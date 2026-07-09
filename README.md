@@ -40,14 +40,16 @@ npx -y playwright screenshot --viewport-size=1200,630 \
 ## Content gates
 
 Run all of these before any push; every one must pass. The word budget is **450** visible words.
+README.md is excluded from the greps — it quotes the gate patterns themselves; keep its prose
+clean by eye.
 
 Grep gates (banned words, vendors, openai):
 
 ```bash
 cd /Users/alxedelweiss/junco-site
-grep -rniE 'blazing|seamless|revolutionary|supercharge|magical|\beasy\b|\bsimply\b|powerful' site/ og.html README.md; echo "banned-words exit: $?"   # expected: 1 (no matches)
-grep -rniE 'anthropic|claude|gpt|gemini|llama|mistral|deepseek|qwen|ollama|vllm|lm.?studio|mlx' site/ og.html .github/ README.md; echo "vendor exit: $?"  # expected: 1
-grep -rni 'openai' site/ og.html README.md | grep -vi 'openai-compatible'; echo "openai exit: $?"  # expected: 1
+grep -rniE 'blazing|seamless|revolutionary|supercharge|magical|\beasy\b|\bsimply\b|powerful' site/ og.html; echo "banned-words exit: $?"   # expected: 1 (no matches)
+grep -rniE 'anthropic|claude|gpt|gemini|llama|mistral|deepseek|qwen|ollama|vllm|lm.?studio|mlx' site/ og.html .github/; echo "vendor exit: $?"  # expected: 1
+grep -rni 'openai' site/ og.html | grep -vi 'openai-compatible'; echo "openai exit: $?"  # expected: 1
 ```
 
 Emoji and hex gates:
@@ -58,7 +60,7 @@ import re
 pat = re.compile('[\U0001F000-\U0001FAFF☀-➿⬀-⯿️⌚⌛⤴⤵⏩-⏺]')
 allowed = set('✓✗')
 bad = []
-for f in ['site/index.html','site/styles.css','og.html','README.md']:
+for f in ['site/index.html','site/styles.css','og.html']:
     for i, line in enumerate(open(f), 1):
         bad += [(f,i,c) for c in pat.findall(line) if c not in allowed]
 print(bad if bad else 'emoji gate OK'); assert not bad
