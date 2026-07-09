@@ -95,6 +95,134 @@
         </dl>
       </section>
 
+      <!-- 01 · the dashboard -->
+      <section class="sec" aria-labelledby="dash-h">
+        <h2 id="dash-h"><span class="num" aria-hidden="true">01 · </span>The dashboard</h2>
+        <p>
+          <code>junco dashboard</code> runs fullscreen in the terminal: repos, issues, plans, the
+          queue, and every junco-authored PR, one keystroke apart.
+        </p>
+        <figure class="fig">
+          <div class="scroll">
+            <pre class="diagram" aria-hidden="true">
+ <b>junco</b>  acme/reef-api   <span class="hot">●2 review</span> · <span class="hot">✗1 PR</span> · ✓14 · daemon ● up 6h · ◐1 · 2 waiting
+╭ 1 repos ─────────╮╭ 2 issues · 14──────────────────────╮╭ 3 PRs · reef-api ──────╮
+│<span class="hot">▌</span><b>acme/reef-api</b> 2● ││<span class="hot">▌</span>● #52 <b>Fix reef color…</b>   <span class="hot">plan-ready</span> ││<span class="hot">▌</span><span class="hot">✗</span> #52 <b>fix-color-lut</b> <span class="hot">✗2</span> │
+│ acme/tide-cli    ││ ◐ #46 <b>Bleaching alert</b>      working ││ ◐ #48 <b>tide-cache</b>    ◐1 │
+│──────────────────││ ○ #61 <b>Add tide tables</b>          3h  ││ ● #41 <b>alert-copy</b>    ✓4 │
+│ queue            ││ ✓ #44 <b>Coral survey</b>       done  2d  ││                        │
+│ ◐ #46 · turn 14  ││                                    ││                        │
+│ 2 waiting        ││                             2/14   ││                        │
+╰──────────────────╯╰────────────────────────────────────╯╰────────────────────────╯
+ ↑/↓ move · ←/→ panes · enter preview · d dispatch · a approve · / filter · ? help</pre>
+          </div>
+          <figcaption class="visually-hidden">
+            The junco dashboard: three panes side by side. Pane one lists watched repositories with
+            a queue card showing the running ticket and waiting count. Pane two lists the selected
+            repository's junco-labeled issues with lifecycle glyphs and state badges. Pane three
+            lists junco-authored pull requests with check counts. A header line shows review count,
+            PRs needing attention, daemon uptime, and queue depth; a footer line shows key bindings.
+          </figcaption>
+        </figure>
+        <ol class="notes">
+          <li>
+            Watched repos (queue card on top), the selected repo's <code>junco</code>-labeled
+            issues, junco's PRs sorted attention-first — <code>1</code>/<code>2</code>/<code>3</code>
+            jump panes, <code>enter</code> opens detail.
+          </li>
+          <li>
+            Every action is a label mutation through your own <code>gh</code> auth — <code>d</code>
+            dispatches, <code>a</code> approves; the daemon's sweep does the rest.
+          </li>
+          <li>
+            <code>:</code> opens a command palette that runs the actual junco CLI — no
+            reimplementation, no drift.
+          </li>
+        </ol>
+      </section>
+
+      <!-- 02 · the loop -->
+      <section class="sec" aria-labelledby="loop-h">
+        <h2 id="loop-h"><span class="num" aria-hidden="true">02 · </span>The loop</h2>
+        <figure class="fig">
+          <div class="scroll">
+            <pre class="diagram" aria-hidden="true">
+ ┌─ <b>you</b> ─────────────────────┐        ┌─ <b>junco</b> ────────────────────────────────┐
+ │ label an issue: <span class="hot">junco</span>     │ ─────→ │ verifies the labeler has write access, │
+ │                           │        │ plans read-only, posts the plan as a   │
+ │                           │ ←───── │ comment · <span class="hot">junco:plan-ready</span>             │
+ │ read the plan comment,    │        │                                        │
+ │ edit it if you like,      │        │                                        │
+ │ apply <span class="hot">junco:approved</span>      │ ─────→ │ approval verified — write access, and  │
+ │                           │        │ newer than the plan — then: worktree,  │
+ │                           │        │ agent, verify, critic                  │
+ │ review the draft PR       │ ←───── │ opened PR · <span class="hot">Closes acme/reef-api#52</span>    │
+ │                           │        │ issue flips to <span class="hot">junco:done</span>              │
+ └───────────────────────────┘        └────────────────────────────────────────┘</pre>
+          </div>
+          <figcaption class="visually-hidden">
+            You label an issue junco. Junco verifies the labeler has write access, plans in a
+            read-only session, and posts the plan as an issue comment, flipping the label to
+            junco:plan-ready. You read the plan comment, optionally edit it, and apply
+            junco:approved. Junco verifies the approval — write access, and newer than the plan —
+            then runs the agent in a git worktree with verification and a critic, opens a draft
+            pull request whose description says Closes acme/reef-api#52, and flips the issue to
+            junco:done.
+          </figcaption>
+        </figure>
+        <div class="panel term">
+          <p class="panel-cap" aria-hidden="true">── junco logs -f ──</p>
+          <div class="scroll">
+            <pre class="demo" id="demo"><span
+                class="l">$ junco logs -f</span><span
+                class="l">09:14:07 INFO  github bridge: dispatched issue {"nwo":"acme/reef-api","issue":52,"id":"gh-acme-reef-api-52-plan","kind":"plan"}</span><span
+                class="l">09:14:52 INFO  [gh-acme-reef-api-52-plan] finalized {"dst":"done/gh-acme-reef-api-52-plan.md","status":"completed"}</span><span
+                class="l note">── plan on #52 · junco:plan-ready · a human reads it, applies junco:approved ──</span><span
+                class="l">09:31:02 INFO  github bridge: approved plan dispatched for execution {"nwo":"acme/reef-api","issue":52,"id":"gh-acme-reef-api-52"}</span><span
+                class="l">09:31:05 INFO  claimed {"src":"inbox/gh-acme-reef-api-52.md","dst":"processing/gh-acme-reef-api-52.md"}</span><span
+                class="l">09:42:31 INFO  [gh-acme-reef-api-52] spec verification: 2/2 checks passed</span><span
+                class="l">09:42:58 INFO  [gh-acme-reef-api-52] critic: pass</span><span
+                class="l">09:43:41 INFO  [gh-acme-reef-api-52] pushed junco/gh-acme-reef-api-52 (3 new commits)</span><span
+                class="l">09:43:56 INFO  [gh-acme-reef-api-52] opened PR https://github.com/acme/reef-api/pull/57</span><span
+                class="l">09:43:57 INFO  [gh-acme-reef-api-52] finalized (pr-flow) {"dst":"done/gh-acme-reef-api-52.md","status":"completed"}</span><span
+                class="l">09:43:58 INFO  idle<span class="caret" aria-hidden="true">▌</span></span></pre>
+          </div>
+        </div>
+        <ol class="notes">
+          <li>
+            Approval is verified: <code>junco:approved</code> must come from a write+ collaborator
+            and postdate the plan comment. junco fails closed on any verification error.
+          </li>
+          <li>The plan is an editable issue comment — whatever it says at approval time is what executes.</li>
+          <li>
+            <code>junco:ask</code> skips planning: read-only Q&amp;A, answered as a comment. No
+            branch, no PR.
+          </li>
+          <li>
+            Offline? Labels, comments, and the PR push queue in a durable outbox — FIFO replay,
+            idempotent, dead-lettered after 3 attempts.
+          </li>
+        </ol>
+      </section>
+
+      <!-- 03 · assess -->
+      <section class="sec" aria-labelledby="assess-h">
+        <h2 id="assess-h"><span class="num" aria-hidden="true">03 · </span>It files its own issues</h2>
+        <p>
+          <code>junco assess</code> audits a repo — <code>npm audit</code> plus a read-only agent
+          pass — and files fingerprinted, severity-labeled issues, deduped against the last 500
+          findings, closed ones included. With <code>--auto-plan</code> each issue also carries the
+          trigger label: junco plans its own findings; you approve the ones worth doing.
+        </p>
+        <div class="panel">
+          <p class="panel-cap" aria-hidden="true">── junco assess acme/reef-api · filed ──</p>
+          <div class="scroll">
+            <pre class="diagram">● <b>[high] Unsanitized template in exportCsv (sql-injection)</b>
+  <span class="hot">junco:finding</span> · <span class="hot">severity/high</span> · <span class="hot">junco</span></pre>
+          </div>
+        </div>
+      </section>
+
       <!-- S1 · how it works -->
       <section class="sec" aria-labelledby="how-h">
         <h2 id="how-h"><span class="num" aria-hidden="true">01 · </span>How it works</h2>
@@ -133,29 +261,6 @@
             diff against the spec — a MISSING verdict buys exactly one corrective pass.
           </li>
         </ol>
-      </section>
-
-      <!-- S2 · terminal demo -->
-      <section class="sec" aria-labelledby="demo-h">
-        <h2 id="demo-h"><span class="num" aria-hidden="true">02 · </span>One ticket, end to end</h2>
-        <div class="panel term">
-          <p class="panel-cap" aria-hidden="true">── junco logs -f ──</p>
-          <div class="scroll">
-            <pre class="demo" id="demo"><span
-                class="l">$ junco submit fix-tide-rounding.md</span><span
-                class="l">submitted: ~/junco/inbox/fix-tide-rounding.md</span><span
-                class="l"> </span><span
-                class="l">$ junco logs -f</span><span
-                class="l">14:02:03 INFO  worker online {"pid":51423}</span><span
-                class="l">14:02:07 INFO  claimed {"src":"inbox/fix-tide-rounding.md","dst":"processing/fix-tide-rounding.md"}</span><span
-                class="l">14:14:41 INFO  [fix-tide-rounding] spec verification: 2/2 checks passed</span><span
-                class="l">14:14:58 INFO  [fix-tide-rounding] critic: pass</span><span
-                class="l">14:15:02 INFO  [fix-tide-rounding] pushed junco/fix-tide-rounding (3 new commits)</span><span
-                class="l">14:15:09 INFO  [fix-tide-rounding] opened PR https://github.com/acme/reef-api/pull/57</span><span
-                class="l">14:15:10 INFO  [fix-tide-rounding] finalized (pr-flow) {"dst":"done/fix-tide-rounding.md","status":"completed"}</span><span
-                class="l">14:15:11 INFO  idle<span class="caret" aria-hidden="true">▌</span></span></pre>
-          </div>
-        </div>
       </section>
 
       <!-- S3 · the ticket -->

@@ -358,6 +358,9 @@ h2 .num {
 .caret {
   color: var(--accent);
 }
+.demo .note {
+  color: var(--ink-muted);
+}
 
 .caption {
   color: var(--ink-muted);
