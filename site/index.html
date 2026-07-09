@@ -223,9 +223,13 @@
         </div>
       </section>
 
-      <!-- S1 · how it works -->
-      <section class="sec" aria-labelledby="how-h">
-        <h2 id="how-h"><span class="num" aria-hidden="true">01 · </span>How it works</h2>
+      <!-- 04 · under the hood -->
+      <section class="sec" aria-labelledby="hood-h">
+        <h2 id="hood-h"><span class="num" aria-hidden="true">04 · </span>Under the hood: every issue becomes a ticket</h2>
+        <p>
+          The bridge writes an execution ticket into the same <code>inbox/</code> that
+          <code>junco submit</code> uses — one queue, one pipeline, wherever the work came from.
+        </p>
         <figure class="fig">
           <div class="scroll">
             <pre class="diagram" aria-hidden="true">
@@ -253,19 +257,14 @@
             workers can never own the same ticket.
           </li>
           <li>
-            Four loop guards watch the agent's event stream; a supervisor nudges, escalates, then
-            kills. A killed or timed-out run still gets its commits salvaged into a draft PR.
+            Four loop guards; a supervisor nudges, escalates, kills. A killed or timed-out run
+            still gets its commits salvaged into a draft PR.
           </li>
           <li>
-            junco runs the ticket's verification blocks in the worktree, then a critic reads the
-            diff against the spec — a MISSING verdict buys exactly one corrective pass.
+            Verification blocks run in the worktree; a critic reads the diff against the spec — a
+            MISSING verdict buys exactly one corrective pass.
           </li>
         </ol>
-      </section>
-
-      <!-- S3 · the ticket -->
-      <section class="sec" aria-labelledby="ticket-h">
-        <h2 id="ticket-h"><span class="num" aria-hidden="true">03 · </span>The ticket</h2>
         <div class="panel">
           <p class="panel-cap" aria-hidden="true">── fix-tide-rounding.md ──</p>
           <div class="scroll">
@@ -306,9 +305,9 @@ npm test
         </p>
       </section>
 
-      <!-- S4 · capabilities -->
+      <!-- 05 · capabilities -->
       <section class="sec" aria-labelledby="cap-h">
-        <h2 id="cap-h"><span class="num" aria-hidden="true">04 · </span>Capabilities</h2>
+        <h2 id="cap-h"><span class="num" aria-hidden="true">05 · </span>Capabilities</h2>
         <dl class="grid">
           <div>
             <dt>Atomic claiming</dt>
@@ -345,9 +344,9 @@ npm test
         </dl>
       </section>
 
-      <!-- S5 · setup -->
+      <!-- 06 · setup -->
       <section class="sec" aria-labelledby="setup-h">
-        <h2 id="setup-h"><span class="num" aria-hidden="true">05 · </span>Sixty seconds to a running worker</h2>
+        <h2 id="setup-h"><span class="num" aria-hidden="true">06 · </span>Sixty seconds to a running worker</h2>
         <p>Node ≥ 22.19, git, and an authenticated <code>gh</code> for PR flows.</p>
         <div class="panel install-block">
           <div class="block-bar">
@@ -390,9 +389,9 @@ range      your machine · any inference endpoint</pre>
         </aside>
       </section>
 
-      <!-- S6 · contribute -->
+      <!-- 07 · contribute -->
       <section class="sec" aria-labelledby="con-h">
-        <h2 id="con-h"><span class="num" aria-hidden="true">06 · </span>Contribute</h2>
+        <h2 id="con-h"><span class="num" aria-hidden="true">07 · </span>Contribute</h2>
         <p>
           junco is young, and the codebase is still small enough to hold in your head. ~1,100
           tests run in a few seconds; <a
