@@ -99,13 +99,13 @@
       <section class="sec" aria-labelledby="dash-h">
         <h2 id="dash-h"><span class="num" aria-hidden="true">01 · </span>The dashboard</h2>
         <p>
-          Repos, issues, plans, the queue, and every junco-authored PR — one keystroke apart.
+          <code>junco dashboard</code> — repos, issues, plans, the queue, and every junco-authored PR one keystroke apart.
         </p>
         <figure class="fig">
           <div class="scroll">
             <pre class="diagram" aria-hidden="true">
  <b>junco</b>  acme/reef-api   <span class="hot">●2 review</span> · <span class="hot">✗1 PR</span> · ✓14 · daemon ● up 6h · ◐1 · 2 waiting
-╭ 1 repos ─────────╮╭ 2 issues · 14──────────────────────╮╭ 3 PRs · reef-api ──────╮
+╭ 1 repos ─────────╮╭ 2 issues · 14 ─────────────────────╮╭ 3 PRs · reef-api ──────╮
 │<span class="hot">▌</span><b>acme/reef-api</b> 2● ││<span class="hot">▌</span>● #52 <b>Fix reef color…</b>   <span class="hot">plan-ready</span> ││<span class="hot">▌</span><span class="hot">✗</span> #52 <b>fix-color-lut</b> <span class="hot">✗2</span> │
 │ acme/tide-cli    ││ ◐ #46 <b>Bleaching alert</b>      working ││ ◐ #48 <b>tide-cache</b>    ◐1 │
 │──────────────────││ ○ #61 <b>Add tide tables</b>          3h  ││ ● #41 <b>alert-copy</b>    ✓4 │
@@ -189,7 +189,7 @@
         </div>
         <ol class="notes">
           <li>
-            Approval is verified — a write+ collaborator, applied after the plan comment — and
+            Approval is verified — write access, applied after the plan comment — and
             junco fails closed on any verification error.
           </li>
           <li>The plan is an editable issue comment; what it says at approval time is what executes.</li>
@@ -407,7 +407,7 @@ npm install &amp;&amp; npm test       # vitest, ~1,100 tests, a few seconds</cod
         </div>
       </section>
 
-      <!-- S7 · final CTA -->
+      <!-- CTA -->
       <section class="cta" aria-label="Install">
         <p class="cta-line">Label an issue. Get a pull request.</p>
         <div class="panel install">

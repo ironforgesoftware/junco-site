@@ -638,3 +638,8 @@ curl -s https://junco.ironforgesoftware.com/ | grep -o '<title>[^<]*</title>'   
 - **No invented strings:** transcript and labels traced to the string inventory table; the two spec-flagged verification items (plan-ticket finalize line, ticket id shape) were resolved against code before this plan was written.
 - **Known judgment points left to the implementer:** exact padding inside the two gated `<pre>` blocks (the width gate arbitrates) and the loop-diagram arrow glyph fallback (T1 Step 3 defines the rule).
 - **Declared deviation from the spec:** section 01 ships 3 annotations, not the spec's 4 — the header-pulse note was cut for the 450-word budget (the visually-hidden figcaption still describes the pulse; the mock shows it). If the final word count lands comfortably under 430, the implementer MAY restore it as annotation 3: "The header pulse: issues awaiting review, PRs with failing checks or requested changes, daemon uptime, queue depth."
+
+## Errata (post-execution)
+
+- The canonical gate commands live in README.md's "Content gates" section and EXCLUDE README.md from the grep targets (it quotes the patterns); Task 8's inline copies above are the pre-fix versions.
+- Task 3's gated mock block above is 85 chars on the pane-border line; the shipped mock (site/index.html) is the corrected 84-char version.
