@@ -99,8 +99,7 @@
       <section class="sec" aria-labelledby="dash-h">
         <h2 id="dash-h"><span class="num" aria-hidden="true">01 · </span>The dashboard</h2>
         <p>
-          <code>junco dashboard</code> runs fullscreen in the terminal: repos, issues, plans, the
-          queue, and every junco-authored PR, one keystroke apart.
+          Repos, issues, plans, the queue, and every junco-authored PR — one keystroke apart.
         </p>
         <figure class="fig">
           <div class="scroll">
@@ -126,17 +125,17 @@
         </figure>
         <ol class="notes">
           <li>
-            Watched repos (queue card on top), the selected repo's <code>junco</code>-labeled
-            issues, junco's PRs sorted attention-first — <code>1</code>/<code>2</code>/<code>3</code>
-            jump panes, <code>enter</code> opens detail.
+            Watched repos and the queue card; the repo's <code>junco</code>-labeled issues;
+            junco's PRs, attention-first. <code>1</code>/<code>2</code>/<code>3</code> jump panes;
+            <code>enter</code> opens detail.
           </li>
           <li>
             Every action is a label mutation through your own <code>gh</code> auth — <code>d</code>
             dispatches, <code>a</code> approves; the daemon's sweep does the rest.
           </li>
           <li>
-            <code>:</code> opens a command palette that runs the actual junco CLI — no
-            reimplementation, no drift.
+            A command palette (<code>:</code>) runs the actual junco CLI — no reimplementation,
+            no drift.
           </li>
         </ol>
       </section>
@@ -190,17 +189,13 @@
         </div>
         <ol class="notes">
           <li>
-            Approval is verified: <code>junco:approved</code> must come from a write+ collaborator
-            and postdate the plan comment. junco fails closed on any verification error.
+            Approval is verified — a write+ collaborator, applied after the plan comment — and
+            junco fails closed on any verification error.
           </li>
-          <li>The plan is an editable issue comment — whatever it says at approval time is what executes.</li>
+          <li>The plan is an editable issue comment; what it says at approval time is what executes.</li>
           <li>
-            <code>junco:ask</code> skips planning: read-only Q&amp;A, answered as a comment. No
+            <code>junco:ask</code> skips planning — read-only Q&amp;A answered as a comment; no
             branch, no PR.
-          </li>
-          <li>
-            Offline? Labels, comments, and the PR push queue in a durable outbox — FIFO replay,
-            idempotent, dead-lettered after 3 attempts.
           </li>
         </ol>
       </section>
@@ -210,12 +205,12 @@
         <h2 id="assess-h"><span class="num" aria-hidden="true">03 · </span>It files its own issues</h2>
         <p>
           <code>junco assess</code> audits a repo — <code>npm audit</code> plus a read-only agent
-          pass — and files fingerprinted, severity-labeled issues, deduped against the last 500
-          findings, closed ones included. With <code>--auto-plan</code> each issue also carries the
-          trigger label: junco plans its own findings; you approve the ones worth doing.
+          pass — and files fingerprinted, severity-labeled issues, deduped against past findings.
+          <code>--auto-plan</code> adds the trigger label: junco plans its own findings; you
+          approve what's worth doing.
         </p>
         <div class="panel">
-          <p class="panel-cap" aria-hidden="true">── junco assess acme/reef-api · filed ──</p>
+          <p class="panel-cap" aria-hidden="true">── junco assess · filed ──</p>
           <div class="scroll">
             <pre class="diagram">● <b>[high] Unsanitized template in exportCsv (sql-injection)</b>
   <span class="hot">junco:finding</span> · <span class="hot">severity/high</span> · <span class="hot">junco</span></pre>
@@ -227,8 +222,8 @@
       <section class="sec" aria-labelledby="hood-h">
         <h2 id="hood-h"><span class="num" aria-hidden="true">04 · </span>Under the hood: every issue becomes a ticket</h2>
         <p>
-          The bridge writes an execution ticket into the same <code>inbox/</code> that
-          <code>junco submit</code> uses — one queue, one pipeline, wherever the work came from.
+          The bridge writes execution tickets into the same <code>inbox/</code> as
+          <code>junco submit</code> — one queue, one pipeline, wherever work comes from.
         </p>
         <figure class="fig">
           <div class="scroll">
@@ -251,20 +246,6 @@
             backoff.
           </figcaption>
         </figure>
-        <ol class="notes">
-          <li>
-            Claim is one atomic rename — <code>inbox/</code> to <code>processing/</code> — so two
-            workers can never own the same ticket.
-          </li>
-          <li>
-            Four loop guards; a supervisor nudges, escalates, kills. A killed or timed-out run
-            still gets its commits salvaged into a draft PR.
-          </li>
-          <li>
-            Verification blocks run in the worktree; a critic reads the diff against the spec — a
-            MISSING verdict buys exactly one corrective pass.
-          </li>
-        </ol>
         <div class="panel">
           <p class="panel-cap" aria-hidden="true">── fix-tide-rounding.md ──</p>
           <div class="scroll">
@@ -300,8 +281,8 @@ npm test
           </div>
         </div>
         <p class="caption">
-          Without a <code>repo:</code> field this is a Q&amp;A ticket — answered in place,
-          read-only, no git. <code>junco schema</code> prints the full frontmatter contract.
+          No <code>repo:</code> field? Then it's a Q&amp;A ticket — answered in place, read-only.
+          <code>junco schema</code> prints the full contract.
         </p>
       </section>
 
@@ -341,13 +322,17 @@ npm test
             <dt>PR monitor</dt>
             <dd>junco-authored PRs sorted attention-first — failing checks and requested changes surface at the top. <code>junco prs</code> prints the same list.</dd>
           </div>
+          <div>
+            <dt>Verify, then critique</dt>
+            <dd>Verification blocks run in the worktree; a critic reads the diff against the spec — a MISSING verdict buys exactly one corrective pass.</dd>
+          </div>
         </dl>
       </section>
 
       <!-- 06 · setup -->
       <section class="sec" aria-labelledby="setup-h">
         <h2 id="setup-h"><span class="num" aria-hidden="true">06 · </span>Sixty seconds to a running worker</h2>
-        <p>Node ≥ 22.19, git, and an authenticated <code>gh</code> for PR flows.</p>
+        <p>Node ≥ 22.19 · git · an authenticated <code>gh</code> for PR flows.</p>
         <div class="panel install-block">
           <div class="block-bar">
             <p class="panel-cap" aria-hidden="true">── setup ──</p>
@@ -404,7 +389,7 @@ range      your machine · any inference endpoint</pre>
       <section class="sec" aria-labelledby="con-h">
         <h2 id="con-h"><span class="num" aria-hidden="true">07 · </span>Contribute</h2>
         <p>
-          junco is young, and the codebase is still small enough to hold in your head. ~1,100
+          junco is young; the codebase still fits in your head. ~1,100
           tests run in a few seconds; <a
             href="https://github.com/ironforgesoftware/junco/blob/main/ARCHITECTURE.md"
             >ARCHITECTURE.md</a
