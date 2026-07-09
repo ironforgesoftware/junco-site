@@ -3,13 +3,13 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>junco — Markdown tickets in. Pull requests out.</title>
+    <title>junco — Issues in. Pull requests out.</title>
     <meta
       name="description"
       content="A harness-agnostic task-queue worker that turns Markdown tickets into git pull requests by driving a coding agent."
    >
     <link rel="canonical" href="https://junco.ironforgesoftware.com/">
-    <meta property="og:title" content="junco — Markdown tickets in. Pull requests out.">
+    <meta property="og:title" content="junco — Issues in. Pull requests out.">
     <meta
       property="og:description"
       content="A harness-agnostic task-queue worker that turns Markdown tickets into git pull requests by driving a coding agent."
@@ -69,11 +69,11 @@
       <!-- S0 · hero -->
       <section class="hero" aria-labelledby="hero-h">
         <p class="kicker">junco · field spec · v0.4.0 · MIT</p>
-        <h1 id="hero-h">Markdown tickets in.<br>Pull requests out.</h1>
+        <h1 id="hero-h">Issues in.<br>Pull requests out.</h1>
         <p class="sub">
-          junco is a daemon on your machine that claims tickets from a folder — or GitHub issues
-          you label — and drives a coding agent in an isolated git worktree until a draft pull
-          request comes out.
+          Label a GitHub issue <code>junco</code> and a plan appears as a comment. Approve it, and
+          junco drives a coding agent in an isolated worktree until a draft PR arrives — watched
+          from a terminal dashboard built for the whole loop.
         </p>
 
         <div class="panel install">
@@ -86,8 +86,9 @@
 
         <dl class="spec">
           <div><dt>designation</dt><dd>harness-agnostic task-queue worker · local daemon</dd></div>
-          <div><dt>input</dt><dd>Markdown tickets (YAML frontmatter) · GitHub issues you label</dd></div>
-          <div><dt>output</dt><dd>draft pull requests · in-place answers · plan comments</dd></div>
+          <div><dt>input</dt><dd>GitHub issues you label · Markdown tickets (YAML frontmatter)</dd></div>
+          <div><dt>output</dt><dd>draft pull requests · plan comments · in-place answers</dd></div>
+          <div><dt>cockpit</dt><dd>fullscreen terminal dashboard · <code>junco dashboard</code></dd></div>
           <div><dt>endpoint</dt><dd>any OpenAI-compatible inference endpoint</dd></div>
           <div><dt>runtime</dt><dd>Node ≥ 22.19 · git · gh</dd></div>
           <div><dt>records</dt><dd>per-ticket JSONL transcripts · structured worker.log</dd></div>
