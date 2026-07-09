@@ -338,8 +338,8 @@ npm test
             <dd>Your machine, your git, your <code>gh</code> auth, any OpenAI-compatible inference endpoint. No third service.</dd>
           </div>
           <div>
-            <dt>A dashboard worth living in</dt>
-            <dd>Repos, plans, approvals, queue, and open PRs in one fullscreen terminal UI with a command palette.</dd>
+            <dt>PR monitor</dt>
+            <dd>junco-authored PRs sorted attention-first — failing checks and requested changes surface at the top. <code>junco prs</code> prints the same list.</dd>
           </div>
         </dl>
       </section>
@@ -362,9 +362,20 @@ npm test
           </div>
           <div class="scroll">
             <pre><code>npx @ironforgesoftware/junco   # first run → setup wizard; afterwards → the daemon
-junco submit my-task.md        # a repo: field opens a PR; without one it answers in place
-junco status                   # daemon · endpoint · queue at a glance
-junco dashboard                # or drive everything from the TUI</code></pre>
+junco dashboard                # the cockpit: watch, dispatch, approve, monitor
+junco submit my-task.md        # or feed it a Markdown ticket directly</code></pre>
+          </div>
+        </div>
+
+        <div class="panel install-block">
+          <p class="panel-cap" aria-hidden="true">── config.toml ──</p>
+          <div class="scroll">
+            <pre><code>[github]
+enabled = true            # label an issue `junco` → plan → approve → PR
+
+[[github.repos]]          # or press `w` in the dashboard to watch a repo
+nwo  = "acme/reef-api"
+path = "~/code/reef-api"</code></pre>
           </div>
         </div>
 
@@ -374,7 +385,7 @@ junco dashboard                # or drive everything from the TUI</code></pre>
             <pre class="fg">Junco hyemalis · dark-eyed junco
 
 habitat    your filesystem
-diet       Markdown tickets
+diet       GitHub issues · Markdown tickets
 song       structured JSONL · human format available
 behavior   overwinters — survives crashes, requeues
            with backoff, drains the queue before rest
@@ -382,7 +393,7 @@ range      your machine · any inference endpoint</pre>
           </div>
           <p class="visually-hidden">
             Field guide, tongue in cheek: Junco hyemalis, the dark-eyed junco. Habitat: your
-            filesystem. Diet: Markdown tickets. Song: structured JSONL logs, human format
+            filesystem. Diet: GitHub issues, Markdown tickets. Song: structured JSONL logs, human format
             available. Behavior: overwinters — survives crashes, requeues with backoff, drains the
             queue before rest. Range: your machine, any inference endpoint.
           </p>
@@ -413,7 +424,7 @@ npm install &amp;&amp; npm test       # vitest, ~1,100 tests, a few seconds</cod
 
       <!-- S7 · final CTA -->
       <section class="cta" aria-label="Install">
-        <p class="cta-line">Drop a ticket. Get a pull request.</p>
+        <p class="cta-line">Label an issue. Get a pull request.</p>
         <div class="panel install">
           <code>npm install -g @ironforgesoftware/junco</code>
           <button class="copy" type="button" aria-live="polite" data-copy="npm install -g @ironforgesoftware/junco">
