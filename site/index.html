@@ -52,7 +52,12 @@
     <a class="skip" href="#main">Skip to content</a>
 
     <header class="wrap bar">
-      <a class="wordmark" href="/">junco</a>
+      <a class="wordmark" href="/"
+        ><svg class="mark" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true">
+          <circle fill="currentColor" cx="13" cy="16" r="12"></circle>
+          <path fill="var(--accent)" d="M21 10 L32 16 L21 22 Z"></path></svg
+        >junco</a
+      >
       <nav aria-label="Site">
         <a href="https://github.com/ironforgesoftware/junco">GitHub</a>
         <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a>
@@ -96,13 +101,13 @@
           <div class="scroll">
             <pre class="diagram" aria-hidden="true">
 ┌────────┐   claim    ┌─────────────┐   run    ┌────────────────────────┐
-│ inbox/ │ ─────────► │ processing/ │ ───────► │ agent in a worktree    │
+│ <b>inbox/</b> │ ─────────► │ <b>processing/</b> │ ───────► │ <b>agent in a worktree</b>    │
 └────────┘  (atomic   └─────────────┘          │ run → verify → critic  │
      ▲       rename)         │                 └───────────┬────────────┘
      │                       │ transient                   │ push
      │                       │ failure,                    ▼
      │                       │ no commits        ┌───────────────────┐
-     └── requeue ◄───────────┘                   │ draft PR → done/  │
+     └── requeue ◄───────────┘                   │ <span class="hot">draft PR → done/</span>  │
          retry_count++ · not_before              └───────────────────┘</pre>
           </div>
           <figcaption class="visually-hidden">
@@ -346,6 +351,7 @@ npm install &amp;&amp; npm test       # vitest, ~1,100 tests, a few seconds</cod
           localStorage.setItem("theme", next);
           paint();
         });
+        matchMedia("(prefers-color-scheme: dark)").addEventListener("change", paint);
         paint();
 
         document.querySelectorAll(".copy").forEach(function (btn) {

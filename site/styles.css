@@ -172,6 +172,12 @@ button:hover {
 .wordmark {
   font-weight: 700;
   text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 1ch;
+}
+.wordmark .mark {
+  flex: none;
 }
 
 .bar nav {
@@ -195,8 +201,8 @@ button:hover {
 }
 
 h1 {
-  font-size: clamp(1.5rem, 5.5vw + 0.25rem, 2.25rem);
-  line-height: 1.35;
+  font-size: clamp(1.5rem, 5.5vw + 0.25rem, 2.5rem);
+  line-height: 1.3;
   font-weight: 700;
   margin-block: var(--lh);
   letter-spacing: -0.02em;
@@ -296,7 +302,7 @@ h1 {
 .sec,
 .cta {
   border-top: 1px solid var(--line);
-  margin-block-start: calc(2 * var(--lh));
+  margin-block-start: calc(2.5 * var(--lh));
   padding-block-start: calc(1.5 * var(--lh));
 }
 
@@ -316,9 +322,17 @@ h2 .num {
   max-width: 68ch;
 }
 
-/* pipeline diagram */
+/* pipeline diagram — structure muted, stations bold, outcome accented */
 .diagram {
+  color: var(--ink-muted);
+}
+.diagram b {
   color: var(--ink);
+  font-weight: 700;
+}
+.diagram .hot {
+  color: var(--accent);
+  font-weight: 700;
 }
 .fig {
   margin-block: var(--lh);
@@ -340,6 +354,9 @@ h2 .num {
 .term .demo .l {
   display: block;
   white-space: pre;
+}
+.caret {
+  color: var(--accent);
 }
 
 .caption {
