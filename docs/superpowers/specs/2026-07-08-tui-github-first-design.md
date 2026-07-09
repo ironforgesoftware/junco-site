@@ -206,7 +206,10 @@ unchanged). Footer unchanged.
 - **Glyph policy for the mock.** The real TUI's `⚑` (U+2691) and `⏳` (U+23F3) are excluded: both
   fall outside the shipped subset's ranges, and U+23F3 sits in a standard emoji range (our own
   emoji gate would flag it). The mock substitutes `✗1 PR` for the attention chip and the words
-  `2 waiting` for the queue chip. Remaining mock glyphs: `▌ ● ◐ ○ ✓ ✗ ◍` plus box-drawing.
+  `2 waiting` for the queue chip. `◍` (U+25CD, the TUI's pending-checks count glyph) turned out
+  to be absent from Commit Mono entirely — the mock substitutes `◐`, which already means
+  "pending" in the TUI's lifecycle vocabulary. Remaining mock glyphs: `▌ ● ◐ ○ ✓ ✗` plus
+  box-drawing.
   `◐` (U+25D0) and `◍` (U+25CD) — `◐` is OUTSIDE the current geometric-shapes subset range
   (U+25A0–25CF): **re-subset both weights** with the README recipe, extending geometric shapes to
   U+25A0–25FF, then re-run the cmap coverage gate over every glyph the page uses before styling.

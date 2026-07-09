@@ -195,7 +195,7 @@ Save the block below (exactly, no HTML) to `scratchpad/mock.txt`, then `node scr
  junco  acme/reef-api   ●2 review · ✗1 PR · ✓14 · daemon ● up 6h · ◐1 · 2 waiting
 ╭ 1 repos ─────────╮╭ 2 issues · 14 ──────────────────────╮╭ 3 PRs · reef-api ──────╮
 │▌acme/reef-api 2● ││▌● #52 Fix reef color…   plan-ready ││▌✗ #52 fix-color-lut ✗2 │
-│ acme/tide-cli    ││ ◐ #46 Bleaching alert      working ││ ◐ #48 tide-cache    ◍1 │
+│ acme/tide-cli    ││ ◐ #46 Bleaching alert      working ││ ◐ #48 tide-cache    ◐1 │
 │──────────────────││ ○ #61 Add tide tables          3h  ││ ● #41 alert-copy    ✓4 │
 │ queue            ││ ✓ #44 Coral survey       done  2d  ││                        │
 │ ◐ #46 · turn 14  ││                                    ││                        │
@@ -222,7 +222,7 @@ Insert after the hero's closing `</section>`. The `<pre>` content is the gated `
  <b>junco</b>  acme/reef-api   <span class="hot">●2 review</span> · <span class="hot">✗1 PR</span> · ✓14 · daemon ● up 6h · ◐1 · 2 waiting
 ╭ 1 repos ─────────╮╭ 2 issues · 14 ──────────────────────╮╭ 3 PRs · reef-api ──────╮
 │<span class="hot">▌</span><b>acme/reef-api</b> 2● ││<span class="hot">▌</span>● #52 <b>Fix reef color…</b>   <span class="hot">plan-ready</span> ││<span class="hot">▌</span><span class="hot">✗</span> #52 <b>fix-color-lut</b> <span class="hot">✗2</span> │
-│ acme/tide-cli    ││ ◐ #46 <b>Bleaching alert</b>      working ││ ◐ #48 <b>tide-cache</b>    ◍1 │
+│ acme/tide-cli    ││ ◐ #46 <b>Bleaching alert</b>      working ││ ◐ #48 <b>tide-cache</b>    ◐1 │
 │──────────────────││ ○ #61 <b>Add tide tables</b>          3h  ││ ● #41 <b>alert-copy</b>    ✓4 │
 │ queue            ││ ✓ #44 <b>Coral survey</b>       done  2d  ││                        │
 │ ◐ #46 · turn 14  ││                                    ││                        │
