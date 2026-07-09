@@ -1,19 +1,376 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>junco — Markdown tickets in. Pull requests out.</title>
     <meta
       name="description"
       content="A harness-agnostic task-queue worker that turns Markdown tickets into git pull requests by driving a coding agent."
-    />
+   >
+    <link rel="canonical" href="https://junco.ironforgesoftware.com/">
+    <meta property="og:title" content="junco — Markdown tickets in. Pull requests out.">
+    <meta
+      property="og:description"
+      content="A harness-agnostic task-queue worker that turns Markdown tickets into git pull requests by driving a coding agent."
+   >
+    <meta property="og:url" content="https://junco.ironforgesoftware.com/">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://junco.ironforgesoftware.com/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f4f5">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#14171d">
+    <meta name="color-scheme" content="light dark">
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="assets/fonts/CommitMono-400.woff2"
+      crossorigin
+   >
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="assets/fonts/CommitMono-700.woff2"
+      crossorigin
+   >
+    <link rel="stylesheet" href="styles.css">
+    <script>
+      (function () {
+        var t = localStorage.getItem("theme");
+        if (t) document.documentElement.setAttribute("data-theme", t);
+        document.documentElement.classList.add("js");
+      })();
+    </script>
   </head>
   <body>
-    <main>
-      <h1>junco</h1>
-      <p>Markdown tickets in. Pull requests out.</p>
-      <p><a href="https://github.com/ironforgesoftware/junco">github.com/ironforgesoftware/junco</a></p>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="wrap bar">
+      <a class="wordmark" href="/">junco</a>
+      <nav aria-label="Site">
+        <a href="https://github.com/ironforgesoftware/junco">GitHub</a>
+        <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a>
+        <button id="theme-toggle" type="button" aria-pressed="false">dark</button>
+      </nav>
+    </header>
+
+    <main id="main" class="wrap">
+      <!-- S0 · hero -->
+      <section class="hero" aria-labelledby="hero-h">
+        <p class="kicker">junco · field spec · v0.4.0 · MIT</p>
+        <h1 id="hero-h">Markdown tickets in.<br>Pull requests out.</h1>
+        <p class="sub">
+          junco is a daemon on your machine that claims tickets from a folder — or GitHub issues
+          you label — and drives a coding agent in an isolated git worktree until a draft pull
+          request comes out.
+        </p>
+
+        <div class="panel install">
+          <code>npm install -g @ironforgesoftware/junco</code>
+          <button class="copy" type="button" aria-live="polite" data-copy="npm install -g @ironforgesoftware/junco">
+            copy<span class="visually-hidden"> install command</span>
+          </button>
+        </div>
+        <p class="micro">MIT · runs entirely on your machine · bring your own inference endpoint</p>
+
+        <dl class="spec">
+          <div><dt>designation</dt><dd>harness-agnostic task-queue worker · local daemon</dd></div>
+          <div><dt>input</dt><dd>Markdown tickets (YAML frontmatter) · GitHub issues you label</dd></div>
+          <div><dt>output</dt><dd>draft pull requests · in-place answers · plan comments</dd></div>
+          <div><dt>endpoint</dt><dd>any OpenAI-compatible inference endpoint</dd></div>
+          <div><dt>runtime</dt><dd>Node ≥ 22.19 · git · gh</dd></div>
+          <div><dt>records</dt><dd>per-ticket JSONL transcripts · structured worker.log</dd></div>
+        </dl>
+      </section>
+
+      <!-- S1 · how it works -->
+      <section class="sec" aria-labelledby="how-h">
+        <h2 id="how-h"><span class="num" aria-hidden="true">01 · </span>How it works</h2>
+        <figure class="fig">
+          <div class="scroll">
+            <pre class="diagram" aria-hidden="true">
+┌────────┐   claim    ┌─────────────┐   run    ┌────────────────────────┐
+│ inbox/ │ ─────────► │ processing/ │ ───────► │ agent in a worktree    │
+└────────┘  (atomic   └─────────────┘          │ run → verify → critic  │
+     ▲       rename)         │                 └───────────┬────────────┘
+     │                       │ transient                   │ push
+     │                       │ failure,                    ▼
+     │                       │ no commits        ┌───────────────────┐
+     └── requeue ◄───────────┘                   │ draft PR → done/  │
+         retry_count++ · not_before              └───────────────────┘</pre>
+          </div>
+          <figcaption class="visually-hidden">
+            A ticket lands in the inbox directory, is claimed into the processing directory by an
+            atomic rename, runs through an agent in an isolated git worktree with verification and
+            a critic review, is pushed as a draft pull request, and is finalized into the done
+            directory. A transient failure with no commits requeues the ticket to the inbox with
+            backoff.
+          </figcaption>
+        </figure>
+        <ol class="notes">
+          <li>
+            Claim is one atomic rename — <code>inbox/</code> to <code>processing/</code> — so two
+            workers can never own the same ticket.
+          </li>
+          <li>
+            Four loop guards watch the agent's event stream; a supervisor nudges, escalates, then
+            kills. A killed or timed-out run still gets its commits salvaged into a draft PR.
+          </li>
+          <li>
+            junco runs the ticket's verification blocks in the worktree, then a critic reads the
+            diff against the spec — a MISSING verdict buys exactly one corrective pass.
+          </li>
+        </ol>
+      </section>
+
+      <!-- S2 · terminal demo -->
+      <section class="sec" aria-labelledby="demo-h">
+        <h2 id="demo-h"><span class="num" aria-hidden="true">02 · </span>One ticket, end to end</h2>
+        <div class="panel term">
+          <p class="panel-cap" aria-hidden="true">── junco logs -f ──</p>
+          <div class="scroll">
+            <pre class="demo" id="demo"><span class="l">$ junco submit fix-tide-rounding.md</span>
+<span class="l">submitted: ~/junco/inbox/fix-tide-rounding.md</span>
+<span class="l"> </span>
+<span class="l">$ junco logs -f</span>
+<span class="l">14:02:03 INFO  worker online {"pid":51423}</span>
+<span class="l">14:02:07 INFO  claimed {"src":"inbox/fix-tide-rounding.md","dst":"processing/fix-tide-rounding.md"}</span>
+<span class="l">14:14:41 INFO  [fix-tide-rounding] spec verification: 2/2 checks passed</span>
+<span class="l">14:14:58 INFO  [fix-tide-rounding] critic: pass</span>
+<span class="l">14:15:02 INFO  [fix-tide-rounding] pushed junco/fix-tide-rounding (3 new commits)</span>
+<span class="l">14:15:09 INFO  [fix-tide-rounding] opened PR https://github.com/acme/reef-api/pull/57</span>
+<span class="l">14:15:10 INFO  [fix-tide-rounding] finalized (pr-flow) {"dst":"done/fix-tide-rounding.md","status":"completed"}</span>
+<span class="l">14:15:11 INFO  idle<span class="caret" aria-hidden="true">▌</span></span></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- S3 · the ticket -->
+      <section class="sec" aria-labelledby="ticket-h">
+        <h2 id="ticket-h"><span class="num" aria-hidden="true">03 · </span>The ticket</h2>
+        <div class="panel">
+          <p class="panel-cap" aria-hidden="true">── fix-tide-rounding.md ──</p>
+          <div class="scroll">
+            <pre class="ticket"><code>---
+id: fix-tide-rounding
+priority: normal
+timeout_minutes: 30
+repo: ~/code/reef-api
+base_branch: main
+pr_title: "fix: round tide heights to one decimal"
+draft: true
+---
+
+# Round tide heights to one decimal
+
+`TideTable.render()` prints raw floats. Round display values
+to one decimal; leave the underlying data untouched.
+
+## Steps
+
+- [ ] Add `formatHeight()` in src/tideTable.ts; use it in `render()`.
+- [ ] Commit: `git add -A &amp;&amp; git commit -m "fix: round tide heights"`
+
+## Verification
+
+```bash
+npm test
+```
+
+## Done when
+
+- [ ] 1 commit on the branch; `npm test` green.</code></pre>
+          </div>
+        </div>
+        <p class="caption">
+          Without a <code>repo:</code> field this is a Q&amp;A ticket — answered in place,
+          read-only, no git. <code>junco schema</code> prints the full frontmatter contract.
+        </p>
+      </section>
+
+      <!-- S4 · capabilities -->
+      <section class="sec" aria-labelledby="cap-h">
+        <h2 id="cap-h"><span class="num" aria-hidden="true">04 · </span>Capabilities</h2>
+        <dl class="grid">
+          <div>
+            <dt>Atomic claiming</dt>
+            <dd>A ticket moves <code>inbox/ → processing/</code> in one rename; ownership is never ambiguous.</dd>
+          </div>
+          <div>
+            <dt>Plans before code</dt>
+            <dd>In GitHub mode the plan is an issue comment; nothing runs until a verified <code>junco:approved</code> label.</dd>
+          </div>
+          <div>
+            <dt>Supervised sessions</dt>
+            <dd>Four loop guards on the event stream: nudge → escalate → kill. Every run leaves a JSONL transcript.</dd>
+          </div>
+          <div>
+            <dt>Timeout salvage</dt>
+            <dd>Commits made before the cutoff are pushed and opened as a draft PR instead of thrown away.</dd>
+          </div>
+          <div>
+            <dt>Requeue with backoff</dt>
+            <dd>Transient endpoint failures set <code>retry_count</code> and <code>not_before</code>, then return the ticket to the inbox.</dd>
+          </div>
+          <div>
+            <dt>Offline outbox</dt>
+            <dd>Comments, labels, and PR pushes queue durably while GitHub is unreachable, then drain on reconnect.</dd>
+          </div>
+          <div>
+            <dt>Local-first</dt>
+            <dd>Your machine, your git, your <code>gh</code> auth, any OpenAI-compatible inference endpoint. No third service.</dd>
+          </div>
+          <div>
+            <dt>A dashboard worth living in</dt>
+            <dd>Repos, plans, approvals, queue, and open PRs in one fullscreen terminal UI with a command palette.</dd>
+          </div>
+        </dl>
+      </section>
+
+      <!-- S5 · setup -->
+      <section class="sec" aria-labelledby="setup-h">
+        <h2 id="setup-h"><span class="num" aria-hidden="true">05 · </span>Sixty seconds to a running worker</h2>
+        <p>Node ≥ 22.19, git, and an authenticated <code>gh</code> for PR flows.</p>
+        <div class="panel install-block">
+          <div class="scroll">
+            <pre><code>npx @ironforgesoftware/junco   # first run → setup wizard; afterwards → the daemon
+junco submit my-task.md        # a repo: field opens a PR; without one it answers in place
+junco status                   # daemon · endpoint · queue at a glance
+junco dashboard                # or drive everything from the TUI</code></pre>
+          </div>
+          <button
+            class="copy"
+            type="button"
+            data-copy="npx @ironforgesoftware/junco"
+          >
+            copy<span class="visually-hidden"> first command</span>
+          </button>
+        </div>
+
+        <aside class="card" aria-labelledby="fg-h">
+          <p class="panel-cap" id="fg-h">── field guide ──</p>
+          <div class="scroll" aria-hidden="true">
+            <pre class="fg">Junco hyemalis · dark-eyed junco
+
+habitat    your filesystem
+diet       Markdown tickets
+song       structured JSONL · human format available
+behavior   overwinters — survives crashes, requeues
+           with backoff, drains the queue before rest
+range      your machine · any inference endpoint</pre>
+          </div>
+          <p class="visually-hidden">
+            Field guide, tongue in cheek: Junco hyemalis, the dark-eyed junco. Habitat: your
+            filesystem. Diet: Markdown tickets. Song: structured JSONL logs, human format
+            available. Behavior: overwinters — survives crashes, requeues with backoff, drains the
+            queue before rest. Range: your machine, any inference endpoint.
+          </p>
+        </aside>
+      </section>
+
+      <!-- S6 · contribute -->
+      <section class="sec" aria-labelledby="con-h">
+        <h2 id="con-h"><span class="num" aria-hidden="true">06 · </span>Contribute</h2>
+        <p>
+          junco is young, and the codebase is still small enough to hold in your head. ~1,100
+          tests run in a few seconds; <a
+            href="https://github.com/ironforgesoftware/junco/blob/main/ARCHITECTURE.md"
+            >ARCHITECTURE.md</a
+          >
+          is accurate and maintained. For features, open an
+          <a href="https://github.com/ironforgesoftware/junco/issues">issue</a> first — plans are
+          cheap, rework isn't. junco dogfoods: it submits tickets against its own repository.
+        </p>
+        <div class="panel install-block">
+          <div class="scroll">
+            <pre><code>git clone https://github.com/ironforgesoftware/junco &amp;&amp; cd junco
+npm install &amp;&amp; npm test       # vitest, ~1,100 tests, a few seconds</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- S7 · final CTA -->
+      <section class="cta" aria-label="Install">
+        <p class="cta-line">Drop a ticket. Get a pull request.</p>
+        <div class="panel install">
+          <code>npm install -g @ironforgesoftware/junco</code>
+          <button class="copy" type="button" aria-live="polite" data-copy="npm install -g @ironforgesoftware/junco">
+            copy<span class="visually-hidden"> install command</span>
+          </button>
+        </div>
+      </section>
     </main>
+
+    <footer class="wrap foot">
+      <p>
+        <a href="https://github.com/ironforgesoftware/junco/blob/main/LICENSE">MIT</a> ·
+        <a href="https://github.com/ironforgesoftware/junco">GitHub</a> ·
+        <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a> ·
+        <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a> ·
+        v0.4.0
+      </p>
+      <p class="bird">
+        Named after the dark-eyed junco — a small, unassuming snowbird that works through winter.
+      </p>
+    </footer>
+
+    <script>
+      (function () {
+        var doc = document.documentElement;
+        var toggle = document.getElementById("theme-toggle");
+        function current() {
+          var set = doc.getAttribute("data-theme");
+          if (set) return set;
+          return matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        function paint() {
+          var dark = current() === "dark";
+          toggle.textContent = dark ? "light" : "dark";
+          toggle.setAttribute("aria-pressed", String(dark));
+        }
+        toggle.addEventListener("click", function () {
+          var next = current() === "dark" ? "light" : "dark";
+          doc.setAttribute("data-theme", next);
+          localStorage.setItem("theme", next);
+          paint();
+        });
+        paint();
+
+        document.querySelectorAll(".copy").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            navigator.clipboard.writeText(btn.getAttribute("data-copy")).then(function () {
+              btn.firstChild.textContent = "copied";
+              setTimeout(function () {
+                btn.firstChild.textContent = "copy";
+              }, 2000);
+            });
+          });
+        });
+
+        var demo = document.getElementById("demo");
+        if (demo && matchMedia("(prefers-reduced-motion: no-preference)").matches) {
+          demo.querySelectorAll(".l").forEach(function (line, i) {
+            line.style.setProperty("--n", line.textContent.length);
+            line.style.setProperty("--i", i);
+          });
+          demo.classList.add("armed");
+          new IntersectionObserver(
+            function (entries, io) {
+              if (entries[0].isIntersecting) {
+                demo.classList.add("play");
+                io.disconnect();
+              }
+            },
+            { threshold: 0.4 }
+          ).observe(demo);
+        }
+      })();
+    </script>
   </body>
 </html>
