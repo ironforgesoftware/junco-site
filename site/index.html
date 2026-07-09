@@ -135,18 +135,19 @@
         <div class="panel term">
           <p class="panel-cap" aria-hidden="true">── junco logs -f ──</p>
           <div class="scroll">
-            <pre class="demo" id="demo"><span class="l">$ junco submit fix-tide-rounding.md</span>
-<span class="l">submitted: ~/junco/inbox/fix-tide-rounding.md</span>
-<span class="l"> </span>
-<span class="l">$ junco logs -f</span>
-<span class="l">14:02:03 INFO  worker online {"pid":51423}</span>
-<span class="l">14:02:07 INFO  claimed {"src":"inbox/fix-tide-rounding.md","dst":"processing/fix-tide-rounding.md"}</span>
-<span class="l">14:14:41 INFO  [fix-tide-rounding] spec verification: 2/2 checks passed</span>
-<span class="l">14:14:58 INFO  [fix-tide-rounding] critic: pass</span>
-<span class="l">14:15:02 INFO  [fix-tide-rounding] pushed junco/fix-tide-rounding (3 new commits)</span>
-<span class="l">14:15:09 INFO  [fix-tide-rounding] opened PR https://github.com/acme/reef-api/pull/57</span>
-<span class="l">14:15:10 INFO  [fix-tide-rounding] finalized (pr-flow) {"dst":"done/fix-tide-rounding.md","status":"completed"}</span>
-<span class="l">14:15:11 INFO  idle<span class="caret" aria-hidden="true">▌</span></span></pre>
+            <pre class="demo" id="demo"><span
+                class="l">$ junco submit fix-tide-rounding.md</span><span
+                class="l">submitted: ~/junco/inbox/fix-tide-rounding.md</span><span
+                class="l"> </span><span
+                class="l">$ junco logs -f</span><span
+                class="l">14:02:03 INFO  worker online {"pid":51423}</span><span
+                class="l">14:02:07 INFO  claimed {"src":"inbox/fix-tide-rounding.md","dst":"processing/fix-tide-rounding.md"}</span><span
+                class="l">14:14:41 INFO  [fix-tide-rounding] spec verification: 2/2 checks passed</span><span
+                class="l">14:14:58 INFO  [fix-tide-rounding] critic: pass</span><span
+                class="l">14:15:02 INFO  [fix-tide-rounding] pushed junco/fix-tide-rounding (3 new commits)</span><span
+                class="l">14:15:09 INFO  [fix-tide-rounding] opened PR https://github.com/acme/reef-api/pull/57</span><span
+                class="l">14:15:10 INFO  [fix-tide-rounding] finalized (pr-flow) {"dst":"done/fix-tide-rounding.md","status":"completed"}</span><span
+                class="l">14:15:11 INFO  idle<span class="caret" aria-hidden="true">▌</span></span></pre>
           </div>
         </div>
       </section>
@@ -238,19 +239,23 @@ npm test
         <h2 id="setup-h"><span class="num" aria-hidden="true">05 · </span>Sixty seconds to a running worker</h2>
         <p>Node ≥ 22.19, git, and an authenticated <code>gh</code> for PR flows.</p>
         <div class="panel install-block">
+          <div class="block-bar">
+            <p class="panel-cap" aria-hidden="true">── setup ──</p>
+            <button
+              class="copy"
+              type="button"
+              aria-live="polite"
+              data-copy="npx @ironforgesoftware/junco"
+            >
+              copy<span class="visually-hidden"> first command</span>
+            </button>
+          </div>
           <div class="scroll">
             <pre><code>npx @ironforgesoftware/junco   # first run → setup wizard; afterwards → the daemon
 junco submit my-task.md        # a repo: field opens a PR; without one it answers in place
 junco status                   # daemon · endpoint · queue at a glance
 junco dashboard                # or drive everything from the TUI</code></pre>
           </div>
-          <button
-            class="copy"
-            type="button"
-            data-copy="npx @ironforgesoftware/junco"
-          >
-            copy<span class="visually-hidden"> first command</span>
-          </button>
         </div>
 
         <aside class="card" aria-labelledby="fg-h">
@@ -288,6 +293,7 @@ range      your machine · any inference endpoint</pre>
           cheap, rework isn't. junco dogfoods: it submits tickets against its own repository.
         </p>
         <div class="panel install-block">
+          <p class="panel-cap" aria-hidden="true">── clone &amp; test ──</p>
           <div class="scroll">
             <pre><code>git clone https://github.com/ironforgesoftware/junco &amp;&amp; cd junco
 npm install &amp;&amp; npm test       # vitest, ~1,100 tests, a few seconds</code></pre>
