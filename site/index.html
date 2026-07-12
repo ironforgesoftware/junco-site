@@ -68,12 +68,12 @@
     <main id="main" class="wrap">
       <!-- S0 · hero -->
       <section class="hero" aria-labelledby="hero-h">
-        <p class="kicker">junco · field spec · v0.4.0 · MIT</p>
+        <p class="kicker">Junco hyemalis · task-queue worker · v0.7.0 · MIT</p>
         <h1 id="hero-h">Issues in.<br>Pull requests out.</h1>
         <p class="sub">
           Label a GitHub issue <code>junco</code> and a plan appears as a comment. Approve it, and
-          junco drives a coding agent in an isolated worktree until a draft PR arrives — watched
-          from a terminal dashboard built for the whole loop.
+          junco drives a coding agent in a sandboxed worktree until a draft PR arrives — watched from a
+          dashboard built for the whole loop.
         </p>
 
         <div class="panel install">
@@ -82,14 +82,27 @@
             copy<span class="visually-hidden"> install command</span>
           </button>
         </div>
-        <p class="micro">MIT · runs entirely on your machine · bring your own inference endpoint</p>
+        <p class="micro">MIT · runs entirely on your machine · local endpoint or hosted provider</p>
 
+        <div class="spec-perch">
+          <svg class="perch" width="66" height="46" viewBox="0 0 66 46" aria-hidden="true">
+            <path fill="currentColor" d="M9 18.5 L26 14.5 L28.5 24 L11.5 25.5 Z"></path>
+            <path fill="var(--bg)" d="M10.4 20.2 L25.2 16.6 L25.9 19 L11 22 Z"></path>
+            <circle fill="var(--bg)" stroke="currentColor" stroke-width="1.25" cx="38" cy="24" r="15"></circle>
+            <path fill="currentColor" d="M23.6 21.5 A15 15 0 0 1 52.4 21.5 L38 30 Z"></path>
+            <path fill="var(--accent)" d="M52 16.5 L60 19 L52 22 Z"></path>
+            <circle fill="var(--bg)" cx="45.5" cy="14.5" r="1.4"></circle>
+            <path stroke="var(--accent)" stroke-width="1.6" d="M34.5 38.5 L34 46 M42 38.5 L42.5 46" fill="none"></path>
+          </svg>
+        </div>
         <dl class="spec">
           <div><dt>designation</dt><dd>harness-agnostic task-queue worker · local daemon</dd></div>
           <div><dt>input</dt><dd>GitHub issues you label · Markdown tickets (YAML frontmatter)</dd></div>
           <div><dt>output</dt><dd>draft pull requests · plan comments · in-place answers</dd></div>
           <div><dt>cockpit</dt><dd>fullscreen terminal dashboard · <code>junco dashboard</code></dd></div>
-          <div><dt>endpoint</dt><dd>any OpenAI-compatible inference endpoint</dd></div>
+          <div><dt>endpoint</dt><dd>any OpenAI-compatible endpoint · or a hosted provider from the built-in catalog</dd></div>
+          <div><dt>sandbox</dt><dd>OS-level isolation of agent tools · on by default · fails closed</dd></div>
+          <div><dt>spend</dt><dd>per-session cost ledger · optional daily budget cap</dd></div>
           <div><dt>runtime</dt><dd>Node ≥ 22.19 · git · gh</dd></div>
           <div><dt>records</dt><dd>per-ticket JSONL transcripts · structured worker.log</dd></div>
         </dl>
@@ -130,8 +143,8 @@
             <code>enter</code> opens detail.
           </li>
           <li>
-            Every action is a label mutation through your own <code>gh</code> auth — <code>d</code>
-            dispatches, <code>a</code> approves; the daemon's sweep does the rest.
+            Every action is a label mutation through your own <code>gh</code> auth; the daemon's
+            sweep does the rest.
           </li>
           <li>
             A command palette (<code>:</code>) runs the actual junco CLI — no reimplementation,
@@ -189,8 +202,8 @@
         </div>
         <ol class="notes">
           <li>
-            Approval is verified — write access, applied after the plan comment — and
-            junco fails closed on any verification error.
+            Approval is verified — write access, applied after the plan comment; junco fails
+            closed otherwise.
           </li>
           <li>The plan is an editable issue comment; what it says at approval time is what executes.</li>
           <li>
@@ -205,9 +218,10 @@
         <h2 id="assess-h"><span class="num" aria-hidden="true">03 · </span>It files its own issues</h2>
         <p>
           <code>junco assess</code> audits a repo — <code>npm audit</code> plus a read-only agent
-          pass — and files fingerprinted, severity-labeled issues, deduped against past findings.
-          <code>--auto-plan</code> adds the trigger label: junco plans its own findings; you
-          approve what's worth doing.
+          pass — and parks every finding for review. Nothing reaches a tracker until you confirm;
+          filed issues arrive fingerprinted, severity-labeled, deduped.
+          <code>junco analyze</code> drafts one issue's investigation as a comment, posted only
+          on your say-so.
         </p>
         <div class="panel">
           <p class="panel-cap" aria-hidden="true">── junco assess · filed ──</p>
@@ -315,8 +329,20 @@ npm test
             <dd>Comments, labels, and PR pushes queue durably while GitHub is unreachable, then drain on reconnect.</dd>
           </div>
           <div>
+            <dt>Sandboxed by default</dt>
+            <dd>Agent tools run OS-confined: writes jailed to the worktree, network denied unless a ticket opts in, credentials scrubbed. Fails closed.</dd>
+          </div>
+          <div>
+            <dt>Provider gate</dt>
+            <dd>A bad key, empty quota, or rate limit pauses claiming loudly — and never burns a ticket's retry budget.</dd>
+          </div>
+          <div>
+            <dt>Spend you can see</dt>
+            <dd>Every session's cost lands in a per-day ledger; <code>daily_budget_usd</code> stops the queue at the cap until midnight.</dd>
+          </div>
+          <div>
             <dt>Local-first</dt>
-            <dd>Your machine, your git, your <code>gh</code> auth, any OpenAI-compatible inference endpoint. No third service.</dd>
+            <dd>Your machine, your git, your <code>gh</code> auth. No third service in the loop unless you choose a hosted provider.</dd>
           </div>
           <div>
             <dt>PR monitor</dt>
@@ -346,21 +372,21 @@ npm test
             </button>
           </div>
           <div class="scroll">
-            <pre><code>npx @ironforgesoftware/junco   # first run → setup wizard; afterwards → the daemon
+            <pre><code>npx @ironforgesoftware/junco   # first run → guided walkthrough; afterwards → the daemon
 junco dashboard                # the cockpit: watch, dispatch, approve, monitor
 junco submit my-task.md        # or feed it a Markdown ticket directly</code></pre>
           </div>
         </div>
 
         <div class="panel install-block">
-          <p class="panel-cap" aria-hidden="true">── config.toml ──</p>
+          <p class="panel-cap" aria-hidden="true">── config.json ──</p>
           <div class="scroll">
-            <pre><code>[github]
-enabled = true            # label an issue `junco` → plan → approve → PR
-
-[[github.repos]]          # or press `w` in the dashboard to watch a repo
-nwo  = "acme/reef-api"
-path = "~/code/reef-api"</code></pre>
+            <pre><code>{
+  "github": {
+    "enabled": true,
+    "repos": [{ "nwo": "acme/reef-api", "path": "~/code/reef-api" }]
+  }
+}</code></pre>
           </div>
         </div>
 
@@ -389,8 +415,8 @@ range      your machine · any inference endpoint</pre>
       <section class="sec" aria-labelledby="con-h">
         <h2 id="con-h"><span class="num" aria-hidden="true">07 · </span>Contribute</h2>
         <p>
-          junco is young; the codebase still fits in your head. ~1,100
-          tests run in a few seconds; <a
+          junco is young; the codebase still fits in your head. ~2,500
+          tests run in under a minute; <a
             href="https://github.com/ironforgesoftware/junco/blob/main/ARCHITECTURE.md"
             >ARCHITECTURE.md</a
           >
@@ -402,7 +428,7 @@ range      your machine · any inference endpoint</pre>
           <p class="panel-cap" aria-hidden="true">── clone &amp; test ──</p>
           <div class="scroll">
             <pre><code>git clone https://github.com/ironforgesoftware/junco &amp;&amp; cd junco
-npm install &amp;&amp; npm test       # vitest, ~1,100 tests, a few seconds</code></pre>
+npm install &amp;&amp; npm test       # vitest, ~2,500 tests, under a minute</code></pre>
           </div>
         </div>
       </section>
@@ -425,7 +451,7 @@ npm install &amp;&amp; npm test       # vitest, ~1,100 tests, a few seconds</cod
         <a href="https://github.com/ironforgesoftware/junco">GitHub</a> ·
         <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a> ·
         <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a> ·
-        v0.4.0
+        v0.7.0
       </p>
       <p class="bird">
         Named after the dark-eyed junco — a small, unassuming snowbird that works through winter.

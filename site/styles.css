@@ -27,6 +27,7 @@
   --accent: #a84067;
   --line: #c5ccd2;
   --shadow: #cdd3d8;
+  --grid: #e7eaec;
   --lh: 1.5rem;
   --mono:
     "Commit Mono", ui-monospace, "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
@@ -40,6 +41,7 @@
   --accent: #eb6f92;
   --line: #343b48;
   --shadow: #0b0d12;
+  --grid: #191d25;
   color-scheme: dark;
 }
 @media (prefers-color-scheme: dark) {
@@ -51,6 +53,7 @@
     --accent: #eb6f92;
     --line: #343b48;
     --shadow: #0b0d12;
+    --grid: #191d25;
     color-scheme: dark;
   }
 }
@@ -71,7 +74,11 @@ html {
 body {
   font: 400 16px/1.5 var(--mono);
   font-variant-numeric: tabular-nums;
-  background: var(--bg);
+  /* quad-ruled field-notebook paper: two hairline grids on the 1.5rem rhythm */
+  background:
+    linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 100% 3rem,
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 3rem 100%,
+    var(--bg);
   color: var(--ink);
 }
 
@@ -220,7 +227,22 @@ h1 {
   margin-block: calc(0.5 * var(--lh)) calc(2 * var(--lh));
 }
 
-/* spec-sheet key/value table */
+/* spec-sheet key/value table — the junco perches on its top rule */
+.spec-perch {
+  position: relative;
+  height: 0;
+}
+.perch {
+  position: absolute;
+  right: 3ch;
+  bottom: -1px; /* feet touch the rule */
+  color: var(--ink);
+}
+@media (max-width: 480px) {
+  .perch {
+    right: 1ch;
+  }
+}
 .spec {
   border-block: 1px solid var(--line);
   padding-block: calc(0.5 * var(--lh));
@@ -458,6 +480,7 @@ h2 .num {
     --accent: #000000;
     --line: #999999;
     --shadow: transparent;
+    --grid: transparent;
   }
   .copy,
   #theme-toggle {
