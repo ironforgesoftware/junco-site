@@ -496,6 +496,207 @@ export function buildPages(outRoot) {
   return written;
 }
 
+// ------------------------------------------------------- check (gate) helpers
+
+// Local echo of the README gate greps — README's documented commands remain
+// the authority; keep the two in sync when either changes.
+const VENDOR_RE = /anthropic|claude|gpt|gemini|llama|mistral|deepseek|qwen|ollama|vllm|lm.?studio|mlx/i;
+const BANNED_RE = /blazing|seamless|revolutionary|supercharge|magical|\beasy\b|\bsimply\b|\bpowerful\b/i;
+const OPENAI_RE = /openai/gi;
+
+export function checkContentGates(text) {
+  const violations = [];
+  for (const line of text.split("\n")) {
+    for (const v of line.matchAll(new RegExp(VENDOR_RE.source, "gi"))) {
+      violations.push(`vendor "${v[0].toLowerCase()}": ${line.trim().slice(0, 80)}`);
+    }
+    for (const b of line.matchAll(new RegExp(BANNED_RE.source, "gi"))) {
+      violations.push(`banned word "${b[0].toLowerCase()}": ${line.trim().slice(0, 80)}`);
+    }
+    for (const m of line.matchAll(OPENAI_RE)) {
+      const ctx = line.slice(Math.max(0, m.index - 1), m.index + 17);
+      if (!/openai-compatible/i.test(ctx)) {
+        violations.push(`openai outside "OpenAI-compatible": ${line.trim().slice(0, 80)}`);
+      }
+    }
+  }
+  return violations;
+}
+
+export function checkCliCoverage(surface, fragments) {
+  const slugs = new Set(surface.commands.map((c) => c.slug));
+  const missing = [...slugs].filter((s) => !fragments.has(s)).sort();
+  const orphans = [...fragments.keys()].filter((s) => !slugs.has(s)).sort();
+  const noExample = [...fragments.entries()]
+    .filter(([slug, html]) => slugs.has(slug) && !html.includes('<pre class="cmd">'))
+    .map(([slug]) => slug)
+    .sort();
+  return { missing, orphans, noExample };
+}
+
+export function checkFlagsRendered(surface, cliHtml) {
+  const missing = [];
+  for (const cmd of surface.commands) {
+    if (!cmd.flags.length) continue;
+    const start = cliHtml.indexOf(`<h2 id="${cmd.slug}">`);
+    if (start === -1) continue; // absence of the section is condition 2's finding
+    const next = cliHtml.indexOf("<h2 id=", start + 1);
+    const section = cliHtml.slice(start, next === -1 ? undefined : next);
+    for (const f of cmd.flags) {
+      if (!section.includes(f.flag)) missing.push(`${cmd.path}: ${f.flag}`);
+    }
+  }
+  return missing;
+}
+
+export function checkStamps(pagesHtml, version) {
+  return [...pagesHtml.entries()]
+    .filter(([, html]) => !html.includes(`verified against junco ${version}`))
+    .map(([slug]) => slug)
+    .sort();
+}
+
+export function checkNavBijection(navSlugs, pageSlugs) {
+  const nav = new Set(navSlugs);
+  const pages = new Set(pageSlugs);
+  return {
+    navOnly: [...nav].filter((s) => !pages.has(s)).sort(),
+    pagesOnly: [...pages].filter((s) => !nav.has(s)).sort(),
+  };
+}
+
+// ------------------------------------------------------------ check + release
+
+import { readdirSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+
+function listFilesRec(dir) {
+  const out = [];
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    const p = join(dir, e.name);
+    if (e.isDirectory()) out.push(...listFilesRec(p));
+    else out.push(p);
+  }
+  return out;
+}
+
+function cliFragmentsFromDisk() {
+  const dir = join(SRC, "cli");
+  const map = new Map();
+  if (!existsSync(dir)) return map;
+  for (const f of readdirSync(dir)) {
+    if (f.endsWith(".html")) map.set(f.replace(/\.html$/, ""), readFileSync(join(dir, f), "utf8"));
+  }
+  return map;
+}
+
+export function runCheck() {
+  const failures = [];
+  const put = (category, items) => {
+    if (items.length) failures.push([category, items]);
+  };
+
+  const surface = JSON.parse(readFileSync(join(EXTRACTED, "surface.json"), "utf8"));
+  const meta = JSON.parse(readFileSync(join(EXTRACTED, "meta.json"), "utf8"));
+  const nav = JSON.parse(readFileSync(join(SRC, "nav.json"), "utf8"));
+
+  // 1 — drift: rebuild into a temp root, byte-compare against site/docs.
+  const tmp = join(tmpdir(), `junco-docs-check-${process.pid}`);
+  rmSync(tmp, { recursive: true, force: true });
+  mkdirSync(tmp, { recursive: true });
+  const built = buildPages(tmp);
+  const outRoot = join(ROOT, "site", "docs");
+  const drifted = [];
+  for (const b of built) {
+    const rel = b.slice(tmp.length + 1);
+    const committed = join(outRoot, rel);
+    if (!existsSync(committed)) drifted.push(`${rel} (missing — rebuild not committed)`);
+    else if (readFileSync(b, "utf8") !== readFileSync(committed, "utf8")) drifted.push(rel);
+  }
+  rmSync(tmp, { recursive: true, force: true });
+  put("drift (run: node scripts/build-docs.mjs build, then commit)", drifted);
+
+  // 2–4 — CLI prose coverage.
+  const fragments = cliFragmentsFromDisk();
+  const cov = checkCliCoverage(surface, fragments);
+  put("command without prose fragment (docs-src/cli/<slug>.html)", cov.missing);
+  put("orphaned prose fragment (command no longer in surface.json)", cov.orphans);
+  put('fragment without an example (<pre class="cmd">)', cov.noExample);
+
+  // 5 — every flag appears in its rendered CLI section.
+  const cliPage = join(outRoot, "cli", "index.html");
+  if (existsSync(cliPage)) {
+    put("flag not mentioned in its command's section", checkFlagsRendered(surface, readFileSync(cliPage, "utf8")));
+  }
+
+  // 6 — stamps.
+  const pagesHtml = new Map();
+  if (existsSync(outRoot)) {
+    for (const f of listFilesRec(outRoot).filter((p) => p.endsWith("index.html"))) {
+      const slug = f === join(outRoot, "index.html") ? "index" : f.slice(outRoot.length + 1, -"/index.html".length);
+      pagesHtml.set(slug, readFileSync(f, "utf8"));
+    }
+  }
+  put(`stamp != junco ${meta.juncoVersion}`, checkStamps(pagesHtml, meta.juncoVersion));
+
+  // 7 — nav ↔ fragments bijection.
+  const navSlugs = nav.groups.flatMap((g) => g.slugs);
+  const pageSlugs = readdirSync(join(SRC, "pages"))
+    .filter((f) => f.endsWith(".html"))
+    .map((f) => f.replace(/\.html$/, ""));
+  const bij = checkNavBijection(navSlugs, pageSlugs);
+  put("nav.json slug with no page fragment", bij.navOnly);
+  put("page fragment missing from nav.json", bij.pagesOnly);
+
+  // 8 — content gates over emitted docs.
+  const gateViolations = [];
+  for (const [slug, html] of pagesHtml) {
+    for (const v of checkContentGates(html)) gateViolations.push(`${slug}: ${v}`);
+  }
+  put("content gate", gateViolations);
+
+  if (failures.length) {
+    for (const [category, items] of failures) {
+      console.error(`✗ ${category} (${items.length})`);
+      for (const item of items) console.error(`    ${item}`);
+    }
+    process.exit(1);
+  }
+  console.log("✓ docs check clean: no drift, full coverage, stamps current, gates pass");
+}
+
+export function runRelease() {
+  const meta = JSON.parse(readFileSync(join(EXTRACTED, "meta.json"), "utf8"));
+  const installed = runJunco(["--version"]).trim();
+  console.log(`stamped:   junco ${meta.juncoVersion}`);
+  console.log(`installed: junco ${installed}`);
+  console.log("");
+  const diff = spawnSync("git", ["diff", "--stat", "HEAD", "--", "docs-src/extracted/"], {
+    cwd: ROOT,
+    encoding: "utf8",
+  }).stdout.trim();
+  console.log(diff ? `snapshot delta vs HEAD:\n${diff}` : "snapshot delta vs HEAD: none (run --extract first?)");
+  console.log("");
+  const changelogPath = join(homedir(), "junco", "CHANGELOG.md");
+  if (existsSync(changelogPath) && installed !== meta.juncoVersion) {
+    const changelog = readFileSync(changelogPath, "utf8");
+    const sections = changelog.split(/^## /m).slice(1);
+    const newer = [];
+    for (const s of sections) {
+      const version = s.match(/^\[?([0-9]+\.[0-9]+\.[0-9]+)/)?.[1];
+      if (version === meta.juncoVersion) break;
+      newer.push(`## ${s.trim()}`);
+    }
+    console.log("CHANGELOG entries since the stamped version — map each Added/Changed");
+    console.log("item to a guide or field-notes touch, or consciously mark it n/a:\n");
+    console.log(newer.join("\n\n") || "(none found)");
+  } else {
+    console.log("CHANGELOG review: versions match — nothing new to map.");
+  }
+  console.log("\nchecklist: 1) --extract  2) --check (write missing prose)  3) map CHANGELOG");
+  console.log("           4) build  5) run README gates  6) one push");
+}
+
 // ----------------------------------------------------------------------- cli
 
 const invokedDirectly =
@@ -508,7 +709,7 @@ if (invokedDirectly) {
     const written = buildPages(join(ROOT, "site", "docs"));
     console.log(`built ${written.length} page(s)`);
   }
-  else if (mode === "--check") { console.error("--check: not implemented yet (Task 4)"); process.exit(1); }
-  else if (mode === "--release") { console.error("--release: not implemented yet (Task 4)"); process.exit(1); }
+  else if (mode === "--check") runCheck();
+  else if (mode === "--release") runRelease();
   else { console.error(`unknown mode: ${mode}`); process.exit(2); }
 }

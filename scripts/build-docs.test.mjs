@@ -14,6 +14,11 @@ import {
   extractSections,
   buildSearchIndexJson,
   SEARCH_OPTIONS,
+  checkCliCoverage,
+  checkFlagsRendered,
+  checkStamps,
+  checkNavBijection,
+  checkContentGates,
 } from "./build-docs.mjs";
 
 const HELP_FIXTURE = `Usage: junco <subcommand> [options]
@@ -297,6 +302,60 @@ test("search index round-trip: build → loadJSON → query", async () => {
   const hits = loaded.search("assess", { prefix: true });
   assert.equal(hits[0].id, "cli#assess");
   assert.equal(hits[0].url, "/docs/cli/#assess");
+});
+
+// ------------------------------------------------------------- Task 4: gate
+
+const SURFACE_FIXTURE = {
+  commands: [
+    { slug: "submit", path: "submit", synopsis: "junco submit <file|->", summary: "s",
+      flags: [] },
+    { slug: "assess-file", path: "assess file", synopsis: "junco assess file <id>", summary: "s",
+      flags: [{ flag: "--all", placeholder: null, description: null },
+              { flag: "--only", placeholder: "<fp,...>", description: null }] },
+    { slug: "doctor", path: "doctor", synopsis: "junco doctor", summary: "s", flags: [] },
+  ],
+  globalFlags: [],
+};
+
+test("checkCliCoverage: missing, orphaned, and example-less fragments", () => {
+  const fragments = new Map([
+    ["submit", '<p>ok</p><pre class="cmd">junco submit ./t.md</pre>'],
+    ["assess-file", "<p>no example here</p>"],
+    ["ghost", '<p>gone</p><pre class="cmd">junco ghost</pre>'],
+  ]);
+  const r = checkCliCoverage(SURFACE_FIXTURE, fragments);
+  assert.deepEqual(r.missing, ["doctor"]);
+  assert.deepEqual(r.orphans, ["ghost"]);
+  assert.deepEqual(r.noExample, ["assess-file"]);
+});
+
+test("checkFlagsRendered: flags must appear inside their command's section", () => {
+  const cliHtml = `<h2 id="assess-file">junco assess file</h2><p>Use <code>--all</code> to file everything.</p>
+<h2 id="submit">junco submit</h2><p>tail</p>`;
+  const missing = checkFlagsRendered(SURFACE_FIXTURE, cliHtml);
+  assert.deepEqual(missing, ["assess file: --only"]);
+});
+
+test("checkStamps + checkNavBijection", () => {
+  const pages = new Map([
+    ["index", "…verified against junco 0.8.0…"],
+    ["cli", "…verified against junco 0.7.0…"],
+  ]);
+  assert.deepEqual(checkStamps(pages, "0.8.0"), ["cli"]);
+  assert.deepEqual(checkNavBijection(["index", "cli", "config"], ["index", "cli", "stray"]), {
+    navOnly: ["config"],
+    pagesOnly: ["stray"],
+  });
+});
+
+test("checkContentGates: vendor and banned-word regexes", () => {
+  assert.deepEqual(checkContentGates("An OpenAI-compatible endpoint."), []);
+  const bad = checkContentGates("Simply use openai/gpt-4o-mini for blazing results.");
+  assert.ok(bad.some((v) => v.includes("gpt")));
+  assert.ok(bad.some((v) => v.includes("blazing")));
+  assert.ok(bad.some((v) => v.includes("simply")));
+  assert.ok(bad.some((v) => v.includes("openai")));
 });
 
 test("renderPage: index canonical is /docs/", () => {
