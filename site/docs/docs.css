@@ -91,7 +91,8 @@ main li::marker {
 
 @media (max-width: 720px) {
   .docs-grid {
-    grid-template-columns: 1fr;
+    /* minmax(0, …): a long <pre> line must scroll inside its block, not widen the track */
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--lh) 0;
   }
   .side {
