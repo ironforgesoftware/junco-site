@@ -1,0 +1,695 @@
+{
+  "levers": [
+    {
+      "path": "dataDir",
+      "type": "string",
+      "markers": [],
+      "default": "undefined",
+      "description": "Unified data root — queue, reviews, outbox, mirror, clones, worktrees, transcripts.",
+      "reload": "restart"
+    },
+    {
+      "path": "vaultRoot",
+      "type": "string",
+      "markers": [],
+      "default": "undefined",
+      "description": "Root directory Junco keeps its ticket queue under.",
+      "reload": "restart"
+    },
+    {
+      "path": "juncoSubdir",
+      "type": "string",
+      "markers": [],
+      "default": "\"Junco\"",
+      "description": "Subdirectory under vaultRoot holding inbox/processing/done/failed.",
+      "reload": "restart"
+    },
+    {
+      "path": "tools",
+      "type": "structured",
+      "markers": [
+        "read-only"
+      ],
+      "default": "[\"read\",\"bash\",\"edit\",\"write\",\"grep\",\"find\",\"ls\"]",
+      "description": "Tool allowlist granted to the coding agent.",
+      "reload": "live"
+    },
+    {
+      "path": "updateCheck",
+      "type": "boolean",
+      "markers": [],
+      "default": "true",
+      "description": "Enable periodic update checks for new Junco releases.",
+      "reload": "live"
+    },
+    {
+      "path": "model.id",
+      "type": "string",
+      "markers": [],
+      "default": "\"local/my-model\"",
+      "description": "Provider-prefixed model id, e.g. openai/gpt-4o-mini.",
+      "reload": "live"
+    },
+    {
+      "path": "model.source",
+      "type": "string",
+      "markers": [],
+      "default": "\"auto\"",
+      "description": "Model resolution mode: auto (catalog for non-local providers without an explicit baseUrl), catalog, or inline.",
+      "reload": "live"
+    },
+    {
+      "path": "model.modelsJson",
+      "type": "string",
+      "markers": [],
+      "default": "undefined",
+      "description": "Path to a Pi-style models.json; when set, provider+model load from that file and the inline capability fields are ignored.",
+      "reload": "live"
+    },
+    {
+      "path": "model.api",
+      "type": "string",
+      "markers": [],
+      "default": "\"openai-completions\"",
+      "description": "Pi API style, e.g. openai-completions.",
+      "reload": "live"
+    },
+    {
+      "path": "model.baseUrl",
+      "type": "string",
+      "markers": [],
+      "default": "undefined",
+      "description": "OpenAI-compatible /v1 endpoint base URL. Unset = local default (http://127.0.0.1:1234/v1); setting it forces inline resolution.",
+      "reload": "live"
+    },
+    {
+      "path": "model.apiKey",
+      "type": "secret",
+      "markers": [],
+      "default": "undefined",
+      "description": "API key for the inference endpoint. Literal, \"$ENV_VAR\" reference, or unset to use the provider's env var (e.g. ANTHROPIC_API_KEY) for hosted catalog models.",
+      "reload": "live"
+    },
+    {
+      "path": "model.retry.maxRetries",
+      "type": "number",
+      "markers": [],
+      "default": "undefined",
+      "description": "SDK auto-retry attempts on transient provider errors; unset = SDK default (3).",
+      "reload": "live"
+    },
+    {
+      "path": "model.retry.baseDelayMs",
+      "type": "number",
+      "markers": [],
+      "default": "undefined",
+      "description": "Base delay for SDK auto-retry backoff in ms; unset = SDK default (2000).",
+      "reload": "live"
+    },
+    {
+      "path": "model.reasoning",
+      "type": "boolean",
+      "markers": [],
+      "default": "true",
+      "description": "Whether the model supports reasoning/thinking tokens.",
+      "reload": "live"
+    },
+    {
+      "path": "model.input",
+      "type": "structured",
+      "markers": [
+        "read-only"
+      ],
+      "default": "[\"text\",\"image\"]",
+      "description": "Accepted input modalities for the model.",
+      "reload": "live"
+    },
+    {
+      "path": "model.contextWindow",
+      "type": "number",
+      "markers": [],
+      "default": "131072",
+      "description": "Model context window size in tokens.",
+      "reload": "live"
+    },
+    {
+      "path": "model.maxTokens",
+      "type": "number",
+      "markers": [],
+      "default": "49152",
+      "description": "Max output tokens per model call.",
+      "reload": "live"
+    },
+    {
+      "path": "model.cost.input",
+      "type": "number",
+      "markers": [],
+      "default": "0",
+      "description": "Cost per input token, for cost tracking/reporting.",
+      "reload": "live"
+    },
+    {
+      "path": "model.cost.output",
+      "type": "number",
+      "markers": [],
+      "default": "0",
+      "description": "Cost per output token, for cost tracking/reporting.",
+      "reload": "live"
+    },
+    {
+      "path": "model.cost.cacheRead",
+      "type": "number",
+      "markers": [],
+      "default": "0",
+      "description": "Cost per cache-read token, for cost tracking/reporting.",
+      "reload": "live"
+    },
+    {
+      "path": "model.cost.cacheWrite",
+      "type": "number",
+      "markers": [],
+      "default": "0",
+      "description": "Cost per cache-write token, for cost tracking/reporting.",
+      "reload": "live"
+    },
+    {
+      "path": "model.thinkingLevel",
+      "type": "string",
+      "markers": [],
+      "default": "\"medium\"",
+      "description": "Worker default reasoning/thinking level.",
+      "reload": "live"
+    },
+    {
+      "path": "model.compat",
+      "type": "structured",
+      "markers": [
+        "read-only"
+      ],
+      "default": "{}",
+      "description": "Provider compatibility overrides (developer role, reasoning effort, thinking format, etc.), merged over junco's defaults.",
+      "reload": "live"
+    },
+    {
+      "path": "worker.defaultTimeoutMinutes",
+      "type": "number",
+      "markers": [],
+      "default": "30",
+      "description": "Default per-ticket execution timeout in minutes.",
+      "reload": "live"
+    },
+    {
+      "path": "worker.pollIntervalSeconds",
+      "type": "number",
+      "markers": [],
+      "default": "15",
+      "description": "Seconds between inbox polls when idle.",
+      "reload": "live"
+    },
+    {
+      "path": "worker.startupPollSeconds",
+      "type": "number",
+      "markers": [],
+      "default": "30",
+      "description": "Seconds the daemon waits/polls at startup before normal polling begins.",
+      "reload": "live"
+    },
+    {
+      "path": "worker.startupWait",
+      "type": "boolean",
+      "markers": [],
+      "default": "true",
+      "description": "Whether the daemon waits at startup for crash-recovery grace before claiming.",
+      "reload": "live"
+    },
+    {
+      "path": "worker.endpointProbe",
+      "type": "enum",
+      "markers": [],
+      "default": "\"auto\"",
+      "description": "Endpoint probe policy: auto (probe local/inline, skip hosted catalog), always, or never.",
+      "enumValues": [
+        "auto",
+        "always",
+        "never"
+      ],
+      "reload": "live"
+    },
+    {
+      "path": "worker.maxTransientRetries",
+      "type": "number",
+      "markers": [],
+      "default": "2",
+      "description": "Max retries for transient failures before a ticket is marked failed.",
+      "reload": "live"
+    },
+    {
+      "path": "worker.retryBackoffSeconds",
+      "type": "number",
+      "markers": [],
+      "default": "60",
+      "description": "Backoff seconds before a requeued ticket becomes eligible again.",
+      "reload": "live"
+    },
+    {
+      "path": "worker.maxConcurrent",
+      "type": "number",
+      "markers": [],
+      "default": "1",
+      "description": "Parallel ticket slots; same-repo tickets always serialize (restart to apply — the serial-vs-scheduler mode fork is chosen once at startup).",
+      "reload": "restart"
+    },
+    {
+      "path": "worker.commitLeftovers",
+      "type": "boolean",
+      "markers": [],
+      "default": "false",
+      "description": "Sweep uncommitted leftovers into a final commit at run end.",
+      "reload": "live"
+    },
+    {
+      "path": "worker.dailyBudgetUsd",
+      "type": "number",
+      "markers": [],
+      "default": "0",
+      "description": "Daily USD spend cap; claiming pauses once reached until local midnight (0 disables).",
+      "reload": "live"
+    },
+    {
+      "path": "supervisor.enabled",
+      "type": "boolean",
+      "markers": [],
+      "default": "true",
+      "description": "Enable the supervisor (nudge/escalate/kill loop-guard).",
+      "reload": "live"
+    },
+    {
+      "path": "supervisor.budgetPerKind",
+      "type": "number",
+      "markers": [],
+      "default": "1",
+      "description": "Budget of guard interventions allowed per kind before escalation.",
+      "reload": "live"
+    },
+    {
+      "path": "supervisor.escalationWindowTurns",
+      "type": "number",
+      "markers": [],
+      "default": "3",
+      "description": "Turn window over which supervisor escalation is evaluated.",
+      "reload": "live"
+    },
+    {
+      "path": "supervisor.outputBudgetPerTurn",
+      "type": "number",
+      "markers": [],
+      "default": "12000",
+      "description": "Max output budget per turn before the supervisor nudges.",
+      "reload": "live"
+    },
+    {
+      "path": "supervisor.outputBudgetPostCommit",
+      "type": "number",
+      "markers": [],
+      "default": "24000",
+      "description": "Max output budget per turn once a commit has landed.",
+      "reload": "live"
+    },
+    {
+      "path": "git.gitBin",
+      "type": "string",
+      "markers": [],
+      "default": "\"git\"",
+      "description": "Path/name of the git binary to invoke.",
+      "reload": "live"
+    },
+    {
+      "path": "git.ghBin",
+      "type": "string",
+      "markers": [],
+      "default": "\"gh\"",
+      "description": "Path/name of the GitHub CLI (gh) binary to invoke.",
+      "reload": "live"
+    },
+    {
+      "path": "git.defaultBaseBranch",
+      "type": "string",
+      "markers": [],
+      "default": "\"main\"",
+      "description": "Default base branch PRs are opened against.",
+      "reload": "live"
+    },
+    {
+      "path": "git.branchPrefix",
+      "type": "string",
+      "markers": [],
+      "default": "\"junco/\"",
+      "description": "Prefix applied to branches Junco creates.",
+      "reload": "live"
+    },
+    {
+      "path": "git.worktreeRoot",
+      "type": "string",
+      "markers": [],
+      "default": "undefined",
+      "description": "Deprecated: overrides dataDir for per-ticket git worktrees only.",
+      "reload": "live"
+    },
+    {
+      "path": "git.removeWorktreeOnSuccess",
+      "type": "boolean",
+      "markers": [],
+      "default": "true",
+      "description": "Remove the git worktree after a successful run.",
+      "reload": "live"
+    },
+    {
+      "path": "git.allowedRepoRoots",
+      "type": "structured",
+      "markers": [
+        "read-only"
+      ],
+      "default": "[]",
+      "description": "Containment rail: when non-empty, PR-flow tickets may only target repos under these roots ([] = anywhere).",
+      "reload": "live"
+    },
+    {
+      "path": "pr.draftByDefault",
+      "type": "boolean",
+      "markers": [],
+      "default": "true",
+      "description": "Open PRs as drafts by default.",
+      "reload": "live"
+    },
+    {
+      "path": "pr.defaultLabels",
+      "type": "structured",
+      "markers": [
+        "read-only"
+      ],
+      "default": "[]",
+      "description": "Labels applied to every PR Junco opens.",
+      "reload": "live"
+    },
+    {
+      "path": "verify.enabled",
+      "type": "boolean",
+      "markers": [],
+      "default": "true",
+      "description": "Run the verify (build/test) phase before opening a PR.",
+      "reload": "live"
+    },
+    {
+      "path": "verify.commandTimeout",
+      "type": "number",
+      "markers": [],
+      "default": "60",
+      "description": "Timeout in seconds for the verify command.",
+      "reload": "live"
+    },
+    {
+      "path": "verify.blockOnFail",
+      "type": "boolean",
+      "markers": [],
+      "default": "false",
+      "description": "Block PR creation when verify fails (vs. warn and continue).",
+      "reload": "live"
+    },
+    {
+      "path": "sandbox.enabled",
+      "type": "boolean",
+      "markers": [],
+      "default": "true",
+      "description": "Wrap agent tool subprocesses in an OS sandbox (env scrub + path jail).",
+      "reload": "live"
+    },
+    {
+      "path": "sandbox.backend",
+      "type": "enum",
+      "markers": [],
+      "default": "\"auto\"",
+      "description": "Sandbox backend: auto (seatbelt on macOS, bwrap on Linux), a forced one, or none.",
+      "enumValues": [
+        "auto",
+        "seatbelt",
+        "bwrap",
+        "none"
+      ],
+      "reload": "live"
+    },
+    {
+      "path": "sandbox.network",
+      "type": "enum",
+      "markers": [],
+      "default": "\"deny\"",
+      "description": "Default network egress for agent tool subprocesses (per-ticket network:true widens it).",
+      "enumValues": [
+        "deny",
+        "allow"
+      ],
+      "reload": "live"
+    },
+    {
+      "path": "sandbox.extraDenyRead",
+      "type": "structured",
+      "markers": [
+        "read-only"
+      ],
+      "default": "[]",
+      "description": "Extra absolute paths whose reads are denied (added to the built-in secret deny-list).",
+      "reload": "live"
+    },
+    {
+      "path": "sandbox.extraAllowWrite",
+      "type": "structured",
+      "markers": [
+        "read-only"
+      ],
+      "default": "[]",
+      "description": "Extra absolute paths where writes are permitted (added to worktree + scratch).",
+      "reload": "live"
+    },
+    {
+      "path": "critic.enabled",
+      "type": "boolean",
+      "markers": [],
+      "default": "true",
+      "description": "Run the post-session critic review pass before finalizing a PR.",
+      "reload": "live"
+    },
+    {
+      "path": "critic.maxRetries",
+      "type": "number",
+      "markers": [],
+      "default": "1",
+      "description": "Max critic-requested revision retries.",
+      "reload": "live"
+    },
+    {
+      "path": "critic.thinking",
+      "type": "string",
+      "markers": [],
+      "default": "\"minimal\"",
+      "description": "Thinking level used for critic review calls.",
+      "reload": "live"
+    },
+    {
+      "path": "planLint.enabled",
+      "type": "boolean",
+      "markers": [],
+      "default": "true",
+      "description": "Run plan-lint checks on ticket plans before execution.",
+      "reload": "live"
+    },
+    {
+      "path": "planLint.blockOnError",
+      "type": "boolean",
+      "markers": [],
+      "default": "true",
+      "description": "Block execution when plan-lint finds errors (vs. warn).",
+      "reload": "live"
+    },
+    {
+      "path": "planLint.checkLabels",
+      "type": "boolean",
+      "markers": [],
+      "default": "true",
+      "description": "Include label checks in plan-lint.",
+      "reload": "live"
+    },
+    {
+      "path": "observability.healthEnabled",
+      "type": "boolean",
+      "markers": [],
+      "default": "true",
+      "description": "Enable the /health metrics HTTP server.",
+      "reload": "restart"
+    },
+    {
+      "path": "observability.healthHost",
+      "type": "string",
+      "markers": [],
+      "default": "\"127.0.0.1\"",
+      "description": "Bind address for /health; non-loopback exposes metrics (restart to rebind).",
+      "reload": "restart"
+    },
+    {
+      "path": "observability.healthPort",
+      "type": "number",
+      "markers": [],
+      "default": "8787",
+      "description": "Port the /health metrics server binds (restart to rebind).",
+      "reload": "restart"
+    },
+    {
+      "path": "observability.logLevel",
+      "type": "enum",
+      "markers": [],
+      "default": "\"info\"",
+      "description": "Daemon-wide log threshold (applied live).",
+      "enumValues": [
+        "debug",
+        "info",
+        "warn",
+        "error"
+      ],
+      "reload": "live"
+    },
+    {
+      "path": "observability.stateDir",
+      "type": "string",
+      "markers": [],
+      "default": "undefined",
+      "description": "Deprecated: overrides dataDir for the entire data root.",
+      "reload": "restart"
+    },
+    {
+      "path": "observability.logToFile",
+      "type": "boolean",
+      "markers": [],
+      "default": "true",
+      "description": "Write daemon logs to a file under dataDir.",
+      "reload": "restart"
+    },
+    {
+      "path": "observability.transcripts",
+      "type": "boolean",
+      "markers": [],
+      "default": "true",
+      "description": "Write per-ticket event transcripts under dataDir.",
+      "reload": "restart"
+    },
+    {
+      "path": "github.enabled",
+      "type": "boolean",
+      "markers": [],
+      "default": "false",
+      "description": "Enable the GitHub issues→inbox bridge (disabled by default: zero gh calls).",
+      "reload": "restart"
+    },
+    {
+      "path": "github.triggerLabel",
+      "type": "string",
+      "markers": [],
+      "default": "\"junco\"",
+      "description": "Approval label that triggers the PR flow; lifecycle labels derive from it. Restart to apply — the reporter bakes in the label prefix at startup.",
+      "reload": "restart"
+    },
+    {
+      "path": "github.askLabel",
+      "type": "string",
+      "markers": [],
+      "default": "undefined",
+      "description": "Issue label that routes to the read-only Q&A path (defaults to `<triggerLabel>:ask`). Restart to apply (see triggerLabel).",
+      "reload": "restart"
+    },
+    {
+      "path": "github.pollIntervalSeconds",
+      "type": "number",
+      "markers": [],
+      "default": "60",
+      "description": "GitHub bridge sweep cadence, independent of the worker poll interval.",
+      "reload": "live"
+    },
+    {
+      "path": "github.requireApproval",
+      "type": "boolean",
+      "markers": [],
+      "default": "true",
+      "description": "When false, a plan-ready GitHub ticket auto-executes on the next sweep.",
+      "reload": "live"
+    },
+    {
+      "path": "github.plannerModelId",
+      "type": "string",
+      "markers": [],
+      "default": "undefined",
+      "description": "Planning-session model id override for GitHub tickets (same endpoint).",
+      "reload": "live"
+    },
+    {
+      "path": "github.externalReposRoot",
+      "type": "string",
+      "markers": [],
+      "default": "undefined",
+      "description": "Root directory for managed clones of unowned repos (fork-PR flow).",
+      "reload": "live"
+    },
+    {
+      "path": "github.repos",
+      "type": "structured",
+      "markers": [
+        "read-only"
+      ],
+      "default": "[]",
+      "description": "Explicit list of watched GitHub repos (owner/repo name-with-owner + local path).",
+      "reload": "live"
+    },
+    {
+      "path": "botAccount.enabled",
+      "type": "boolean",
+      "markers": [],
+      "default": "false",
+      "description": "Act as a dedicated bot account for all daemon GitHub traffic (log it in with: junco auth login).",
+      "reload": "restart"
+    },
+    {
+      "path": "botAccount.configDir",
+      "type": "string",
+      "markers": [],
+      "default": "\"~/.config/junco/gh\"",
+      "description": "Isolated gh config dir holding the bot login (GH_CONFIG_DIR for daemon gh/git).",
+      "reload": "restart"
+    },
+    {
+      "path": "assess.maxIssuesPerRun",
+      "type": "number",
+      "markers": [],
+      "default": "20",
+      "description": "Cap on issues filed per `junco assess` run.",
+      "reload": "live"
+    },
+    {
+      "path": "assess.minSeverity",
+      "type": "enum",
+      "markers": [],
+      "default": "\"low\"",
+      "description": "Drop assessment findings below this severity.",
+      "enumValues": [
+        "critical",
+        "high",
+        "medium",
+        "low"
+      ],
+      "reload": "live"
+    },
+    {
+      "path": "assess.npmBin",
+      "type": "string",
+      "markers": [],
+      "default": "\"npm\"",
+      "description": "Binary for the dependency scan (npm audit --json).",
+      "reload": "live"
+    }
+  ]
+}
