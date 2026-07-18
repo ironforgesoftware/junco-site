@@ -42,7 +42,9 @@ npx -y playwright screenshot --viewport-size=1200,630 \
 
 ## Content gates
 
-Run all of these before any push; every one must pass. The word budget is **450** visible words.
+`main` is PR-only (repository ruleset "main quality gate", same shape as junco's): work lands
+on a branch, the `quality-gate` workflow re-runs these gates on the PR, and merging deploys.
+Run all of these locally before opening the PR; every one must pass. The word budget is **450** visible words.
 README.md is excluded from the greps — it quotes the gate patterns themselves; keep its prose
 clean by eye.
 
@@ -51,7 +53,7 @@ Grep gates (banned words, vendors, openai):
 ```bash
 cd /Users/alxedelweiss/junco-site
 grep -rniE 'blazing|seamless|revolutionary|supercharge|magical|\beasy\b|\bsimply\b|powerful' site/ og.html; echo "banned-words exit: $?"   # expected: 1 (no matches)
-grep -rniE 'anthropic|claude|gpt|gemini|llama|mistral|deepseek|qwen|ollama|vllm|lm.?studio|mlx' site/ og.html .github/; echo "vendor exit: $?"  # expected: 1
+grep -rniE 'anthropic|claude|gpt|gemini|llama|mistral|deepseek|qwen|ollama|vllm|lm.?studio|mlx' site/ og.html .github/ --exclude=quality-gate.yml; echo "vendor exit: $?"  # expected: 1 (the workflow quotes the pattern)
 grep -rni 'openai' site/ og.html | grep -viE 'openai-(compatible|completions)'; echo "openai exit: $?"  # expected: 1 ("openai-completions" is junco's factual model.api value)
 ```
 

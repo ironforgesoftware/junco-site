@@ -1,0 +1,56 @@
+# The PR gate required by the "main quality gate" ruleset — the job name
+# `quality-gate` is the required status-check context. Grep steps mirror
+# README.md "Content gates"; keep the two in sync.
+name: Quality gate
+on:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  quality-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Unit tests
+        run: node --test scripts/build-docs.test.mjs
+      - name: Docs coverage + drift gate
+        run: node scripts/build-docs.mjs --check
+      - name: HTML validation
+        run: npx -y html-validate 'site/**/*.html'
+      - name: Banned-word / vendor / openai greps
+        run: |
+          ! grep -rniE 'blazing|seamless|revolutionary|supercharge|magical|\beasy\b|\bsimply\b|powerful' site/ og.html
+          ! grep -rniE 'anthropic|claude|gpt|gemini|llama|mistral|deepseek|qwen|ollama|vllm|lm.?studio|mlx' site/ og.html .github/ --exclude=quality-gate.yml
+          ! { grep -rni 'openai' site/ og.html | grep -viE 'openai-(compatible|completions)'; }
+      - name: Landing word budget (450)
+        run: |
+          python3 - <<'EOF'
+          import re, html
+          s = open('site/index.html').read()
+          for p in (r'<script[\s\S]*?</script>', r'<style[\s\S]*?</style>', r'<pre[\s\S]*?</pre>',
+                    r'<dl[\s\S]*?</dl>', r'<[a-z]+[^>]*visually-hidden[^>]*>[\s\S]*?</[a-z]+>'):
+              s = re.sub(p, ' ', s)
+          n = len(html.unescape(re.sub(r'<[^>]+>', ' ', s)).split())
+          print(n, 'visible words (budget 450)'); assert n <= 450
+          EOF
+      - name: Emoji and hex gates
+        run: |
+          python3 - <<'EOF'
+          import re, glob
+          pat = re.compile('[\U0001F000-\U0001FAFF☀-➿⬀-⯿️⌚⌛⤴⤵⏩-⏺]')
+          allowed = set('✓✗')
+          files = (['site/index.html','site/styles.css','og.html',
+                    'site/docs/docs.css','site/docs/docs.js']
+                   + glob.glob('site/docs/**/index.html', recursive=True)
+                   + glob.glob('docs-src/**/*.html', recursive=True))
+          bad = []
+          for f in files:
+              for i, line in enumerate(open(f), 1):
+                  bad += [(f,i,c) for c in pat.findall(line) if c not in allowed]
+          print(bad if bad else 'emoji gate OK'); assert not bad
+          EOF
+          ! { grep -rn '#[0-9a-fA-F]\{3,8\}\b' site/ --include='*.html' | grep -v theme-color; }
+          ! grep -n '#[0-9a-fA-F]\{3,8\}\b' site/docs/docs.css
