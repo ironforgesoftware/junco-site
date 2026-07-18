@@ -1,6 +1,7 @@
 # junco-site v3 — developer documentation section
 
-**Date:** 2026-07-17 · **Status:** PROPOSED — awaiting maintainer review (drafted autonomously;
+**Date:** 2026-07-17 · revised 2026-07-18 (maintainer requirements: total coverage + cheap
+release updates) · **Status:** PROPOSED — awaiting maintainer review (drafted autonomously;
 every decision below is an assumption until confirmed, flagged in "Open questions")
 
 ## Goal
@@ -9,6 +10,11 @@ Add a documentation section to junco.ironforgesoftware.com: searchable, every ju
 config lever explained, with tips and worked examples. Same repo, same "Snowbird Spec Sheet"
 design system, same deploy (Pages Actions publishes `site/` verbatim on push to main). The
 landing page stays the landing page; docs live under `/docs/`.
+
+Two hard requirements (maintainer, 2026-07-18): **(a)** the docs must cover *all* of junco's
+functionality, and **(b)** documenting new junco functionality at release time must be genuinely
+cheap. Both are met structurally — generated reference + a coverage gate — not by discipline
+alone. See "Completeness & release machinery".
 
 ## Research inputs (summarized)
 
@@ -79,6 +85,14 @@ local preview; Pagefind-committed pollutes diffs with opaque chunks.
 8. **Content is adapted, not copied**, from junco's own `docs/*.md` + source, and every page
    carries a "verified against junco v0.8.0 · source: docs/<file>.md" footer stamp with an
    edit link into the junco repo.
+9. **The reference layer is generated from junco's self-descriptions** — global `--help`
+   output, `junco config list`, `junco schema` — via committed snapshots; hand prose only for
+   descriptions, examples, and tips. Output formats verified parseable on 2026-07-18 against
+   junco 0.8.0 (note: there is no per-command `--help`; the single global help page carries
+   the full surface).
+10. **Coverage gate**: the build fails, naming names, while any command, flag, lever, or
+    schema field is undocumented, or any prose is orphaned by a removed command — completeness
+    is enforced, not aspirational.
 
 ## URL & file map
 
@@ -105,8 +119,16 @@ site/
     search-index.json        generated, committed
     assets/minisearch.js     vendored, MIT license header kept
   llms.txt                   machine-readable docs index
-docs-src/                    body fragments + page metadata (authoring source)
-scripts/build-docs.mjs       stitcher + indexer, zero deps; --check mode for gates
+docs-src/                    authoring source: page fragments + per-command prose fragments
+  extracted/                 committed snapshots of junco's self-described surface:
+    surface.json             commands/subcommands + flags   ← parsed global `junco --help`
+    levers.json              config levers                  ← parsed `junco config list`
+    ticket-schema.json       frontmatter contract           ← verbatim `junco schema`
+    meta.json                junco version — single source of every "verified against" stamp
+  render-substitutions.json  reviewed map sanitizing junco text for site gates (vendor ids)
+scripts/build-docs.mjs       extract + stitch + index, zero deps;
+                             --extract refreshes snapshots · --check drift/coverage gate ·
+                             --release prints the per-release delta checklist
 ```
 
 Nav groups (sidebar order): **start** — Start here · How junco works · Security model;
@@ -131,9 +153,9 @@ reference pages; guides carry workflows; tips ride as callouts + the field-notes
 | Operations | Daemon lifecycle (`start`/`run-once`/`restart`/`update`; lock semantics; Ctrl-C once/twice/thrice); `service --platform` install for launchd/systemd (drain-aware stop timeouts); `logs`/`status`/`list`; health endpoints (`/live` `/ready` `/health`) + loopback warning; provider-gate state table; spend & `dailyBudgetUsd`; update awareness; data root, `data` / `data migrate` (+ `--dry-run`/`--force`); recovery playbook (stuck processing, retry, outbox flush) | docs/operations.md, docs/configuration.md |
 | Security model | The inbox as a code-execution boundary; sandbox (Seatbelt/bwrap, fails closed, per-ticket `network` opt-in); `git.allowedRepoRoots` containment; approval gate rationale (`requireApproval:false` warning); untrusted issue text; what leaves the machine and what never does | docs/operations.md security section, README |
 | Bot account | Why (attribution, dispatcher≠approver); `auth login` device flow; `auth grant`; doctor checks; SSO/SAML caveat; migration gotchas (duplicate first comments, stale fork remotes, auto-onboarding via push access) | docs/bot-account.md |
-| CLI reference | **Every command and subcommand** (36 sections at v0.8.0, counting the bare `junco` launcher), one section each, gh-style anatomy: synopsis → description (incl. side effects) → flags table → 2–4 examples → see-also. Global flags (`--config`, `--help`, `--version`) in a head section. Deprecations noted (`junco init` removed → `dashboard`/`config init`) | cli.ts, README table, docs/operations.md |
-| Configuration | Every lever, grouped by section exactly as `configLevers.ts`: name · type · default · live/restart · one-line effect. Env vars (`JUNCO_LOG_JSON`, `GH_CONFIG_DIR`, `$EDITOR`…); config resolution order; hot-reload semantics; deprecated path keys + migration pointer; example minimal + hosted-catalog configs (neutral model ids) | configLevers.ts, docs/configuration.md |
-| Ticket schema | Frontmatter contract field-by-field (mirrors `junco schema`): type, required/optional, default, which flavor uses it; worker-managed vs author-settable fields; additive-only stability promise | ticketSchema.ts, docs/tickets.md |
+| CLI reference | **Every command and subcommand** (36 sections at v0.8.0, counting the bare `junco` launcher), gh-style anatomy per section: synopsis + flags table **generated from `surface.json`**; description (incl. side effects), 2–4 examples, callouts, see-also from per-command prose fragments (`docs-src/cli/<command>.html`) — coverage-gated. Global flags (`--config`, `--help`, `--version`) in a head section. Deprecations noted (`junco init` removed → `dashboard`/`config init`) | surface.json, docs/operations.md, README table |
+| Configuration | Every lever **rendered from `levers.json`** (name · type · default · live/restart · junco's own one-line description, sanitized via the substitution map), grouped as `configLevers.ts`; optional extended-prose fragment where a lever deserves more. Env vars (`JUNCO_LOG_JSON`, `GH_CONFIG_DIR`, `$EDITOR`…); config resolution order; hot-reload semantics; deprecated path keys + migration pointer; example minimal + hosted-catalog configs (neutral model ids) | levers.json, docs/configuration.md |
+| Ticket schema | Field-by-field reference **rendered from `ticket-schema.json`** (verbatim `junco schema` output, incl. its per-field descriptions): type, required/optional, default, which flavor uses it; worker-managed vs author-settable fields; additive-only stability promise | ticket-schema.json, docs/tickets.md |
 | Field notes | Curated cross-cutting tips in field-guide voice: plan-authoring discipline (anti-loop phrases to avoid); BSD/GNU portability; retry-separator caveat; provider-fault vs ticket-fault retries; `restart` not SIGTERM; merged≠running; metrics vs spend divergence; recipe blocks ("run headless under launchd", "cron a run-once sweep", "confine PR targets"); FAQ seeded from junco's issue tracker | inventory §9, docs/*, issue tracker |
 
 ## Layout & design
@@ -188,25 +210,71 @@ clean enough to parse, and junco's own repo docs remain the markdown source).
 3. Word budget: unchanged, landing-only. Landing goes 447→449 with the two "docs" links.
 4. `npx html-validate 'site/**/*.html'` — all pages, 0 errors.
 5. **New**: `node scripts/build-docs.mjs --check` — regenerates chrome + search index to temp
-   and byte-compares; fails on drift (stale index or hand-edited output).
+   and byte-compares; fails on drift (stale index or hand-edited output) **and on coverage
+   holes** — undocumented command/flag, missing example, orphaned prose, stamp ≠ snapshot
+   version (see "Completeness & release machinery").
 6. **New**: cmap coverage check over docs pages' glyphs (existing recipe).
 7. Screenshot pass for a docs page and the landing at 320/768/1440, light+dark, before push.
 
-## Accuracy & maintenance ritual
+## Completeness & release machinery
 
-- Every factual claim traces to a junco-repo file; specs in `docs-src/` carry `source:`
-  metadata that renders into the page footer stamp.
-- Per junco release: CHANGELOG-driven delta pass over affected pages, bump every "verified
-  against" stamp, re-run gates, push once. (Same ritual the landing already follows per
-  release — v0.7.0/v0.8.0 precedent.)
-- The junco repo's `docs/*.md` remain the working source of truth; the site is the curated,
-  designed presentation. No junco-repo changes in this project.
+The two hard requirements are met by construction, in three parts.
+
+**1. junco self-describes; the reference layer is generated from it.**
+`build-docs.mjs --extract` runs the installed `junco` binary (read-only informational commands
+only, cwd = junco-site — never inside `~/junco`, whose checkout is a live daemon runtime) and
+refreshes the committed snapshots under `docs-src/extracted/`:
+
+- `surface.json` ← the single global `junco --help` page (verified: no per-command help
+  exists). Parses the `Subcommands:` block (command path, embedded synopsis/arg syntax,
+  one-line description — including compound lines like `config path|list|get|set|init`) and
+  the flat `Options:` list (flag, `(subcommand)` scope tag, placeholder, `[default: …]`).
+- `levers.json` ← `junco config list`, run with `--config` pointed at a committed blank
+  scratch config so **current values never enter the snapshot** — only path, type
+  (incl. `[secret]`/`[structured]` markers), default, and junco's own one-line description
+  are kept. (Verified format: `path\t= value (default X) [type] description`.)
+- `ticket-schema.json` ← `junco schema`, verbatim (JSON Schema draft 2020-12 with per-field
+  descriptions — no parsing needed).
+- `meta.json` ← `junco --version`; the single source every page stamp renders from.
+
+Rendering applies `docs-src/render-substitutions.json` — a small, human-reviewed map that
+sanitizes junco's own strings for the site's gates (verified need: the `model.id` lever
+description says `e.g. openai/gpt-4o-mini`, which trips the vendor grep → rendered as
+`<provider>/<model-name>`). The snapshot keeps junco's text verbatim; only rendering
+substitutes; the gate then runs on rendered output, so an unreviewed new vendor string fails
+loudly instead of slipping through.
+
+**2. A coverage gate makes "all functionality" falsifiable.** `--check` fails, naming names,
+when: a command in `surface.json` has no prose fragment or no example; a snapshot flag never
+appears in its command's rendered section; a prose fragment exists for a command no longer in
+the snapshot (removals/renames caught); any page's stamp ≠ `meta.json` version; or chrome/
+search-index output drifted. Config levers and schema fields cannot be missing by
+construction — their pages render from the snapshots themselves.
+
+**3. The release flow — the "really easy" path.** When junco vNext ships:
+
+1. `junco update`, then `build-docs.mjs --extract` — the git diff of `docs-src/extracted/`
+   **is** the reference to-do list (added/changed/removed commands, flags, levers, fields).
+2. `--check` lists exactly the missing prose stubs; write only those.
+3. `--release` prints the delta summary plus junco's CHANGELOG entries since the last stamped
+   version, each to be mapped to a guide/field-notes touch or consciously marked n/a — this is
+   how non-CLI-surface features (a new guard, a dashboard pane, a new label) reach the guides
+   instead of relying on memory.
+4. Rebuild (stamps bump everywhere automatically), run gates, push once.
+
+Steady-state cost per release: write prose for what is genuinely new; everything mechanical is
+generated or check-listed. Every factual claim still traces to a junco-repo file via `source:`
+metadata rendered into page footers; junco's `docs/*.md` remain the working source of truth for
+guide prose — the site is the curated presentation.
 
 ## Phased implementation outline (full task plan follows approval, via writing-plans)
 
-1. **Scaffold**: `build-docs.mjs`, docs.css/docs.js, chrome template, `/docs/` home +
-   quickstart, landing nav/footer links, gates extended, README updated. *Deployable alone.*
-2. **Reference core**: CLI, Configuration, Ticket schema — the "every function" payload.
+1. **Scaffold**: `build-docs.mjs` (extract + stitch + index + coverage gate + release report),
+   first committed snapshots, docs.css/docs.js, chrome template, `/docs/` home + quickstart,
+   landing nav/footer links, gates extended, README updated. *Deployable alone.*
+2. **Reference core**: CLI, Configuration, Ticket schema — config + ticket-schema render from
+   snapshots immediately; the writing effort is the ~36 per-command prose fragments
+   (description, examples, callouts), burned down by the coverage gate's own missing-list.
 3. **Guides**: how-it-works, github-loop, tickets, assess, analyze, dashboard, operations,
    security, bot-account.
 4. **Field notes + search polish + llms.txt**: tips/recipes/FAQ, search tuning, final gate run,
@@ -218,9 +286,12 @@ from the sidebar, never dead links).
 
 ## Out of scope
 
-Any junco-repo changes (including linking the site from junco's README — worthwhile, separate).
-Versioned docs (`latest`/`vX`) — revisit at 1.0. Per-page `.md` endpoints. Docs i18n.
-Analytics. Comments/feedback widgets.
+Any junco-repo changes in this project — including the natural follow-up: a
+`junco introspect --json` (or a junco-CI-generated surface artifact) that would replace
+help-text parsing with a stable machine-readable contract. Worth filing as a junco issue once
+the extractor's needs are concrete; the extractor should prefer it when it appears. Also out:
+linking the site from junco's README (worthwhile, separate); versioned docs (`latest`/`vX`) —
+revisit at 1.0; per-page `.md` endpoints; docs i18n; analytics; comments/feedback widgets.
 
 ## Open questions for the maintainer
 
@@ -233,3 +304,9 @@ Analytics. Comments/feedback widgets.
 4. Sidebar "field notes" naming (on-theme) vs a plainer "tips & FAQ"?
 5. Landing spec-sheet `<dl>`: add a `docs` row pointing at `/docs/` (free — `<dl>` is excluded
    from the word count), or keep discovery to nav+footer links?
+6. Extraction source: the globally-installed `junco` binary (recommended — it is what the
+   docs should describe), with `node ~/junco/dist/cli.js` as a pinned fallback? Either way,
+   never run with cwd inside `~/junco` (live daemon runtime; `./config.json` would win
+   resolution there).
+7. After the extractor exists: green light to file a junco issue proposing
+   `junco introspect --json`? (It could itself be dispatched as a junco ticket — dogfooding.)
