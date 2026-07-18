@@ -68,7 +68,7 @@
     <main id="main" class="wrap">
       <!-- S0 · hero -->
       <section class="hero" aria-labelledby="hero-h">
-        <p class="kicker">junco · task-queue worker · v0.7.0 · MIT</p>
+        <p class="kicker">junco · task-queue worker · v0.8.0 · MIT</p>
         <h1 id="hero-h">Issues in.<br>Pull requests out.</h1>
         <p class="sub">
           Label a GitHub issue <code>junco</code> and a plan appears as a comment. Approve it, and
@@ -102,6 +102,8 @@
           <div><dt>cockpit</dt><dd>fullscreen terminal dashboard · <code>junco dashboard</code></dd></div>
           <div><dt>endpoint</dt><dd>any OpenAI-compatible endpoint · or a hosted provider from the built-in catalog</dd></div>
           <div><dt>sandbox</dt><dd>OS-level isolation of agent tools · on by default · fails closed</dd></div>
+          <div><dt>identity</dt><dd>your <code>gh</code> auth · optional dedicated bot account for daemon traffic</dd></div>
+          <div><dt>data root</dt><dd>one <code>dataDir</code> · queue, clones, worktrees, transcripts, parked reviews</dd></div>
           <div><dt>spend</dt><dd>per-session cost ledger · optional daily budget cap</dd></div>
           <div><dt>runtime</dt><dd>Node ≥ 22.19 · git · gh</dd></div>
           <div><dt>records</dt><dd>per-ticket JSONL transcripts · structured worker.log</dd></div>
@@ -352,6 +354,18 @@ npm test
             <dt>Verify, then critique</dt>
             <dd>Verification blocks run in the worktree; a critic reads the diff against the spec — a MISSING verdict buys exactly one corrective pass.</dd>
           </div>
+          <div>
+            <dt>Bot identity</dt>
+            <dd>Daemon GitHub traffic can run as a dedicated bot account you grant per-repo access with <code>junco auth grant</code>; interactive commands stay under your own <code>gh</code> auth.</dd>
+          </div>
+          <div>
+            <dt>One data root</dt>
+            <dd>Queue, clones, worktrees, transcripts, and parked reviews resolve under a single <code>dataDir</code>. <code>junco data</code> prints the tree; <code>junco data migrate</code> unifies a legacy layout.</dd>
+          </div>
+          <div>
+            <dt>Stay current</dt>
+            <dd>A newer release surfaces in the dashboard, <code>junco status</code>, and <code>junco doctor</code>; <code>junco update</code> installs it and drain-restarts the supervised daemon.</dd>
+          </div>
         </dl>
       </section>
 
@@ -372,8 +386,8 @@ npm test
             </button>
           </div>
           <div class="scroll">
-            <pre><code>npx @ironforgesoftware/junco   # first run → guided walkthrough; afterwards → the daemon
-junco dashboard                # the cockpit: watch, dispatch, approve, monitor
+            <pre><code>npx @ironforgesoftware/junco   # first run → guided setup walkthrough
+junco                          # ensures the daemon is up, then the cockpit: watch, dispatch, approve, monitor
 junco submit my-task.md        # or feed it a Markdown ticket directly</code></pre>
           </div>
         </div>
@@ -415,7 +429,7 @@ range      your machine · any inference endpoint</pre>
       <section class="sec" aria-labelledby="con-h">
         <h2 id="con-h"><span class="num" aria-hidden="true">07 · </span>Contribute</h2>
         <p>
-          junco is young; the codebase still fits in your head. ~2,500
+          junco is young; the codebase still fits in your head. ~2,800
           tests run in under a minute; <a
             href="https://github.com/ironforgesoftware/junco/blob/main/ARCHITECTURE.md"
             >ARCHITECTURE.md</a
@@ -428,7 +442,7 @@ range      your machine · any inference endpoint</pre>
           <p class="panel-cap" aria-hidden="true">── clone &amp; test ──</p>
           <div class="scroll">
             <pre><code>git clone https://github.com/ironforgesoftware/junco &amp;&amp; cd junco
-npm install &amp;&amp; npm test       # vitest, ~2,500 tests, under a minute</code></pre>
+npm install &amp;&amp; npm test       # vitest, ~2,800 tests, under a minute</code></pre>
           </div>
         </div>
       </section>
@@ -451,7 +465,7 @@ npm install &amp;&amp; npm test       # vitest, ~2,500 tests, under a minute</co
         <a href="https://github.com/ironforgesoftware/junco">GitHub</a> ·
         <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a> ·
         <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a> ·
-        v0.7.0
+        v0.8.0
       </p>
       <p class="bird">
         Named after the dark-eyed junco — a small, unassuming snowbird that works through winter.
