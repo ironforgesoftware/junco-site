@@ -7,3 +7,8 @@
 ## start
 
 - [Start here](https://junco.ironforgesoftware.com/docs/): What junco is, a sixty-second setup, and a map of these docs.
+
+## reference
+
+- [Configuration](https://junco.ironforgesoftware.com/docs/config/): Every config lever: type, default, live or restart, straight from junco's own registry.
+- [Ticket schema](https://junco.ironforgesoftware.com/docs/ticket-schema/): The frontmatter contract, field by field — junco schema rendered as a page.

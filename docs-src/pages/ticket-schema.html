@@ -1,0 +1,19 @@
+<!--meta {"title":"Ticket schema","description":"The frontmatter contract, field by field — junco schema rendered as a page.","slug":"ticket-schema","navLabel":"Ticket schema","source":"docs/tickets.md","keywords":["frontmatter","YAML","schema","repo","priority","timeout_minutes","amends_pr","push_remote","not_before","tools","network"]} -->
+<p>
+  A ticket is a Markdown file whose YAML frontmatter (between <code>---</code> delimiters)
+  follows this contract. <code>junco schema</code> prints it as JSON Schema — this page renders
+  the same data. The contract is <b>additive-only</b>: fields are added, never repurposed or
+  removed, so external dispatchers can depend on it.
+</p>
+<p>Flavor selection reads frontmatter in this order:</p>
+<ol>
+  <li><code>assess:</code> present — audit ticket (parked findings, never a PR)</li>
+  <li><code>analyze:</code> present — investigation ticket (parked comment draft)</li>
+  <li><code>repo:</code> present — PR-flow ticket (worktree, agent, draft PR)</li>
+  <li>none of the three — Q&amp;A ticket (read-only, answered in place)</li>
+</ol>
+<pre class="cmd">junco schema</pre>
+<div class="note"><b>note —</b> fields documented as worker-managed
+(<code>retry_count</code>, <code>github:</code>) are junco's bookkeeping. Dispatchers leave
+them alone; junco writes them.</div>
+<h2 id="fields">Fields</h2>

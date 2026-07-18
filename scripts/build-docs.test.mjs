@@ -19,6 +19,8 @@ import {
   checkStamps,
   checkNavBijection,
   checkContentGates,
+  renderConfigReference,
+  renderSchemaReference,
 } from "./build-docs.mjs";
 
 const HELP_FIXTURE = `Usage: junco <subcommand> [options]
@@ -302,6 +304,64 @@ test("search index round-trip: build → loadJSON → query", async () => {
   const hits = loaded.search("assess", { prefix: true });
   assert.equal(hits[0].id, "cli#assess");
   assert.equal(hits[0].url, "/docs/cli/#assess");
+});
+
+// ------------------------------------------------- Task 6: reference renderers
+
+test("renderConfigReference: groups, substituted text, defaults, reload", () => {
+  const levers = { levers: [
+    { path: "dataDir", type: "string", markers: [], default: "undefined", reload: "restart",
+      description: "Unified data root — queue, reviews, outbox." },
+    { path: "model.id", type: "string", markers: [], default: '"local/my-model"', reload: "live",
+      description: "Provider-prefixed model id, e.g. openai/gpt-4o-mini." },
+    { path: "model.apiKey", type: "secret", markers: [], default: "undefined", reload: "live",
+      description: "API key for the inference endpoint." },
+    { path: "worker.endpointProbe", type: "enum", enumValues: ["auto", "always", "never"],
+      markers: [], default: '"auto"', reload: "live", description: "Endpoint probe policy." },
+  ] };
+  const subs = { "openai/gpt-4o-mini": "<provider>/<model-name>" };
+  const html = renderConfigReference(levers, subs, new Map());
+  assert.match(html, /<h2 id="g-top-level">/);
+  assert.match(html, /<h2 id="g-model">/);
+  assert.match(html, /<h2 id="g-worker">/);
+  assert.match(html, /&lt;provider&gt;\/&lt;model-name&gt;/);
+  assert.doesNotMatch(html, /gpt-4o-mini/);
+  assert.match(html, /default &quot;local\/my-model&quot;/);
+  assert.match(html, /restart/);
+  assert.match(html, /auto \| always \| never/);
+  assert.match(html, /secret/);
+});
+
+test("renderConfigReference: extended prose injects after its lever row", () => {
+  const levers = { levers: [
+    { path: "dataDir", type: "string", markers: [], default: "undefined", reload: "restart",
+      description: "Unified data root." },
+    { path: "vaultRoot", type: "string", markers: [], default: "undefined", reload: "restart",
+      description: "Deprecated queue root." },
+  ] };
+  const extended = new Map([["dataDir", "<p>EXTENDED-DATADIR</p>"]]);
+  const html = renderConfigReference(levers, {}, extended);
+  const dataDirAt = html.indexOf("dataDir");
+  const extAt = html.indexOf("EXTENDED-DATADIR");
+  const vaultAt = html.indexOf("vaultRoot");
+  assert.ok(dataDirAt < extAt && extAt < vaultAt, "prose sits between the two levers");
+});
+
+test("renderSchemaReference: fields with anchors, enums, nested props", () => {
+  const schema = {
+    properties: {
+      id: { type: "string", description: "Unique ticket identifier." },
+      priority: { type: "string", enum: ["low", "normal", "high"], description: "Scheduling priority." },
+      github: { type: "object", description: "Worker-managed provenance.",
+        properties: { nwo: { type: "string", description: "owner/repo." } } },
+    },
+  };
+  const html = renderSchemaReference(schema, {});
+  assert.match(html, /<h3 id="f-id">/);
+  assert.match(html, /low \| normal \| high/);
+  assert.match(html, /<h3 id="f-github">/);
+  assert.match(html, /nwo/);
+  assert.match(html, /owner\/repo\./);
 });
 
 // ------------------------------------------------------------- Task 4: gate

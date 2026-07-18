@@ -443,8 +443,91 @@ export function buildSearchIndexJson(sections) {
   return JSON.stringify(index);
 }
 
-// Per-slug generated content appended after the fragment body (Tasks 6–7).
-const GENERATORS = {};
+// ------------------------------------------------------- reference renderers
+
+function subEsc(text, subs) {
+  return escapeHtml(applySubstitutions(text, subs));
+}
+
+function leverTypeLabel(lever) {
+  if (lever.type === "enum") return lever.enumValues.join(" | ");
+  return [lever.type, ...lever.markers].join(", ");
+}
+
+export function renderConfigReference(levers, subs, extended) {
+  const groups = new Map();
+  for (const lever of levers.levers) {
+    const group = lever.path.includes(".") ? lever.path.split(".")[0] : "top-level";
+    if (!groups.has(group)) groups.set(group, []);
+    groups.get(group).push(lever);
+  }
+  const out = [];
+  for (const [group, members] of groups) {
+    out.push(`<h2 id="g-${group}">${group === "top-level" ? "top-level" : `<code>${group}.*</code>`}</h2>`);
+    if (extended.has(group)) out.push(extended.get(group));
+    let open = false;
+    for (const lever of members) {
+      if (!open) { out.push('<dl class="flags">'); open = true; }
+      const reload = lever.reload ? ` · ${lever.reload}` : "";
+      out.push(
+        `  <div><dt><code>${escapeHtml(lever.path)}</code> <span class="ph">${escapeHtml(leverTypeLabel(lever))}</span></dt>` +
+          `<dd>${subEsc(lever.description, subs)} <span class="default">default ${subEsc(lever.default, subs)}${reload}</span></dd></div>`
+      );
+      if (extended.has(lever.path)) {
+        out.push("</dl>", extended.get(lever.path));
+        open = false;
+      }
+    }
+    if (open) out.push("</dl>");
+  }
+  return `\n${out.join("\n")}\n`;
+}
+
+export function renderSchemaReference(schema, subs) {
+  const out = [];
+  for (const [name, prop] of Object.entries(schema.properties)) {
+    out.push(`<h3 id="f-${name}"><code>${escapeHtml(name)}</code></h3>`);
+    const type = prop.enum ? prop.enum.join(" | ") : prop.type;
+    out.push(`<p class="see">${escapeHtml(String(type))}</p>`);
+    if (prop.description) out.push(`<p>${subEsc(prop.description, subs)}</p>`);
+    if (prop.properties) {
+      const rows = Object.entries(prop.properties).map(
+        ([sub, sp]) =>
+          `  <div><dt><code>${escapeHtml(`${name}.${sub}`)}</code> <span class="ph">${escapeHtml(
+            String(sp.enum ? sp.enum.join(" | ") : sp.type)
+          )}</span></dt><dd>${sp.description ? subEsc(sp.description, subs) : ""}</dd></div>`
+      );
+      out.push('<dl class="flags">', ...rows, "</dl>");
+    }
+  }
+  return `\n${out.join("\n")}\n`;
+}
+
+function extendedConfigProse() {
+  const dir = join(SRC, "config");
+  const map = new Map();
+  if (!existsSync(dir)) return map;
+  for (const f of readdirSync(dir)) {
+    if (!f.endsWith(".html")) continue;
+    // filenames use dashes for dots: worker-dailyBudgetUsd.html → worker.dailyBudgetUsd
+    const key = f.replace(/\.html$/, "").replace(/-/g, ".");
+    // group-level fragments have no dash ("sandbox.html" → key "sandbox")
+    map.set(key, readFileSync(join(dir, f), "utf8"));
+  }
+  return map;
+}
+
+// Per-slug generated content appended after the fragment body.
+const GENERATORS = {
+  config: ({ subs }) => {
+    const levers = JSON.parse(readFileSync(join(EXTRACTED, "levers.json"), "utf8"));
+    return renderConfigReference(levers, subs, extendedConfigProse());
+  },
+  "ticket-schema": ({ subs }) => {
+    const schema = JSON.parse(readFileSync(join(EXTRACTED, "ticket-schema.json"), "utf8"));
+    return renderSchemaReference(schema, subs);
+  },
+};
 
 export function loadDocsSource() {
   const nav = JSON.parse(readFileSync(join(SRC, "nav.json"), "utf8"));

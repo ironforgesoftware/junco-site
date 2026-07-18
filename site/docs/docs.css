@@ -203,8 +203,9 @@ dl.flags dd .default {
 
 /* ---------- callouts ---------- */
 
-aside.note,
-aside.warn {
+/* divs, not <aside>: callouts must not register as ARIA landmarks */
+.note,
+.warn {
   border: 1px solid var(--line);
   border-inline-start: 2px solid var(--ink-muted);
   background: var(--panel);
@@ -213,16 +214,16 @@ aside.warn {
   max-width: 68ch;
   font-size: 0.875rem;
 }
-aside.warn {
+.warn {
   border-inline-start-color: var(--accent);
 }
-aside.note > b:first-child {
+.note > b:first-child {
   color: var(--ink-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-size: 0.75rem;
 }
-aside.warn > b:first-child {
+.warn > b:first-child {
   color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 0.08em;

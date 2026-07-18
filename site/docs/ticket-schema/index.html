@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ticket schema — junco docs</title>
+    <meta name="description" content="The frontmatter contract, field by field — junco schema rendered as a page.">
+    <link rel="canonical" href="https://junco.ironforgesoftware.com/docs/ticket-schema/">
+    <meta property="og:title" content="Ticket schema — junco docs">
+    <meta property="og:description" content="The frontmatter contract, field by field — junco schema rendered as a page.">
+    <meta property="og:url" content="https://junco.ironforgesoftware.com/docs/ticket-schema/">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://junco.ironforgesoftware.com/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f4f5">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#14171d">
+    <meta name="color-scheme" content="light dark">
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/CommitMono-400.woff2" crossorigin>
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/CommitMono-700.woff2" crossorigin>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/docs/docs.css">
+    <script>
+      (function () {
+        var t = localStorage.getItem("theme");
+        if (t) document.documentElement.setAttribute("data-theme", t);
+        document.documentElement.classList.add("js");
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="wrap-docs bar">
+      <a class="wordmark" href="/"
+        ><svg class="mark" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true">
+          <circle fill="currentColor" cx="13" cy="16" r="12"></circle>
+          <path fill="var(--accent)" d="M21 10 L32 16 L21 22 Z"></path></svg
+        >junco</a
+      >
+      <div class="search" role="search">
+        <input id="docs-search" type="search" placeholder="search docs" autocomplete="off"
+          role="combobox" aria-expanded="false" aria-controls="search-results"
+          aria-autocomplete="list" aria-label="Search docs">
+        <!-- [html-validate-disable-next prefer-native-element: ARIA combobox popup; a native select cannot host result links] -->
+        <ul id="search-results" role="listbox" aria-label="Search results" hidden></ul>
+      </div>
+      <nav aria-label="Site">
+        <a href="/docs/" aria-current="true">docs</a>
+        <a href="https://github.com/ironforgesoftware/junco">GitHub</a>
+        <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a>
+        <button id="theme-toggle" type="button" aria-pressed="false">dark</button>
+      </nav>
+    </header>
+
+    <div class="wrap-docs docs-grid">
+      <details class="side" open>
+        <summary>contents</summary>
+        <nav aria-label="Docs">
+      <section>
+        <p class="group">start</p>
+        <ul>
+        <li><a href="/docs/">Start here</a></li>
+        </ul>
+      </section>
+      <section>
+        <p class="group">reference</p>
+        <ul>
+        <li><a href="/docs/config/">Configuration</a></li>
+        <li><a aria-current="page" href="/docs/ticket-schema/">Ticket schema</a></li>
+        </ul>
+      </section>
+        </nav>
+      </details>
+      <main id="main">
+        <h1>Ticket schema</h1>
+<p>
+  A ticket is a Markdown file whose YAML frontmatter (between <code>---</code> delimiters)
+  follows this contract. <code>junco schema</code> prints it as JSON Schema — this page renders
+  the same data. The contract is <b>additive-only</b>: fields are added, never repurposed or
+  removed, so external dispatchers can depend on it.
+</p>
+<p>Flavor selection reads frontmatter in this order:</p>
+<ol>
+  <li><code>assess:</code> present — audit ticket (parked findings, never a PR)</li>
+  <li><code>analyze:</code> present — investigation ticket (parked comment draft)</li>
+  <li><code>repo:</code> present — PR-flow ticket (worktree, agent, draft PR)</li>
+  <li>none of the three — Q&amp;A ticket (read-only, answered in place)</li>
+</ol>
+<pre class="cmd">junco schema</pre>
+<div class="note"><b>note —</b> fields documented as worker-managed
+(<code>retry_count</code>, <code>github:</code>) are junco's bookkeeping. Dispatchers leave
+them alone; junco writes them.</div>
+<h2 id="fields">Fields</h2>
+<h3 id="f-id"><code>id</code></h3>
+<p class="see">string</p>
+<p>Unique ticket identifier. Defaults to the filename (without .md) when omitted.</p>
+<h3 id="f-repo"><code>repo</code></h3>
+<p class="see">string</p>
+<p>Absolute path to the target git repo; presence makes this a PR-flow ticket, absence a Q&amp;A ticket.</p>
+<h3 id="f-priority"><code>priority</code></h3>
+<p class="see">low | normal | high</p>
+<p>Scheduling priority. Defaults to normal.</p>
+<h3 id="f-timeout_minutes"><code>timeout_minutes</code></h3>
+<p class="see">number</p>
+<p>Maximum execution time in minutes. Defaults to the daemon's configured default_timeout_minutes. Must be strictly positive; non-positive values fall back to the default.</p>
+<h3 id="f-base_branch"><code>base_branch</code></h3>
+<p class="see">string</p>
+<p>Base branch for the pull request. Defaults to the daemon's configured default_base_branch. Constrained to the git-ref charset so the value cannot smuggle a git option token.</p>
+<h3 id="f-branch_name"><code>branch_name</code></h3>
+<p class="see">string</p>
+<p>Explicit name for the feature branch. Defaults to a generated slug from the ticket id. Constrained to the git-ref charset so the value cannot smuggle a git option token.</p>
+<h3 id="f-pr_title"><code>pr_title</code></h3>
+<p class="see">string</p>
+<p>Pull request title. Defaults to the first H1 heading in the ticket body, or the ticket id.</p>
+<h3 id="f-draft"><code>draft</code></h3>
+<p class="see">boolean</p>
+<p>Open the pull request as a draft. Defaults to the daemon's configured draft_by_default.</p>
+<h3 id="f-labels"><code>labels</code></h3>
+<p class="see">array</p>
+<p>Labels to apply to the pull request. Merged with the daemon's configured default_labels.</p>
+<h3 id="f-reviewers"><code>reviewers</code></h3>
+<p class="see">array</p>
+<p>GitHub handles to request as pull request reviewers.</p>
+<h3 id="f-amends_pr"><code>amends_pr</code></h3>
+<p class="see">number</p>
+<p>Pull request number to amend (push additional commits to) instead of opening a new PR.</p>
+<h3 id="f-push_remote"><code>push_remote</code></h3>
+<p class="see">string</p>
+<p>Git remote the PR flow pushes the feature branch to. Defaults to origin. Set to fork (with a fork remote configured on the clone) for fork-based PRs against repos the operator cannot push to; gh pr create then uses --head &lt;fork-owner&gt;:&lt;branch&gt;.</p>
+<h3 id="f-not_before"><code>not_before</code></h3>
+<p class="see">string</p>
+<p>Do not claim this ticket before this UTC instant (ISO 8601). The worker sets this for retry backoff; dispatchers may also set it to schedule work.</p>
+<h3 id="f-retry_count"><code>retry_count</code></h3>
+<p class="see">integer</p>
+<p>Worker-managed: how many transparent requeue attempts this ticket has consumed. Do not set by hand.</p>
+<h3 id="f-tools"><code>tools</code></h3>
+<p class="see">array</p>
+<p>Tool allowlist override for this ticket's agent session. Q&amp;A tickets default to a read-only subset (read, grep, find, ls); list tools explicitly (e.g. [read, grep, bash]) to opt in to more.</p>
+<h3 id="f-workdir"><code>workdir</code></h3>
+<p class="see">string</p>
+<p>Q&amp;A tickets only: directory the session runs in (read-only tools). Defaults to the worker's processing directory.</p>
+<h3 id="f-network"><code>network</code></h3>
+<p class="see">boolean</p>
+<p>Sandbox egress opt-in for this ticket's agent session. Defaults to the configured `sandbox.network` policy (deny). Set true to allow network (e.g. installing a new dependency); only widens this one ticket.</p>
+<h3 id="f-github"><code>github</code></h3>
+<p class="see">object</p>
+<p>Worker-managed: provenance of a ticket bridged from a GitHub issue. Do not set by hand — to request a linked issue on a local dispatch, see github_request.</p>
+<dl class="flags">
+  <div><dt><code>github.nwo</code> <span class="ph">string</span></dt><dd>Repository name-with-owner, e.g. acme/api.</dd></div>
+  <div><dt><code>github.issue</code> <span class="ph">integer</span></dt><dd>Source issue number.</dd></div>
+  <div><dt><code>github.kind</code> <span class="ph">pr | ask | plan</span></dt><dd>Execution path.</dd></div>
+  <div><dt><code>github.external</code> <span class="ph">boolean</span></dt><dd>Worker-managed: true when the ticket targets a repo the operator does not control. The reporter posts no labels/comments to the upstream issue; the PR itself (from the push_remote fork) is the only outward-facing write.</dd></div>
+</dl>
+<h3 id="f-github_request"><code>github_request</code></h3>
+<p class="see">object</p>
+<p>Dispatcher-settable request: ask the worker to create a GitHub tracking issue for this ticket at claim time and link the resulting pull request to it (the PR body gains `Closes owner/repo#N`, so merging closes the issue). The worker creates the issue on the clone's origin repo under its own gh identity (the bot account when configured) and then stamps the worker-managed `github:` provenance block itself — dispatchers never write `github:` by hand. Best-effort: if the issue cannot be created (offline, no permission, non-GitHub origin) the ticket still runs, unlinked. Ignored on fork-push tickets (`push_remote: fork`), on amend tickets (`amends_pr` — the existing PR body is never edited, so the issue could never auto-close), and on Q&amp;A/assess/analyze tickets.</p>
+<dl class="flags">
+  <div><dt><code>github_request.create_issue</code> <span class="ph">boolean</span></dt><dd>Set true to request tracking-issue creation.</dd></div>
+</dl>
+<h3 id="f-assess"><code>assess</code></h3>
+<p class="see">object</p>
+<p>Presence of this mapping selects the assessment flavor: junco audits the repository named in `repo:` (read-only agent session plus a dependency scan) and parks the findings for review instead of opening a pull request — nothing is filed until a human confirms the batch (`junco assess review` then `junco assess file`). Authored by `junco assess`.</p>
+<dl class="flags">
+  <div><dt><code>assess.auto_plan</code> <span class="ph">boolean</span></dt><dd>Also apply the configured GitHub trigger label to each created issue, so the bridge plans it on its next sweep.</dd></div>
+  <div><dt><code>assess.issue</code> <span class="ph">integer</span></dt><dd>Issue-scoped audit: the audit is steered to the code this issue implicates, and filed findings carry a Context reference to it. Set by `junco assess owner/repo#N`.</dd></div>
+  <div><dt><code>assess.issue_title</code> <span class="ph">string</span></dt><dd>The scoping issue's title (machine-built, display-only).</dd></div>
+</dl>
+<h3 id="f-analyze"><code>analyze</code></h3>
+<p class="see">object</p>
+<p>Presence of this mapping selects the analysis flavor: junco investigates the issue named here against the repository in `repo:` and parks a comment draft for review — it never posts without operator confirmation. Authored by `junco analyze`.</p>
+<dl class="flags">
+  <div><dt><code>analyze.issue</code> <span class="ph">integer</span></dt><dd>Issue number to investigate.</dd></div>
+  <div><dt><code>analyze.title</code> <span class="ph">string</span></dt><dd>Issue title, for display/logging.</dd></div>
+</dl>
+      </main>
+    </div>
+
+    <footer class="wrap-docs foot">
+      <p>
+        <a href="https://github.com/ironforgesoftware/junco/blob/main/LICENSE">MIT</a> ·
+        <a href="https://github.com/ironforgesoftware/junco">GitHub</a> ·
+        <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a> ·
+        <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a>
+      </p>
+      <p class="stamp">
+        verified against junco 0.8.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/tickets.md">docs/tickets.md</a> ·
+        <a href="https://github.com/ironforgesoftware/junco-site/edit/main/docs-src/pages/ticket-schema.html">edit this page</a>
+      </p>
+    </footer>
+
+    <script type="module" src="/docs/docs.js"></script>
+  </body>
+</html>

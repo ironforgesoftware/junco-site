@@ -1,0 +1,7 @@
+<p>Agent tool subprocesses run OS-confined: writes jailed to the worktree plus scratch,
+reads of secret paths denied, environment scrubbed, network egress denied unless a ticket
+sets <code>network: true</code>. Backends: Seatbelt on macOS (built in), bubblewrap on Linux
+(<code>apt/dnf install bubblewrap</code>).</p>
+<div class="warn"><b>warn —</b> the sandbox fails closed. On Linux without
+<code>bwrap</code> the worker refuses to run tickets rather than run them unconfined; install
+bubblewrap or set <code>sandbox.backend: "none"</code> deliberately.</div>

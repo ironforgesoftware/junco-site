@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Configuration — junco docs</title>
+    <meta name="description" content="Every config lever: type, default, live or restart, straight from junco's own registry.">
+    <link rel="canonical" href="https://junco.ironforgesoftware.com/docs/config/">
+    <meta property="og:title" content="Configuration — junco docs">
+    <meta property="og:description" content="Every config lever: type, default, live or restart, straight from junco's own registry.">
+    <meta property="og:url" content="https://junco.ironforgesoftware.com/docs/config/">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://junco.ironforgesoftware.com/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f4f5">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#14171d">
+    <meta name="color-scheme" content="light dark">
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/CommitMono-400.woff2" crossorigin>
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/CommitMono-700.woff2" crossorigin>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/docs/docs.css">
+    <script>
+      (function () {
+        var t = localStorage.getItem("theme");
+        if (t) document.documentElement.setAttribute("data-theme", t);
+        document.documentElement.classList.add("js");
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="wrap-docs bar">
+      <a class="wordmark" href="/"
+        ><svg class="mark" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true">
+          <circle fill="currentColor" cx="13" cy="16" r="12"></circle>
+          <path fill="var(--accent)" d="M21 10 L32 16 L21 22 Z"></path></svg
+        >junco</a
+      >
+      <div class="search" role="search">
+        <input id="docs-search" type="search" placeholder="search docs" autocomplete="off"
+          role="combobox" aria-expanded="false" aria-controls="search-results"
+          aria-autocomplete="list" aria-label="Search docs">
+        <!-- [html-validate-disable-next prefer-native-element: ARIA combobox popup; a native select cannot host result links] -->
+        <ul id="search-results" role="listbox" aria-label="Search results" hidden></ul>
+      </div>
+      <nav aria-label="Site">
+        <a href="/docs/" aria-current="true">docs</a>
+        <a href="https://github.com/ironforgesoftware/junco">GitHub</a>
+        <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a>
+        <button id="theme-toggle" type="button" aria-pressed="false">dark</button>
+      </nav>
+    </header>
+
+    <div class="wrap-docs docs-grid">
+      <details class="side" open>
+        <summary>contents</summary>
+        <nav aria-label="Docs">
+      <section>
+        <p class="group">start</p>
+        <ul>
+        <li><a href="/docs/">Start here</a></li>
+        </ul>
+      </section>
+      <section>
+        <p class="group">reference</p>
+        <ul>
+        <li><a aria-current="page" href="/docs/config/">Configuration</a></li>
+        <li><a href="/docs/ticket-schema/">Ticket schema</a></li>
+        </ul>
+      </section>
+        </nav>
+      </details>
+      <main id="main">
+        <h1>Configuration</h1>
+<p>
+  junco reads one JSON file: <code>./config.json</code> if present, else
+  <code>~/.config/junco/config.json</code> (respects <code>XDG_CONFIG_HOME</code>; any command
+  accepts <code>--config &lt;path&gt;</code>). Every field is optional — omit a key and its
+  default applies. The guided way to produce the file is the setup walkthrough
+  (<code>junco dashboard</code> on a first run); the headless way is
+  <code>junco config init</code>.
+</p>
+<p>
+  Levers marked <em>live</em> apply on the daemon's next poll after the file changes — no
+  restart. Levers marked <em>restart</em> need <code>junco restart</code>;
+  <code>junco status</code> lists any pending ones. Inspect and edit from the command line:
+</p>
+<pre class="cmd">junco config list
+junco config get worker.pollIntervalSeconds
+junco config set worker.dailyBudgetUsd 5</pre>
+<p>
+  A minimal config is the empty object <code>{}</code> — local endpoint, sandbox on, GitHub
+  bridge off. A typical hosted-catalog setup touches three things:
+</p>
+<pre class="cmd">{
+  "model": { "id": "&lt;provider&gt;/&lt;model-name&gt;" },
+  "worker": { "dailyBudgetUsd": 5 },
+  "github": {
+    "enabled": true,
+    "repos": [{ "nwo": "acme/reef-api", "path": "~/code/reef-api" }]
+  }
+}</pre>
+<div class="note"><b>note —</b> catalog model ids are provider-prefixed; the walkthrough and
+<code>junco config list</code> print the real ones. An unset <code>model.baseUrl</code> means
+the local default, <code>http://127.0.0.1:1234/v1</code> — any OpenAI-compatible endpoint
+works.</div>
+<p>
+  Deprecated path keys (<code>vaultRoot</code>, <code>juncoSubdir</code>,
+  <code>observability.stateDir</code>, <code>git.worktreeRoot</code>,
+  <code>github.externalReposRoot</code>) still work, warn once at startup, and are flagged by
+  <code>junco doctor</code>; <code>junco data migrate</code> unifies them under
+  <code>dataDir</code>. TOML configs are no longer read — a nearby <code>config.toml</code>
+  is a startup error, not a silent ignore.
+</p>
+<h2 id="env">Environment variables</h2>
+<dl class="flags">
+  <div><dt><code>JUNCO_LOG_JSON=1</code></dt><dd>Force JSON log lines even on a TTY.</dd></div>
+  <div><dt><code>GH_CONFIG_DIR</code></dt><dd>Injected by the daemon for bot-account GitHub traffic; not yours to set.</dd></div>
+  <div><dt><code>$VISUAL</code> / <code>$EDITOR</code></dt><dd>Editor opened by <code>junco analyze edit</code>.</dd></div>
+  <div><dt><code>XDG_CONFIG_HOME</code></dt><dd>Relocates the default config directory.</dd></div>
+  <div><dt>provider key vars</dt><dd>Hosted catalog models read their provider's conventional env var when <code>model.apiKey</code> is unset; <code>model.apiKey</code> also accepts a literal or a <code>"$ENV_VAR"</code> reference.</dd></div>
+</dl>
+<h2 id="levers">Every lever</h2>
+<p>
+  Generated from <code>junco config list</code> at the version stamped below — names, types,
+  defaults, and descriptions are junco's own. <span class="ph">read-only</span> marks
+  structured levers you edit in the file directly rather than via
+  <code>junco config set</code>.
+</p>
+<h2 id="g-top-level">top-level</h2>
+<dl class="flags">
+  <div><dt><code>dataDir</code> <span class="ph">string</span></dt><dd>Unified data root — queue, reviews, outbox, mirror, clones, worktrees, transcripts. <span class="default">default undefined · restart</span></dd></div>
+</dl>
+<p>Everything junco keeps on disk resolves under this one root (default
+<code>~/.local/state/junco</code>):</p>
+<pre class="out">&lt;dataDir&gt;/
+  queue/            inbox · processing · done · failed
+  review/           parked assess findings · parked analyze drafts
+  outbox/           queued GitHub writes (+ dead/ after 3 attempts)
+  clones/           watched/ and external/ managed checkouts
+  worktrees/        ephemeral per-ticket build worktrees
+  transcripts/      &lt;ticket-id&gt;.jsonl per-run event streams
+  watchlist.json · spend.json · worker.log · migrated.json</pre>
+<p>The root writes itself a <code>.gitignore</code> (<code>*</code>), so pointing
+<code>dataDir</code> inside a git checkout can never dirty a commit. <code>junco data</code>
+prints the live tree with counts and provenance; <code>junco data migrate</code> folds any
+legacy-key layout into it.</p>
+<dl class="flags">
+  <div><dt><code>vaultRoot</code> <span class="ph">string</span></dt><dd>Root directory Junco keeps its ticket queue under. <span class="default">default undefined · restart</span></dd></div>
+  <div><dt><code>juncoSubdir</code> <span class="ph">string</span></dt><dd>Subdirectory under vaultRoot holding inbox/processing/done/failed. <span class="default">default &quot;Junco&quot; · restart</span></dd></div>
+  <div><dt><code>tools</code> <span class="ph">structured, read-only</span></dt><dd>Tool allowlist granted to the coding agent. <span class="default">default [&quot;read&quot;,&quot;bash&quot;,&quot;edit&quot;,&quot;write&quot;,&quot;grep&quot;,&quot;find&quot;,&quot;ls&quot;] · live</span></dd></div>
+  <div><dt><code>updateCheck</code> <span class="ph">boolean</span></dt><dd>Enable periodic update checks for new Junco releases. <span class="default">default true · live</span></dd></div>
+</dl>
+<h2 id="g-model"><code>model.*</code></h2>
+<dl class="flags">
+  <div><dt><code>model.id</code> <span class="ph">string</span></dt><dd>Provider-prefixed model id, e.g. &lt;provider&gt;/&lt;model-name&gt;. <span class="default">default &quot;local/my-model&quot; · live</span></dd></div>
+  <div><dt><code>model.source</code> <span class="ph">string</span></dt><dd>Model resolution mode: auto (catalog for non-local providers without an explicit baseUrl), catalog, or inline. <span class="default">default &quot;auto&quot; · live</span></dd></div>
+  <div><dt><code>model.modelsJson</code> <span class="ph">string</span></dt><dd>Path to a Pi-style models.json; when set, provider+model load from that file and the inline capability fields are ignored. <span class="default">default undefined · live</span></dd></div>
+  <div><dt><code>model.api</code> <span class="ph">string</span></dt><dd>Pi API style, e.g. openai-completions. <span class="default">default &quot;openai-completions&quot; · live</span></dd></div>
+  <div><dt><code>model.baseUrl</code> <span class="ph">string</span></dt><dd>OpenAI-compatible /v1 endpoint base URL. Unset = local default (http://127.0.0.1:1234/v1); setting it forces inline resolution. <span class="default">default undefined · live</span></dd></div>
+  <div><dt><code>model.apiKey</code> <span class="ph">secret</span></dt><dd>API key for the inference endpoint. Literal, &quot;$ENV_VAR&quot; reference, or unset to use the provider's env var (e.g. &lt;PROVIDER&gt;_API_KEY) for hosted catalog models. <span class="default">default undefined · live</span></dd></div>
+  <div><dt><code>model.retry.maxRetries</code> <span class="ph">number</span></dt><dd>SDK auto-retry attempts on transient provider errors; unset = SDK default (3). <span class="default">default undefined · live</span></dd></div>
+  <div><dt><code>model.retry.baseDelayMs</code> <span class="ph">number</span></dt><dd>Base delay for SDK auto-retry backoff in ms; unset = SDK default (2000). <span class="default">default undefined · live</span></dd></div>
+  <div><dt><code>model.reasoning</code> <span class="ph">boolean</span></dt><dd>Whether the model supports reasoning/thinking tokens. <span class="default">default true · live</span></dd></div>
+  <div><dt><code>model.input</code> <span class="ph">structured, read-only</span></dt><dd>Accepted input modalities for the model. <span class="default">default [&quot;text&quot;,&quot;image&quot;] · live</span></dd></div>
+  <div><dt><code>model.contextWindow</code> <span class="ph">number</span></dt><dd>Model context window size in tokens. <span class="default">default 131072 · live</span></dd></div>
+  <div><dt><code>model.maxTokens</code> <span class="ph">number</span></dt><dd>Max output tokens per model call. <span class="default">default 49152 · live</span></dd></div>
+  <div><dt><code>model.cost.input</code> <span class="ph">number</span></dt><dd>Cost per input token, for cost tracking/reporting. <span class="default">default 0 · live</span></dd></div>
+  <div><dt><code>model.cost.output</code> <span class="ph">number</span></dt><dd>Cost per output token, for cost tracking/reporting. <span class="default">default 0 · live</span></dd></div>
+  <div><dt><code>model.cost.cacheRead</code> <span class="ph">number</span></dt><dd>Cost per cache-read token, for cost tracking/reporting. <span class="default">default 0 · live</span></dd></div>
+  <div><dt><code>model.cost.cacheWrite</code> <span class="ph">number</span></dt><dd>Cost per cache-write token, for cost tracking/reporting. <span class="default">default 0 · live</span></dd></div>
+  <div><dt><code>model.thinkingLevel</code> <span class="ph">string</span></dt><dd>Worker default reasoning/thinking level. <span class="default">default &quot;medium&quot; · live</span></dd></div>
+  <div><dt><code>model.compat</code> <span class="ph">structured, read-only</span></dt><dd>Provider compatibility overrides (developer role, reasoning effort, thinking format, etc.), merged over junco's defaults. <span class="default">default {} · live</span></dd></div>
+</dl>
+<h2 id="g-worker"><code>worker.*</code></h2>
+<dl class="flags">
+  <div><dt><code>worker.defaultTimeoutMinutes</code> <span class="ph">number</span></dt><dd>Default per-ticket execution timeout in minutes. <span class="default">default 30 · live</span></dd></div>
+  <div><dt><code>worker.pollIntervalSeconds</code> <span class="ph">number</span></dt><dd>Seconds between inbox polls when idle. <span class="default">default 15 · live</span></dd></div>
+  <div><dt><code>worker.startupPollSeconds</code> <span class="ph">number</span></dt><dd>Seconds the daemon waits/polls at startup before normal polling begins. <span class="default">default 30 · live</span></dd></div>
+  <div><dt><code>worker.startupWait</code> <span class="ph">boolean</span></dt><dd>Whether the daemon waits at startup for crash-recovery grace before claiming. <span class="default">default true · live</span></dd></div>
+  <div><dt><code>worker.endpointProbe</code> <span class="ph">auto | always | never</span></dt><dd>Endpoint probe policy: auto (probe local/inline, skip hosted catalog), always, or never. <span class="default">default &quot;auto&quot; · live</span></dd></div>
+  <div><dt><code>worker.maxTransientRetries</code> <span class="ph">number</span></dt><dd>Max retries for transient failures before a ticket is marked failed. <span class="default">default 2 · live</span></dd></div>
+  <div><dt><code>worker.retryBackoffSeconds</code> <span class="ph">number</span></dt><dd>Backoff seconds before a requeued ticket becomes eligible again. <span class="default">default 60 · live</span></dd></div>
+  <div><dt><code>worker.maxConcurrent</code> <span class="ph">number</span></dt><dd>Parallel ticket slots; same-repo tickets always serialize (restart to apply — the serial-vs-scheduler mode fork is chosen once at startup). <span class="default">default 1 · restart</span></dd></div>
+  <div><dt><code>worker.commitLeftovers</code> <span class="ph">boolean</span></dt><dd>Sweep uncommitted leftovers into a final commit at run end. <span class="default">default false · live</span></dd></div>
+  <div><dt><code>worker.dailyBudgetUsd</code> <span class="ph">number</span></dt><dd>Daily USD spend cap; claiming pauses once reached until local midnight (0 disables). <span class="default">default 0 · live</span></dd></div>
+</dl>
+<div class="note"><b>note —</b> every agent session's cost lands in a per-day ledger
+(<code>spend.json</code>, surfaced on <code>/health</code> and the dashboard). At the cap,
+claiming pauses — loudly, without burning any ticket's retry budget — and resumes at local
+midnight or when you raise the cap. <code>0</code> disables the cap but keeps the ledger.</div>
+<h2 id="g-supervisor"><code>supervisor.*</code></h2>
+<dl class="flags">
+  <div><dt><code>supervisor.enabled</code> <span class="ph">boolean</span></dt><dd>Enable the supervisor (nudge/escalate/kill loop-guard). <span class="default">default true · live</span></dd></div>
+  <div><dt><code>supervisor.budgetPerKind</code> <span class="ph">number</span></dt><dd>Budget of guard interventions allowed per kind before escalation. <span class="default">default 1 · live</span></dd></div>
+  <div><dt><code>supervisor.escalationWindowTurns</code> <span class="ph">number</span></dt><dd>Turn window over which supervisor escalation is evaluated. <span class="default">default 3 · live</span></dd></div>
+  <div><dt><code>supervisor.outputBudgetPerTurn</code> <span class="ph">number</span></dt><dd>Max output budget per turn before the supervisor nudges. <span class="default">default 12000 · live</span></dd></div>
+  <div><dt><code>supervisor.outputBudgetPostCommit</code> <span class="ph">number</span></dt><dd>Max output budget per turn once a commit has landed. <span class="default">default 24000 · live</span></dd></div>
+</dl>
+<h2 id="g-git"><code>git.*</code></h2>
+<dl class="flags">
+  <div><dt><code>git.gitBin</code> <span class="ph">string</span></dt><dd>Path/name of the git binary to invoke. <span class="default">default &quot;git&quot; · live</span></dd></div>
+  <div><dt><code>git.ghBin</code> <span class="ph">string</span></dt><dd>Path/name of the GitHub CLI (gh) binary to invoke. <span class="default">default &quot;gh&quot; · live</span></dd></div>
+  <div><dt><code>git.defaultBaseBranch</code> <span class="ph">string</span></dt><dd>Default base branch PRs are opened against. <span class="default">default &quot;main&quot; · live</span></dd></div>
+  <div><dt><code>git.branchPrefix</code> <span class="ph">string</span></dt><dd>Prefix applied to branches Junco creates. <span class="default">default &quot;junco/&quot; · live</span></dd></div>
+  <div><dt><code>git.worktreeRoot</code> <span class="ph">string</span></dt><dd>Deprecated: overrides dataDir for per-ticket git worktrees only. <span class="default">default undefined · live</span></dd></div>
+  <div><dt><code>git.removeWorktreeOnSuccess</code> <span class="ph">boolean</span></dt><dd>Remove the git worktree after a successful run. <span class="default">default true · live</span></dd></div>
+  <div><dt><code>git.allowedRepoRoots</code> <span class="ph">structured, read-only</span></dt><dd>Containment rail: when non-empty, PR-flow tickets may only target repos under these roots ([] = anywhere). <span class="default">default [] · live</span></dd></div>
+</dl>
+<div class="note"><b>note —</b> the containment rail for the folder inbox: with roots set,
+a PR-flow ticket whose <code>repo:</code> lies outside them fails plan-lint before any agent
+runs. An empty list means any path — fine for a single-user machine, worth narrowing wherever
+anything else can write tickets.</div>
+<h2 id="g-pr"><code>pr.*</code></h2>
+<dl class="flags">
+  <div><dt><code>pr.draftByDefault</code> <span class="ph">boolean</span></dt><dd>Open PRs as drafts by default. <span class="default">default true · live</span></dd></div>
+  <div><dt><code>pr.defaultLabels</code> <span class="ph">structured, read-only</span></dt><dd>Labels applied to every PR Junco opens. <span class="default">default [] · live</span></dd></div>
+</dl>
+<h2 id="g-verify"><code>verify.*</code></h2>
+<dl class="flags">
+  <div><dt><code>verify.enabled</code> <span class="ph">boolean</span></dt><dd>Run the verify (build/test) phase before opening a PR. <span class="default">default true · live</span></dd></div>
+  <div><dt><code>verify.commandTimeout</code> <span class="ph">number</span></dt><dd>Timeout in seconds for the verify command. <span class="default">default 60 · live</span></dd></div>
+  <div><dt><code>verify.blockOnFail</code> <span class="ph">boolean</span></dt><dd>Block PR creation when verify fails (vs. warn and continue). <span class="default">default false · live</span></dd></div>
+</dl>
+<h2 id="g-sandbox"><code>sandbox.*</code></h2>
+<p>Agent tool subprocesses run OS-confined: writes jailed to the worktree plus scratch,
+reads of secret paths denied, environment scrubbed, network egress denied unless a ticket
+sets <code>network: true</code>. Backends: Seatbelt on macOS (built in), bubblewrap on Linux
+(<code>apt/dnf install bubblewrap</code>).</p>
+<div class="warn"><b>warn —</b> the sandbox fails closed. On Linux without
+<code>bwrap</code> the worker refuses to run tickets rather than run them unconfined; install
+bubblewrap or set <code>sandbox.backend: "none"</code> deliberately.</div>
+<dl class="flags">
+  <div><dt><code>sandbox.enabled</code> <span class="ph">boolean</span></dt><dd>Wrap agent tool subprocesses in an OS sandbox (env scrub + path jail). <span class="default">default true · live</span></dd></div>
+  <div><dt><code>sandbox.backend</code> <span class="ph">auto | seatbelt | bwrap | none</span></dt><dd>Sandbox backend: auto (seatbelt on macOS, bwrap on Linux), a forced one, or none. <span class="default">default &quot;auto&quot; · live</span></dd></div>
+  <div><dt><code>sandbox.network</code> <span class="ph">deny | allow</span></dt><dd>Default network egress for agent tool subprocesses (per-ticket network:true widens it). <span class="default">default &quot;deny&quot; · live</span></dd></div>
+  <div><dt><code>sandbox.extraDenyRead</code> <span class="ph">structured, read-only</span></dt><dd>Extra absolute paths whose reads are denied (added to the built-in secret deny-list). <span class="default">default [] · live</span></dd></div>
+  <div><dt><code>sandbox.extraAllowWrite</code> <span class="ph">structured, read-only</span></dt><dd>Extra absolute paths where writes are permitted (added to worktree + scratch). <span class="default">default [] · live</span></dd></div>
+</dl>
+<h2 id="g-critic"><code>critic.*</code></h2>
+<dl class="flags">
+  <div><dt><code>critic.enabled</code> <span class="ph">boolean</span></dt><dd>Run the post-session critic review pass before finalizing a PR. <span class="default">default true · live</span></dd></div>
+  <div><dt><code>critic.maxRetries</code> <span class="ph">number</span></dt><dd>Max critic-requested revision retries. <span class="default">default 1 · live</span></dd></div>
+  <div><dt><code>critic.thinking</code> <span class="ph">string</span></dt><dd>Thinking level used for critic review calls. <span class="default">default &quot;minimal&quot; · live</span></dd></div>
+</dl>
+<h2 id="g-planLint"><code>planLint.*</code></h2>
+<dl class="flags">
+  <div><dt><code>planLint.enabled</code> <span class="ph">boolean</span></dt><dd>Run plan-lint checks on ticket plans before execution. <span class="default">default true · live</span></dd></div>
+  <div><dt><code>planLint.blockOnError</code> <span class="ph">boolean</span></dt><dd>Block execution when plan-lint finds errors (vs. warn). <span class="default">default true · live</span></dd></div>
+  <div><dt><code>planLint.checkLabels</code> <span class="ph">boolean</span></dt><dd>Include label checks in plan-lint. <span class="default">default true · live</span></dd></div>
+</dl>
+<h2 id="g-observability"><code>observability.*</code></h2>
+<dl class="flags">
+  <div><dt><code>observability.healthEnabled</code> <span class="ph">boolean</span></dt><dd>Enable the /health metrics HTTP server. <span class="default">default true · restart</span></dd></div>
+  <div><dt><code>observability.healthHost</code> <span class="ph">string</span></dt><dd>Bind address for /health; non-loopback exposes metrics (restart to rebind). <span class="default">default &quot;127.0.0.1&quot; · restart</span></dd></div>
+  <div><dt><code>observability.healthPort</code> <span class="ph">number</span></dt><dd>Port the /health metrics server binds (restart to rebind). <span class="default">default 8787 · restart</span></dd></div>
+  <div><dt><code>observability.logLevel</code> <span class="ph">debug | info | warn | error</span></dt><dd>Daemon-wide log threshold (applied live). <span class="default">default &quot;info&quot; · live</span></dd></div>
+  <div><dt><code>observability.stateDir</code> <span class="ph">string</span></dt><dd>Deprecated: overrides dataDir for the entire data root. <span class="default">default undefined · restart</span></dd></div>
+  <div><dt><code>observability.logToFile</code> <span class="ph">boolean</span></dt><dd>Write daemon logs to a file under dataDir. <span class="default">default true · restart</span></dd></div>
+  <div><dt><code>observability.transcripts</code> <span class="ph">boolean</span></dt><dd>Write per-ticket event transcripts under dataDir. <span class="default">default true · restart</span></dd></div>
+</dl>
+<h2 id="g-github"><code>github.*</code></h2>
+<dl class="flags">
+  <div><dt><code>github.enabled</code> <span class="ph">boolean</span></dt><dd>Enable the GitHub issues→inbox bridge (disabled by default: zero gh calls). <span class="default">default false · restart</span></dd></div>
+  <div><dt><code>github.triggerLabel</code> <span class="ph">string</span></dt><dd>Approval label that triggers the PR flow; lifecycle labels derive from it. Restart to apply — the reporter bakes in the label prefix at startup. <span class="default">default &quot;junco&quot; · restart</span></dd></div>
+  <div><dt><code>github.askLabel</code> <span class="ph">string</span></dt><dd>Issue label that routes to the read-only Q&amp;A path (defaults to `&lt;triggerLabel&gt;:ask`). Restart to apply (see triggerLabel). <span class="default">default undefined · restart</span></dd></div>
+  <div><dt><code>github.pollIntervalSeconds</code> <span class="ph">number</span></dt><dd>GitHub bridge sweep cadence, independent of the worker poll interval. <span class="default">default 60 · live</span></dd></div>
+  <div><dt><code>github.requireApproval</code> <span class="ph">boolean</span></dt><dd>When false, a plan-ready GitHub ticket auto-executes on the next sweep. <span class="default">default true · live</span></dd></div>
+</dl>
+<div class="warn"><b>warn —</b> setting this <code>false</code> removes the human gate:
+any plan-ready issue executes on the next sweep. On a repo with other collaborators, someone
+with triage-only access could steer work they could never approve. Keep it <code>true</code>
+anywhere that isn't a private personal repo.</div>
+<dl class="flags">
+  <div><dt><code>github.plannerModelId</code> <span class="ph">string</span></dt><dd>Planning-session model id override for GitHub tickets (same endpoint). <span class="default">default undefined · live</span></dd></div>
+  <div><dt><code>github.externalReposRoot</code> <span class="ph">string</span></dt><dd>Root directory for managed clones of unowned repos (fork-PR flow). <span class="default">default undefined · live</span></dd></div>
+  <div><dt><code>github.repos</code> <span class="ph">structured, read-only</span></dt><dd>Explicit list of watched GitHub repos (owner/repo name-with-owner + local path). <span class="default">default [] · live</span></dd></div>
+</dl>
+<h2 id="g-botAccount"><code>botAccount.*</code></h2>
+<dl class="flags">
+  <div><dt><code>botAccount.enabled</code> <span class="ph">boolean</span></dt><dd>Act as a dedicated bot account for all daemon GitHub traffic (log it in with: junco auth login). <span class="default">default false · restart</span></dd></div>
+  <div><dt><code>botAccount.configDir</code> <span class="ph">string</span></dt><dd>Isolated gh config dir holding the bot login (GH_CONFIG_DIR for daemon gh/git). <span class="default">default &quot;~/.config/junco/gh&quot; · restart</span></dd></div>
+</dl>
+<h2 id="g-assess"><code>assess.*</code></h2>
+<dl class="flags">
+  <div><dt><code>assess.maxIssuesPerRun</code> <span class="ph">number</span></dt><dd>Cap on issues filed per `junco assess` run. <span class="default">default 20 · live</span></dd></div>
+  <div><dt><code>assess.minSeverity</code> <span class="ph">critical | high | medium | low</span></dt><dd>Drop assessment findings below this severity. <span class="default">default &quot;low&quot; · live</span></dd></div>
+  <div><dt><code>assess.npmBin</code> <span class="ph">string</span></dt><dd>Binary for the dependency scan (npm audit --json). <span class="default">default &quot;npm&quot; · live</span></dd></div>
+</dl>
+      </main>
+    </div>
+
+    <footer class="wrap-docs foot">
+      <p>
+        <a href="https://github.com/ironforgesoftware/junco/blob/main/LICENSE">MIT</a> ·
+        <a href="https://github.com/ironforgesoftware/junco">GitHub</a> ·
+        <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a> ·
+        <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a>
+      </p>
+      <p class="stamp">
+        verified against junco 0.8.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/configuration.md">docs/configuration.md</a> ·
+        <a href="https://github.com/ironforgesoftware/junco-site/edit/main/docs-src/pages/config.html">edit this page</a>
+      </p>
+    </footer>
+
+    <script type="module" src="/docs/docs.js"></script>
+  </body>
+</html>
