@@ -201,6 +201,30 @@ dl.flags dd .default {
   }
 }
 
+/* ---------- tables ---------- */
+
+main table {
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  line-height: var(--lh);
+  margin-block: calc(0.5 * var(--lh)) var(--lh);
+  min-width: 48ch;
+}
+main th {
+  text-align: left;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+main th,
+main td {
+  border-block: 1px solid var(--line);
+  padding: calc(0.25 * var(--lh)) 2ch calc(0.25 * var(--lh)) 0;
+  vertical-align: top;
+}
+
 /* ---------- callouts ---------- */
 
 /* divs, not <aside>: callouts must not register as ARIA landmarks */

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tickets &amp; the inbox — junco docs</title>
+    <meta name="description" content="Markdown tickets with YAML frontmatter: flavors, the plan shape that avoids loops, plan-lint, submission.">
+    <link rel="canonical" href="https://junco.ironforgesoftware.com/docs/tickets/">
+    <meta property="og:title" content="Tickets &amp; the inbox — junco docs">
+    <meta property="og:description" content="Markdown tickets with YAML frontmatter: flavors, the plan shape that avoids loops, plan-lint, submission.">
+    <meta property="og:url" content="https://junco.ironforgesoftware.com/docs/tickets/">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://junco.ironforgesoftware.com/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f4f5">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#14171d">
+    <meta name="color-scheme" content="light dark">
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/CommitMono-400.woff2" crossorigin>
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/CommitMono-700.woff2" crossorigin>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/docs/docs.css">
+    <script>
+      (function () {
+        var t = localStorage.getItem("theme");
+        if (t) document.documentElement.setAttribute("data-theme", t);
+        document.documentElement.classList.add("js");
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="wrap-docs bar">
+      <a class="wordmark" href="/"
+        ><svg class="mark" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true">
+          <circle fill="currentColor" cx="13" cy="16" r="12"></circle>
+          <path fill="var(--accent)" d="M21 10 L32 16 L21 22 Z"></path></svg
+        >junco</a
+      >
+      <div class="search" role="search">
+        <input id="docs-search" type="search" placeholder="search docs" autocomplete="off"
+          role="combobox" aria-expanded="false" aria-controls="search-results"
+          aria-autocomplete="list" aria-label="Search docs">
+        <!-- [html-validate-disable-next prefer-native-element: ARIA combobox popup; a native select cannot host result links] -->
+        <ul id="search-results" role="listbox" aria-label="Search results" hidden></ul>
+      </div>
+      <nav aria-label="Site">
+        <a href="/docs/" aria-current="true">docs</a>
+        <a href="https://github.com/ironforgesoftware/junco">GitHub</a>
+        <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a>
+        <button id="theme-toggle" type="button" aria-pressed="false">dark</button>
+      </nav>
+    </header>
+
+    <div class="wrap-docs docs-grid">
+      <details class="side" open>
+        <summary>contents</summary>
+        <nav aria-label="Docs">
+      <section>
+        <p class="group">start</p>
+        <ul>
+        <li><a href="/docs/">Start here</a></li>
+        </ul>
+      </section>
+      <section>
+        <p class="group">guides</p>
+        <ul>
+        <li><a href="/docs/github-loop/">The GitHub loop</a></li>
+        <li><a aria-current="page" href="/docs/tickets/">Tickets &amp; the inbox</a></li>
+        <li><a href="/docs/assess/">Assess</a></li>
+        <li><a href="/docs/analyze/">Analyze</a></li>
+        <li><a href="/docs/dashboard/">The dashboard</a></li>
+        <li><a href="/docs/operations/">Operations</a></li>
+        <li><a href="/docs/bot-account/">Bot account</a></li>
+        </ul>
+      </section>
+      <section>
+        <p class="group">reference</p>
+        <ul>
+        <li><a href="/docs/cli/">CLI</a></li>
+        <li><a href="/docs/config/">Configuration</a></li>
+        <li><a href="/docs/ticket-schema/">Ticket schema</a></li>
+        </ul>
+      </section>
+      <section>
+        <p class="group">field notes</p>
+        <ul>
+        <li><a href="/docs/field-notes/">Tips, recipes &amp; FAQ</a></li>
+        </ul>
+      </section>
+        </nav>
+      </details>
+      <main id="main">
+        <h1>Tickets &amp; the inbox</h1>
+<p>
+  The folder inbox is the second dispatch surface: drop a Markdown ticket and the daemon claims it
+  by atomic rename, runs the agent in an isolated worktree, verifies, runs the diff-vs-spec critic,
+  and opens a draft PR — the same pipeline the
+  <a href="/docs/github-loop/">GitHub label loop</a> feeds (see
+  <a href="/docs/how-it-works/">how it works</a>).
+</p>
+
+<h2 id="anatomy">Anatomy</h2>
+<p>
+  A ticket is one file: YAML frontmatter between <code>---</code> delimiters, then a Markdown plan
+  body sent to the agent as the prompt. Four flavors, selected in this order:
+</p>
+<ol>
+  <li><code>assess:</code> present — audit ticket: parked findings, never a PR. Machine-composed by <code>junco assess</code>.</li>
+  <li><code>analyze:</code> present — investigation ticket: parked comment draft, never a PR. Machine-composed by <code>junco analyze</code>.</li>
+  <li><code>repo:</code> present — PR-flow ticket: worktree, agent, verification, critic, draft PR.</li>
+  <li>none of the three — Q&amp;A ticket: answered in place, no git, tools defaulting to a read-only subset (<code>read, grep, find, ls</code>).</li>
+</ol>
+<p>
+  The field-by-field frontmatter contract lives on the
+  <a href="/docs/ticket-schema/">ticket schema page</a>; <code>junco schema</code> prints the same
+  data as JSON Schema.
+</p>
+
+<h2 id="plan-shape">The plan shape that works</h2>
+<p>
+  Plan quality is the single biggest lever on agent performance: in testing, a structured plan ran
+  several times faster and used far fewer tokens than a loose prompt doing the same work. The shape,
+  from the shipped <code>examples/pr-ticket.md</code>:
+</p>
+<ul>
+  <li><b>Why</b> — one paragraph of intent, plus pre-flight context (build tool, test runner,
+  conventions) and reference signatures verified at plan time. Every Read avoided at execute time
+  saves ~30 seconds.</li>
+  <li><b>Scope, three tiers, in plain words</b> — <i>in scope</i> (what to do); <i>ask before
+  touching</i> (stop and report, don't unilaterally fix — the escape hatch that prevents silent
+  scope expansion, the most expensive failure mode); <i>out of scope</i> (files not to touch).
+  Behavior-level <i>forbidden actions</i> come on top: no force-push or history rewrites, no
+  lockfile edits by hand, no error-suppression comments, no <code>--no-verify</code>, no
+  <code>git push</code> or <code>gh pr create</code> — the worker handles both.</li>
+  <li><b>Files table</b> — path, action, notes. Every path here must reappear in a Step.</li>
+  <li><b>Numbered Steps</b> — each one atomic change ending in exactly one commit. No uncommitted
+  limbo states.</li>
+  <li><b><code>## Verification</code></b> — a fenced bash block junco runs in the worktree after
+  the session. Exact commands that check exit 0, not narrative; paired 1:1 with testable Behavior
+  assertions where the plan has them.</li>
+  <li><b>Done when</b> — observable outcomes, including the expected commit count.</li>
+  <li><b>Notes for the agent (strict)</b> — copied verbatim, never reworded. This is the anti-loop
+  payload: trust the spec instead of re-exploring; never run <code>git log</code>/<code>status</code>/<code>diff</code>
+  to re-verify a commit that exited 0; never resend the full todo phase list (it wipes progress
+  memory and triggers re-planning loops); no scope expansion; and a graceful one-sentence stop on
+  spec mismatch, so the failure note explains what to fix instead of a supervisor kill with no
+  information. Dropping this block is the difference between a few minutes and 20+ minutes of
+  wall clock.</li>
+</ul>
+<div class="warn"><b>warn —</b> never <code>cd</code> inside the <code>## Verification</code>
+block. Junco runs it with cwd set to the worktree; a leading <code>cd</code> moves out of it and
+the verification fails for the wrong reason. Plan-lint rejects it outright.</div>
+<div class="note"><b>note —</b> write portable verification commands — the block runs in the
+daemon's shell on whatever OS hosts it. <code>wc -l &lt; file</code> pads with whitespace on BSD;
+<code>sed -i</code> needs <code>''</code> there; <code>date -v</code> (BSD) and
+<code>date -d</code> (GNU) differ. When in doubt, prefer <code>awk</code> or Python one-liners.</div>
+
+<h2 id="plan-lint">Plan-lint</h2>
+<p>
+  A deterministic linter checks every ticket before the agent starts. Failures route straight to
+  <code>failed/</code> with a <code>phase_error</code> naming the rule — before any tokens are
+  spent. Enforced rules:
+</p>
+<ul>
+  <li>No <code>cd</code> lines inside the <code>## Verification</code> fenced bash block.</li>
+  <li>Every <code>### Step N</code> block contains exactly one <code>git commit</code> line.</li>
+  <li>Every path in the Files table appears in at least one Step body.</li>
+  <li>Every label in frontmatter exists on the repo — a nonexistent label fails
+  <code>gh pr create</code> after push, leaving a branch but no PR.</li>
+  <li>The strict Notes block is present at the end.</li>
+  <li>No forbidden phrases: <code>TBD</code>, <code>Similar to Step N</code>,
+  <code>think carefully</code>, <code>consider all cases</code> — placeholders and vague
+  exhortations feed loops.</li>
+</ul>
+
+<h2 id="submitting-and-managing">Submitting and managing</h2>
+<pre class="cmd">junco submit ./my-ticket.md
+cat my-ticket.md | junco submit -
+junco list failed
+junco retry --all
+junco rm add-util-2026-07-18</pre>
+<p>
+  <a href="/docs/cli/#submit"><code>junco submit</code></a> queues a ticket (also reads stdin);
+  <a href="/docs/cli/#list"><code>junco list [box]</code></a> lists tickets newest-first per queue
+  box (<code>inbox|processing|done|failed</code>);
+  <a href="/docs/cli/#retry"><code>junco retry &lt;name…|--all&gt;</code></a> moves failed tickets
+  back to the inbox — note a retried ticket is cut at the first appended
+  <code>&lt;!-- junco-result</code> separator, so a body containing that literal line loses its
+  tail; <a href="/docs/cli/#rm"><code>junco rm &lt;name&gt;</code></a> deletes a still-queued
+  ticket from the inbox.
+</p>
+
+<h2 id="templates-and-examples">Templates and examples</h2>
+<p>
+  <code>examples/</code> ships three shapes: <code>qa-ticket.md</code> (no <code>repo:</code>,
+  answered in place), <code>pr-ticket.md</code> (the full plan shape above), and
+  <code>amend-ticket.md</code> (<code>amends_pr:</code> — new commits on an existing PR branch,
+  with an amend-mode strict Notes block that forbids rebasing, squashing, and force-pushes).
+  <code>templates/plain/task.md</code> and <code>task-code.md</code> are blank starters in plain
+  Markdown; <code>templates/task.md</code> and <code>task-code.md</code> are the same with Obsidian
+  Templater date/title placeholders for vault-based dispatch. The bundled junco-dispatch skill
+  scaffolds tickets to this exact shape and submits them for you.
+</p>
+      </main>
+    </div>
+
+    <footer class="wrap-docs foot">
+      <p>
+        <a href="https://github.com/ironforgesoftware/junco/blob/main/LICENSE">MIT</a> ·
+        <a href="https://github.com/ironforgesoftware/junco">GitHub</a> ·
+        <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a> ·
+        <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a>
+      </p>
+      <p class="stamp">
+        verified against junco 0.8.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/tickets.md">docs/tickets.md</a> ·
+        <a href="https://github.com/ironforgesoftware/junco-site/edit/main/docs-src/pages/tickets.html">edit this page</a>
+      </p>
+    </footer>
+
+    <script type="module" src="/docs/docs.js"></script>
+  </body>
+</html>

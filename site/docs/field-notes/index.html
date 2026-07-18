@@ -66,6 +66,18 @@
         </ul>
       </section>
       <section>
+        <p class="group">guides</p>
+        <ul>
+        <li><a href="/docs/github-loop/">The GitHub loop</a></li>
+        <li><a href="/docs/tickets/">Tickets &amp; the inbox</a></li>
+        <li><a href="/docs/assess/">Assess</a></li>
+        <li><a href="/docs/analyze/">Analyze</a></li>
+        <li><a href="/docs/dashboard/">The dashboard</a></li>
+        <li><a href="/docs/operations/">Operations</a></li>
+        <li><a href="/docs/bot-account/">Bot account</a></li>
+        </ul>
+      </section>
+      <section>
         <p class="group">reference</p>
         <ul>
         <li><a href="/docs/cli/">CLI</a></li>
@@ -135,8 +147,8 @@
   <li><code>metrics.totalCostUsd</code> resets on restart; <code>spend.todayUsd</code>
     persists until midnight. They legitimately diverge — the ledger is the one the budget cap
     reads.</li>
-  <li>Ctrl-C is a ladder: once finishes the in-flight ticket then exits; twice aborts the
-    session and salvages commits; a third is a hard exit.</li>
+  <li>Ctrl-C escalates: the first requests a graceful stop that drains the in-flight ticket;
+    the second force-stops, aborting the session and salvaging its commits.</li>
 </ul>
 
 <h2 id="recipes">Recipes</h2>

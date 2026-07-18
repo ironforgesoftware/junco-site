@@ -1,0 +1,63 @@
+<!--meta {"title": "Operations", "description": "Running the worker: daemon lifecycle, service files, health endpoints, the provider gate, spend, updates, recovery.", "slug": "operations", "navLabel": "Operations", "source": "docs/operations.md", "keywords": ["daemon", "launchd", "systemd", "health endpoint", "provider gate", "spend cap", "logs", "transcripts", "recovery", "updates"]} -->
+<p>The worker is one daemon plus a CLI around it. This page covers running and recovering it; the pipeline itself is in <a href="/docs/how-it-works/">How it works</a>.</p>
+
+<h2 id="daemon-lifecycle">Daemon lifecycle</h2>
+<p>Bare <code>junco</code> opens the guided setup on a first run (no config yet); otherwise it is <code>start</code>. <code>junco start</code> runs the daemon in the foreground and polls forever; <code>--once</code> processes one task then exits. It acquires a single-instance lock, <code>worker.lock</code>, next to <code>config.json</code> — a second instance exits 0 rather than erroring, so a supervisor never enters a restart loop after a double start. <code>junco run-once</code> processes one available task and exits, taking no lock — safe for cron and dev use alongside a running daemon.</p>
+<pre class="cmd">junco start
+junco start --once
+junco run-once</pre>
+<p>Stopping a foreground daemon: the first Ctrl-C finishes in-flight tickets, then exits — a graceful stop drains work. A second Ctrl-C force-stops: the running session aborts, and commits already made are salvaged. <code>worker.maxConcurrent</code> (default 1) runs that many tickets in parallel; tickets targeting the same repo always serialize.</p>
+
+<h2 id="running-as-a-service">Running as a service</h2>
+<p><code>junco service</code> renders a platform-native service file to stdout — <code>--platform launchd</code> (macOS default) or <code>systemd</code>. Pipe it to the right location and load it (<a href="/docs/cli/#service">flags</a>). Rendered units size their stop timeout to the maximum ticket timeout, so a draining worker is not SIGKILLed mid-ticket.</p>
+<pre class="cmd">junco service --platform launchd --config ~/junco/config.json \
+  &gt; ~/Library/LaunchAgents/com.junco.worker.plist
+launchctl load ~/Library/LaunchAgents/com.junco.worker.plist</pre>
+<pre class="cmd">junco service --platform systemd --config ~/junco/config.json \
+  &gt; ~/.config/systemd/user/junco.service
+systemctl --user daemon-reload
+systemctl --user enable --now junco</pre>
+<p>The daemon reads config and code once at startup. To pick up changes, use <a href="/docs/cli/#restart"><code>junco restart</code></a> — not SIGTERM: with launchd's <code>SuccessfulExit=false</code> keep-alive, a graceful exit stays down. <code>restart</code> finds the launchd plist or systemd user unit referencing your config, validates the config first (refusing to bounce the daemon onto a config it can't parse), kicks the unit with the platform-correct verb, and confirms the pid changed before reporting success.</p>
+
+<h2 id="watching-it">Watching it</h2>
+<p><code>junco status</code> is the one-glance view: daemon pid and uptime, endpoint readiness, in-flight tickets, processed counts, queue sizes. <code>junco list [inbox|processing|done|failed]</code> lists tickets newest-first per queue box. <code>junco logs -f</code> follows the worker log (<a href="/docs/cli/#logs">flags</a>) — structured JSON on stdout, human-readable on a TTY, also written to <code>&lt;dataDir&gt;/worker.log</code> and rotated at 10 MB; <code>observability.logLevel: "debug"</code> for verbose output.</p>
+<pre class="cmd">junco status
+junco logs -f
+junco list failed</pre>
+<pre class="out">09:31:05 INFO  claimed {"src":"inbox/gh-acme-reef-api-52.md","dst":"processing/gh-acme-reef-api-52.md"}
+09:42:58 INFO  [gh-acme-reef-api-52] critic: pass
+09:43:56 INFO  [gh-acme-reef-api-52] opened PR https://github.com/acme/reef-api/pull/57</pre>
+<p>Every agent session appends its event stream — turns, tool calls, results, no token deltas — to <code>&lt;dataDir&gt;/transcripts/&lt;ticket-id&gt;.jsonl</code>: the debugging record for failed runs. Disable with <code>observability.transcripts = false</code>. All state resolves under one <code>dataDir</code> root; configs still carrying legacy path keys unify with <a href="/docs/cli/#data-migrate"><code>junco data migrate</code></a>.</p>
+
+<h2 id="health-server">The health server</h2>
+<p>With <code>observability.healthEnabled = true</code>, the daemon serves HTTP on <code>healthHost:healthPort</code>, default <code>127.0.0.1:8787</code>. <code>GET /live</code> answers liveness (status, pid, uptime). <code>GET /ready</code> answers readiness — a latched or backed-off provider gate forces a 503 with the gate's reason, regardless of the endpoint probe. <code>GET /health</code> returns full metrics: uptime, poll count, in-flight tickets, live per-ticket progress, task counts by status, token and duration totals, plus the <code>gate</code> and <code>spend</code> fields.</p>
+<pre class="cmd">curl http://127.0.0.1:8787/health | jq .</pre>
+<div class="warn"><b>warn —</b> the health server has no authentication. A non-loopback <code>observability.healthHost</code> exposes ticket ids, live progress, and metrics to the network unauthenticated. Keep it on <code>127.0.0.1</code> unless the interface is trusted — see <a href="/docs/security/">Security</a>.</div>
+
+<h2 id="provider-gate">The provider gate</h2>
+<p>junco classifies inference-endpoint failures and, for the ones an operator has to fix, pauses ticket claiming instead of burning tickets against a provider that will keep saying no. <code>/health</code> carries <code>gate</code> as <code>{state, reason, since, until}</code>.</p>
+<div class="scroll"><table>
+<thead><tr><th>State</th><th>Kind</th><th>Clears on</th></tr></thead>
+<tbody>
+<tr><td><code>ok</code></td><td>default</td><td>—</td></tr>
+<tr><td><code>auth_error</code>, <code>quota_exhausted</code>, <code>misconfig</code></td><td>latch</td><td>a successful session, a config hot-reload apply, or a daemon restart — never on its own</td></tr>
+<tr><td><code>rate_limited</code></td><td>backoff</td><td>auto-expires at <code>until</code>; the delay doubles on each further rate-limit report, capped at 900 s</td></tr>
+<tr><td><code>outage_backoff</code></td><td>backoff</td><td>auto-expires after one non-doubling <code>worker.retryBackoffSeconds</code> interval</td></tr>
+<tr><td><code>budget_exhausted</code></td><td>hybrid</td><td>local midnight, or an operator raising the cap via config hot-reload; a successful session does <em>not</em> clear it</td></tr>
+</tbody></table></div>
+<p>A latch is never downgraded by a later rate-limit or outage report. Tickets that trip the gate return to the inbox with a fresh <code>not_before</code> and their retry budget untouched — provider faults never burn a ticket's retries. The dashboard's daemon panel shows the gate as a colored dot (red for a latch, yellow for a backoff) with a reason line.</p>
+
+<h2 id="spend">Spend</h2>
+<p><code>worker.dailyBudgetUsd</code> (default 0, disabled) caps USD spend per local calendar day; at the cap the gate enters <code>budget_exhausted</code>. Every completed session's actual resolved cost — Q&amp;A, assess, analyze, and PR-flow's main run, critic pass, and corrective re-dispatch — is recorded in the per-day ledger (<code>&lt;dataDir&gt;/spend.json</code>) whether or not a cap is set. <code>/health</code> carries <code>spend</code> as <code>{todayUsd, dailyBudgetUsd}</code>, and the dashboard's daemon panel prints a matching line. Cap details: <a href="/docs/config/">Configuration</a>.</p>
+<div class="note"><b>note —</b> <code>metrics.totalCostUsd</code> and <code>spend.todayUsd</code> legitimately diverge: <code>totalCostUsd</code> accumulates only when a ticket reaches a terminal state and resets on daemon restart; the ledger records every session's cost immediately — once per attempt for a requeuing ticket — persists across restarts, and resets only at local midnight.</div>
+
+<h2 id="updates">Updates</h2>
+<p><code>updateCheck</code> (default true) runs a best-effort daily check against the npm registry, surfaced in the dashboard header, <code>junco status</code>, and <code>junco doctor</code>. It is CLI/TUI-side only — the daemon never phones home. <code>junco update</code> installs the latest release and drain-restarts the supervised daemon. Opt out with <code>"updateCheck": false</code>.</p>
+
+<h2 id="recovery-playbook">Recovery playbook</h2>
+<p><b>Stuck in <code>processing/</code>.</b> A daemon crash mid-run (power loss, OOM) strands a ticket; the next startup detects orphaned claims and recovers them automatically. To force it, move the file back — result frontmatter written by the worker is stripped, the original frontmatter preserved:</p>
+<pre class="cmd">mv &lt;dataDir&gt;/queue/processing/&lt;ticket.md&gt; &lt;dataDir&gt;/queue/inbox/</pre>
+<p><b>Failed tickets.</b> <code>junco retry &lt;name…|--all&gt;</code> moves them back to the inbox for a fresh run — claim stamp, appended result blocks, and retry bookkeeping stripped. <b>GitHub backlog.</b> When GitHub is unreachable, labels, comments, and PR pushes queue in a durable outbox — FIFO replay, idempotent, dead-lettered after 3 attempts. <code>junco outbox</code> lists it (operation type, target, age, attempts, dead-letters); <code>flush</code> pushes now instead of waiting for the next sweep.</p>
+<pre class="cmd">junco retry --all
+junco outbox flush</pre>
+<p><b>Transient failures</b> requeue automatically with backoff, up to <code>maxTransientRetries</code>; deferred tickets show their not-before time in the queue view. Provider-gate faults never count against a ticket's retry budget.</p>

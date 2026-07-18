@@ -8,6 +8,16 @@
 
 - [Start here](https://junco.ironforgesoftware.com/docs/): What junco is, a sixty-second setup, and a map of these docs.
 
+## guides
+
+- [The GitHub loop](https://junco.ironforgesoftware.com/docs/github-loop/): Label an issue junco: the daemon plans as an editable comment, executes on approval, and opens a draft PR.
+- [Tickets & the inbox](https://junco.ironforgesoftware.com/docs/tickets/): Markdown tickets with YAML frontmatter: flavors, the plan shape that avoids loops, plan-lint, submission.
+- [Assess](https://junco.ironforgesoftware.com/docs/assess/): junco assess audits a repo, parks findings for review, and files only what a human confirms as GitHub issues.
+- [Analyze](https://junco.ironforgesoftware.com/docs/analyze/): junco analyze investigates one issue read-only and parks a comment draft; only the confirmed post writes outward.
+- [The dashboard](https://junco.ironforgesoftware.com/docs/dashboard/): The fullscreen terminal UI: GITHUB and LOCAL modes, panes and key bindings, the command palette, repo watching.
+- [Operations](https://junco.ironforgesoftware.com/docs/operations/): Running the worker: daemon lifecycle, service files, health endpoints, the provider gate, spend, updates, recovery.
+- [Bot account](https://junco.ironforgesoftware.com/docs/bot-account/): A dedicated GitHub identity for the daemon: setup, per-repo grants, doctor checks, migration caveats.
+
 ## reference
 
 - [CLI reference](https://junco.ironforgesoftware.com/docs/cli/): Every junco command and subcommand: synopsis, flags, examples.
