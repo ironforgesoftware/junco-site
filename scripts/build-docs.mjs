@@ -493,6 +493,34 @@ export function buildPages(outRoot) {
   const indexPath = join(outRoot, "search-index.json");
   writeFileSync(indexPath, `${buildSearchIndexJson(sections)}\n`);
   written.push(indexPath);
+
+  // llms.txt — machine-readable docs index; deployed at the site root.
+  // buildPages writes it inside outRoot; the build CLI and the drift check
+  // both map "llms.txt" to site/llms.txt.
+  const lines = [
+    "# junco documentation",
+    "",
+    "> junco is a harness-agnostic task-queue worker that turns Markdown tickets and",
+    "> labeled GitHub issues into draft pull requests by driving a coding agent on",
+    "> your own machine, against any OpenAI-compatible inference endpoint.",
+    "",
+  ];
+  for (const group of nav.groups) {
+    const groupPages = group.slugs
+      .map((slug) => pages.find((p) => p.meta.slug === slug))
+      .filter(Boolean);
+    if (!groupPages.length) continue;
+    lines.push(`## ${group.label}`, "");
+    for (const p of groupPages) {
+      lines.push(
+        `- [${p.meta.title}](https://junco.ironforgesoftware.com${pageUrl(p.meta.slug)}): ${p.meta.description}`
+      );
+    }
+    lines.push("");
+  }
+  const llmsPath = join(outRoot, "llms.txt");
+  writeFileSync(llmsPath, `${lines.join("\n").trimEnd()}\n`);
+  written.push(llmsPath);
   return written;
 }
 
@@ -609,7 +637,7 @@ export function runCheck() {
   const drifted = [];
   for (const b of built) {
     const rel = b.slice(tmp.length + 1);
-    const committed = join(outRoot, rel);
+    const committed = rel === "llms.txt" ? join(ROOT, "site", "llms.txt") : join(outRoot, rel);
     if (!existsSync(committed)) drifted.push(`${rel} (missing — rebuild not committed)`);
     else if (readFileSync(b, "utf8") !== readFileSync(committed, "utf8")) drifted.push(rel);
   }
@@ -706,8 +734,13 @@ if (invokedDirectly) {
   const mode = process.argv[2] ?? "build";
   if (mode === "--extract") extract();
   else if (mode === "build") {
-    const written = buildPages(join(ROOT, "site", "docs"));
-    console.log(`built ${written.length} page(s)`);
+    const outRoot = join(ROOT, "site", "docs");
+    const written = buildPages(outRoot);
+    // llms.txt deploys at the site root, not under /docs/
+    const emitted = join(outRoot, "llms.txt");
+    writeFileSync(join(ROOT, "site", "llms.txt"), readFileSync(emitted, "utf8"));
+    rmSync(emitted);
+    console.log(`built ${written.length} file(s)`);
   }
   else if (mode === "--check") runCheck();
   else if (mode === "--release") runRelease();

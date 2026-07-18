@@ -1,10 +1,13 @@
 # junco-site
 
-The one-page site for [junco](https://github.com/ironforgesoftware/junco), served at
-[junco.ironforgesoftware.com](https://junco.ironforgesoftware.com).
+The site for [junco](https://github.com/ironforgesoftware/junco), served at
+[junco.ironforgesoftware.com](https://junco.ironforgesoftware.com): a one-page landing plus
+the `/docs/` section.
 
-Static folder, no build step. Everything that deploys lives in `site/`; the GitHub Pages
-workflow (`.github/workflows/pages.yml`) publishes it on every push to `main`.
+Static folder, no build step at deploy time. Everything that deploys lives in `site/`; the
+GitHub Pages workflow (`.github/workflows/pages.yml`) publishes it verbatim on every push to
+`main`. Docs pages are generated locally by `scripts/build-docs.mjs` and committed (see
+"Docs authoring" below) — the same generate-and-commit pattern as the og-image and fonts.
 
 ## Local preview
 
@@ -56,17 +59,29 @@ Emoji and hex gates:
 
 ```bash
 python3 - <<'EOF'
-import re
+import re, glob
 pat = re.compile('[\U0001F000-\U0001FAFF☀-➿⬀-⯿️⌚⌛⤴⤵⏩-⏺]')
 allowed = set('✓✗')
+files = (['site/index.html','site/styles.css','og.html',
+          'site/docs/docs.css','site/docs/docs.js']
+         + glob.glob('site/docs/**/index.html', recursive=True)
+         + glob.glob('docs-src/**/*.html', recursive=True))
 bad = []
-for f in ['site/index.html','site/styles.css','og.html']:
+for f in files:
     for i, line in enumerate(open(f), 1):
         bad += [(f,i,c) for c in pat.findall(line) if c not in allowed]
 print(bad if bad else 'emoji gate OK'); assert not bad
 EOF
-grep -n '#[0-9a-fA-F]\{3,8\}\b' site/index.html   # expected: ONLY the two theme-color metas
+grep -rn '#[0-9a-fA-F]\{3,8\}\b' site/ --include='*.html'  # expected: ONLY theme-color metas (two per page)
 grep -n '#[0-9a-fA-F]\{6\}' site/styles.css       # expected: hits only inside :root, [data-theme=dark], the dark @media, and @media print blocks — verify by eye
+grep -n '#[0-9a-fA-F]\{3,8\}\b' site/docs/docs.css  # expected: 1 (no matches — docs.css is var()-only)
+```
+
+Docs coverage + drift gate (fails naming names: undocumented command/flag, missing example,
+orphaned prose, stale search index, stamp/version mismatch, gate violation in rendered docs):
+
+```bash
+node scripts/build-docs.mjs --check
 ```
 
 Word count gate (≤450):
@@ -86,8 +101,34 @@ EOF
 HTML validation:
 
 ```bash
-npx -y html-validate site/index.html   # 0 errors
+npx -y html-validate 'site/**/*.html'   # 0 errors
 ```
+
+## Docs authoring
+
+The docs under `site/docs/` are generated — never edit them by hand (the drift gate will
+catch it). Sources live in `docs-src/`:
+
+- `pages/<slug>.html` — one fragment per page: a `<!--meta {…} -->` first line (title,
+  description, slug, navLabel, source, optional keywords) followed by body HTML.
+- `cli/<command-slug>.html` — per-command prose (description, examples in
+  `<pre class="cmd">`, callouts). The coverage gate requires one per command in
+  `extracted/surface.json`, each with at least one example.
+- `extracted/*.json` — committed snapshots of junco's self-described surface. Regenerate
+  with `node scripts/build-docs.mjs --extract` (runs the installed `junco`; informational
+  commands only; `config list` reads `blank-config.json` so real settings never land in a
+  snapshot).
+- `render-substitutions.json` — reviewed map applied to snapshot text at render time so
+  junco's own strings pass this repo's gates.
+
+Build: `node scripts/build-docs.mjs` (writes `site/docs/`, `site/search-index.json` under
+docs, and `site/llms.txt`). Verify: `--check`. Voice rules: same banned-word/vendor/emoji
+gates as the landing page; examples copyable without a `$ ` prefix; warnings reserved for
+fails-closed/data-loss behavior.
+
+Per junco release: `junco update`, then `--extract` (the snapshot diff is the to-do list),
+write the prose stubs `--check` lists, run `--release` for the CHANGELOG-mapping checklist,
+rebuild, run all gates, push once.
 
 ## DNS
 

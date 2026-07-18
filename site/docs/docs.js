@@ -72,7 +72,8 @@ function initSearch() {
 
   const hint = document.createElement("span");
   hint.className = "hint";
-  hint.textContent = navigator.platform.startsWith("Mac") ? "⌘K" : "ctrl+K";
+  // plain text, not the ⌘ glyph: U+2318 is outside the shipped font subset
+  hint.textContent = navigator.platform.startsWith("Mac") ? "cmd K" : "ctrl K";
   input.parentNode.appendChild(hint);
 
   let engine = null;
