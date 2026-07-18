@@ -166,7 +166,7 @@ Exit 1 with a named list per category; exit 0 silent otherwise.
 - Headings sentence-case, h2/h3 with kebab-case ids. Commands/paths/labels in `<code>`.
 - Examples: `<pre class="cmd">` copyable, NO `$ ` prefix, common-case args only;
   output in `<pre class="out">` (not copyable). Lead sections with examples where sensible.
-- Callouts: `<aside class="note">`/`<aside class="warn">` starting
+- Callouts: `<div class="note">`/`<div class="warn">` starting
   `<b>note —</b>`/`<b>warn —</b>`; ≤5 per page; warnings reserved for data-loss/security/
   fails-closed behavior.
 - Tips live next to the thing they qualify; cross-cutting recipes go to field-notes.

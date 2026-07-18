@@ -1,0 +1,82 @@
+<!--meta {"title": "Security model", "description": "junco's trust boundaries: inbox, OS sandbox, approval gate, untrusted issue text, and what leaves the machine.", "slug": "security", "navLabel": "Security model", "source": "docs/operations.md", "keywords": ["security model", "code execution", "sandbox", "Seatbelt", "bubblewrap", "approval gate", "untrusted input", "loopback"]} -->
+<p>junco runs a coding agent with bash and file tools on your
+machine, then writes to GitHub as you. This page names each trust
+boundary; the mechanics are in
+<a href="/docs/how-it-works/">how junco works</a>.</p>
+
+<h2 id="code-execution-boundary">The inbox is a code-execution boundary</h2>
+<p>Whatever lands in <code>inbox/</code> runs: the agent gets bash
+and file tools against the ticket, and a PR-flow ticket's
+<code>## Verification</code> blocks execute as your user. Whoever
+writes a ticket acts as you.</p>
+<div class="warn"><b>warn —</b> keep the inbox on a local disk you
+own. Never point it at a synced or shared folder others write to —
+write access to the inbox is code execution as your account.</div>
+<p><code>git.allowedRepoRoots</code> confines PR-flow tickets to
+approved checkout locations; the default <code>[]</code> means any
+path on disk:</p>
+<pre class="cmd">{ "git": { "allowedRepoRoots": ["~/code"] } }</pre>
+
+<h2 id="the-sandbox">The sandbox</h2>
+<p>On by default, agent tool execution is confined with OS-level
+isolation — Seatbelt on macOS, bubblewrap on Linux; no container,
+works offline. bash runs with a scrubbed environment (credentials
+and API keys removed) and no network; the per-ticket
+<code>network: true</code> frontmatter opt-in widens egress for
+one ticket only. The in-process file tools — read, write, edit,
+grep — run under a path-jail to the worktree, so writes land
+nowhere else. junco performs every <code>git push</code> and
+<code>gh pr create</code> itself; the agent never holds a token,
+and the env scrub keeps credentials off the agent plane.</p>
+<p>The sandbox fails closed: a missing backend binary stops
+execution rather than running unconfined. <code>junco doctor</code>
+preflights it. Linux needs <code>bubblewrap</code> installed — or
+an explicit opt-out via <code>sandbox.backend: "none"</code> or
+<code>sandbox.enabled: false</code>. Policy levers:
+<code>junco config list</code>; see
+<a href="/docs/config/">configuration</a>.</p>
+
+<h2 id="the-approval-gate">The approval gate</h2>
+<p>In GitHub mode, nothing runs on a labeled issue until the sweep
+verifies the labeler holds write access — a failed check means no
+dispatch. The plan posts as an ordinary, editable issue comment;
+execution requires <code>junco:approved</code> applied by a
+verified write-access collaborator, and the approval must postdate
+the plan comment's timestamp — a stale approval cannot authorize a
+later plan. Execution-ticket frontmatter is built by the bridge,
+never from model output or issue text, and any verification error
+stops the dispatch: the gate fails closed. Full lifecycle in
+<a href="/docs/github-loop/">the GitHub loop</a>.</p>
+<div class="warn"><b>warn —</b> <code>github.requireApproval:
+false</code> executes as soon as the plan comment exists — the
+labeler's verified write access becomes the only human gate. Leave
+it <code>true</code> unless every write-access collaborator is
+trusted to authorize execution by labeling alone.</div>
+
+<h2 id="untrusted-input">Untrusted input</h2>
+<p>Applying the trigger label vouches for the issue: its title and
+body become the agent's task. Text written by outside reporters is
+untrusted input — junco's dispatch and analyze prompts frame
+external issue text as data, not instructions, but framing is not
+containment. The durable safeguards sit on the output side: every
+PR opens as a draft, assess findings park until
+<code>junco assess file</code>, analyze comments park until
+<code>junco analyze post</code>. Review the draft PR's diff before
+marking it ready — the diff is the review surface, not the issue
+thread. Flavors in <a href="/docs/tickets/">tickets</a>.</p>
+
+<h2 id="what-leaves-the-machine">What leaves the machine</h2>
+<p>Two flows leave the machine: traffic to the configured
+OpenAI-compatible inference endpoint (local or hosted), and GitHub
+writes under your authenticated <code>gh</code> identity or the
+dedicated bot account. No third service sits in the loop. The
+CLI's best-effort daily update check queries the npm registry
+(<code>updateCheck: false</code> opts out); the daemon itself
+never phones home. The health server binds loopback —
+<code>127.0.0.1:8787</code> — by default.</p>
+<div class="warn"><b>warn —</b> a non-loopback
+<code>observability.healthHost</code> serves <code>/health</code>
+with no authentication: in-flight ticket ids, per-ticket progress,
+and daemon metrics become readable to the network.</div>
+<p>Endpoints, service supervision, and troubleshooting are in
+<a href="/docs/operations/">operations</a>.</p>

@@ -1,0 +1,4 @@
+<p>Restarts the supervised daemon so it picks up config and code changes. It validates the config first — refusing to bounce the daemon onto a config it can't parse — then finds the launchd plist / systemd user unit referencing the config path, kicks it with the platform-correct verb (<code>launchctl kickstart -k</code> / <code>systemctl --user restart</code>, the verbs that relaunch unconditionally), and confirms the pid changed before reporting success.</p>
+<pre class="cmd">junco restart</pre>
+<div class="note"><b>note —</b> a plain SIGTERM is not a restart: with launchd's <code>SuccessfulExit=false</code> keep-alive, a graceful exit stays down.</div>
+<p class="see">see also: <a href="#service">service</a> · <a href="#update">update</a> · <a href="/docs/operations/">operations guide</a></p>

@@ -1,0 +1,48 @@
+<!--meta {"title": "Analyze", "description": "junco analyze investigates one issue read-only and parks a comment draft; only the confirmed post writes outward.", "slug": "analyze", "navLabel": "Analyze", "source": "docs/analyze.md", "keywords": ["analyze", "issue investigation", "comment draft", "review", "sanitization", "disclosure footer", "etiquette", "outbox"]} -->
+<p>
+  <code>junco analyze</code> points at a single existing issue — owned repo or not — and
+  investigates the codebase against it: root cause, <code>file:line</code> evidence, reproduction
+  steps, a suggested fix direction. Nothing posts; the result parks as a draft.
+</p>
+
+<h2 id="the-flow">The flow</h2>
+<pre class="cmd">junco analyze acme/reef-api#52
+junco analyze review analyze-acme-reef-api-52
+junco analyze edit analyze-acme-reef-api-52
+junco analyze post analyze-acme-reef-api-52</pre>
+<p>
+  The command resolves the reference (a watched repo maps to its clone; an unwatched one is
+  auto-forked into a managed clone and watch-listed) and queues a machine-owned
+  <a href="/docs/tickets/">ticket</a>; the daemon investigates read-only, extracts the drafted
+  comment, sanitizes it, and parks it. Draft ids carry no timestamp
+  (<code>analyze-&lt;owner&gt;-&lt;repo&gt;-&lt;n&gt;</code>), so there is exactly one pending
+  draft per issue — re-analysis overwrites it, and re-queuing while the same issue's ticket still
+  waits in the inbox fails loud rather than clobbering. <code>review</code> previews exactly what
+  would post, footer included; <code>edit</code> opens the draft in <code>$VISUAL</code>/<code>$EDITOR</code>;
+  <a href="/docs/cli/#analyze-post"><code>post</code></a> is the confirm gate — the only outward
+  write in the whole flow (the ticket carries no <code>github:</code> provenance block, so
+  lifecycle labels and finalize comments never touch the issue). The disclosure footer is a flag
+  composed at post time, not text in the draft; <code>--no-footer</code> drops it.
+</p>
+
+<h2 id="sanitization">Sanitization</h2>
+<p>
+  The issue text is untrusted input, and the draft becomes a public comment under your account — so
+  it is sanitized before parking: HTML comments stripped (closing off marker spoofing, where a
+  hostile issue steers the agent into emitting a fake <code>junco:finding</code>-shaped marker that
+  could poison the assess dedup scan), control characters stripped, length capped at 60,000
+  characters. An edited draft is re-sanitized on save; a run producing no fenced draft, or an empty
+  one after sanitizing, finalizes to <code>failed/</code> — nothing parks.
+</p>
+
+<h2 id="etiquette">Etiquette</h2>
+<div class="warn"><b>warn —</b> on a repo you don't own, the comment posts under your own
+<code>gh</code> identity on someone else's thread — it is your voice. Read the draft before
+posting, the same way a hand-written comment gets read before submitting: no promised timelines,
+no unreviewed prose calling out someone's issue.</div>
+<p>
+  The human gate is the control; the default-on footer is the backstop, telling readers the comment
+  was agent-drafted and human-reviewed, not auto-posted. Offline, the post queues durably to the
+  <a href="/docs/operations/">outbox</a> and drains on the next flush or bridge sweep; the draft
+  archives to <code>posted/</code> either way, so one parked entry never posts twice.
+</p>

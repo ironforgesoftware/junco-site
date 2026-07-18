@@ -1,0 +1,5 @@
+<p>Renders a platform-native service file to stdout — a launchd plist or a systemd unit, defaulting to launchd on macOS and systemd elsewhere; <code>--platform launchd|systemd</code> overrides. Pipe it to the right location and load it; once supervised, <a href="#restart">restart</a> knows how to bounce the daemon.</p>
+<pre class="cmd">junco service --platform launchd &gt; ~/Library/LaunchAgents/com.junco.worker.plist</pre>
+<pre class="cmd">junco service --platform systemd &gt; ~/.config/systemd/user/junco.service</pre>
+<div class="note"><b>note —</b> after writing the file: <code>launchctl load</code> then <code>launchctl start com.junco.worker</code> on macOS; <code>systemctl --user daemon-reload</code> then <code>systemctl --user enable --now junco</code> on Linux.</div>
+<p class="see">see also: <a href="#start">start</a> · <a href="#restart">restart</a> · <a href="/docs/operations/">operations guide</a></p>

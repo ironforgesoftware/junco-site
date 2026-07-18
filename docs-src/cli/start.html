@@ -1,0 +1,5 @@
+<p>Runs the daemon in the foreground: it polls the inbox forever, claiming and processing tickets, until Ctrl-C. On startup it acquires a single-instance lock (<code>worker.lock</code>, next to <code>config.json</code>); if another instance already holds the lock it exits 0 instead of erroring, so a supervisor (launchd, systemd) never enters a restart loop after a double start. <code>--once</code> processes one task and exits.</p>
+<pre class="cmd">junco start</pre>
+<pre class="cmd">junco start --once</pre>
+<div class="note"><b>note —</b> by default (<code>worker.startupWait = true</code>) startup blocks and retries every 30 s until the inference endpoint responds; set it to <code>false</code> to start immediately and fail individual tickets while the endpoint is down.</div>
+<p class="see">see also: <a href="#run-once">run-once</a> · <a href="#service">service</a> · <a href="#restart">restart</a> · <a href="/docs/operations/">operations guide</a></p>

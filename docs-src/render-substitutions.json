@@ -1,0 +1,4 @@
+{
+  "openai/gpt-4o-mini": "<provider>/<model-name>",
+  "(e.g. ANTHROPIC_API_KEY)": "(e.g. <PROVIDER>_API_KEY)"
+}

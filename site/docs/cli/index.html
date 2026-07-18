@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CLI reference — junco docs</title>
+    <meta name="description" content="Every junco command and subcommand: synopsis, flags, examples.">
+    <link rel="canonical" href="https://junco.ironforgesoftware.com/docs/cli/">
+    <meta property="og:title" content="CLI reference — junco docs">
+    <meta property="og:description" content="Every junco command and subcommand: synopsis, flags, examples.">
+    <meta property="og:url" content="https://junco.ironforgesoftware.com/docs/cli/">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://junco.ironforgesoftware.com/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f4f5">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#14171d">
+    <meta name="color-scheme" content="light dark">
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/CommitMono-400.woff2" crossorigin>
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/CommitMono-700.woff2" crossorigin>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/docs/docs.css">
+    <script>
+      (function () {
+        var t = localStorage.getItem("theme");
+        if (t) document.documentElement.setAttribute("data-theme", t);
+        document.documentElement.classList.add("js");
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="wrap-docs bar">
+      <a class="wordmark" href="/"
+        ><svg class="mark" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true">
+          <circle fill="currentColor" cx="13" cy="16" r="12"></circle>
+          <path fill="var(--accent)" d="M21 10 L32 16 L21 22 Z"></path></svg
+        >junco</a
+      >
+      <div class="search" role="search">
+        <input id="docs-search" type="search" placeholder="search docs" autocomplete="off"
+          role="combobox" aria-expanded="false" aria-controls="search-results"
+          aria-autocomplete="list" aria-label="Search docs">
+        <!-- [html-validate-disable-next prefer-native-element: ARIA combobox popup; a native select cannot host result links] -->
+        <ul id="search-results" role="listbox" aria-label="Search results" hidden></ul>
+      </div>
+      <nav aria-label="Site">
+        <a href="/docs/" aria-current="true">docs</a>
+        <a href="https://github.com/ironforgesoftware/junco">GitHub</a>
+        <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a>
+        <button id="theme-toggle" type="button" aria-pressed="false">dark</button>
+      </nav>
+    </header>
+
+    <div class="wrap-docs docs-grid">
+      <details class="side" open>
+        <summary>contents</summary>
+        <nav aria-label="Docs">
+      <section>
+        <p class="group">start</p>
+        <ul>
+        <li><a href="/docs/">Start here</a></li>
+        <li><a href="/docs/how-it-works/">How junco works</a></li>
+        <li><a href="/docs/security/">Security model</a></li>
+        </ul>
+      </section>
+      <section>
+        <p class="group">guides</p>
+        <ul>
+        <li><a href="/docs/github-loop/">The GitHub loop</a></li>
+        <li><a href="/docs/tickets/">Tickets &amp; the inbox</a></li>
+        <li><a href="/docs/assess/">Assess</a></li>
+        <li><a href="/docs/analyze/">Analyze</a></li>
+        <li><a href="/docs/dashboard/">The dashboard</a></li>
+        <li><a href="/docs/operations/">Operations</a></li>
+        <li><a href="/docs/bot-account/">Bot account</a></li>
+        </ul>
+      </section>
+      <section>
+        <p class="group">reference</p>
+        <ul>
+        <li><a aria-current="page" href="/docs/cli/">CLI</a></li>
+        <li><a href="/docs/config/">Configuration</a></li>
+        <li><a href="/docs/ticket-schema/">Ticket schema</a></li>
+        </ul>
+      </section>
+      <section>
+        <p class="group">field notes</p>
+        <ul>
+        <li><a href="/docs/field-notes/">Tips, recipes &amp; FAQ</a></li>
+        </ul>
+      </section>
+        </nav>
+      </details>
+      <main id="main">
+        <h1>CLI reference</h1>
+<p>
+  Every command the installed junco answers to, generated from its own help surface at the
+  version stamped below and annotated by hand. Synopsis conventions:
+  <code>&lt;required&gt;</code>, <code>[optional]</code>, <code>a|b</code> alternatives.
+  Global flags work on every command; per-command flags are covered with their command.
+</p>
+<h2 id="global-flags">global flags</h2>
+<dl class="flags">
+  <div><dt><code>--config</code> <span class="ph">&lt;path&gt;</span></dt><dd>Path to config.json <span class="default">default ./config.json if present, else ~/.config/junco/config.json</span></dd></div>
+  <div><dt><code>--once</code></dt><dd>(<code>start</code>) Process one task then exit</dd></div>
+  <div><dt><code>--platform</code> <span class="ph">&lt;name&gt;</span></dt><dd>(<code>service</code>) Target platform: launchd | systemd <span class="default">default launchd on macOS, systemd elsewhere</span></dd></div>
+  <div><dt><code>--help, -h</code></dt><dd>Show this help message</dd></div>
+  <div><dt><code>--version</code></dt><dd>Print junco's version and exit</dd></div>
+</dl>
+<h2 id="junco"><code>junco</code></h2>
+<pre class="synopsis">junco</pre>
+<p>
+  The bare command is the daily driver: on an interactive terminal it makes sure the
+  supervised daemon is running, then opens the dashboard. With no config yet, it opens the
+  guided setup walkthrough instead. It never starts a daemon on a non-interactive terminal —
+  services and scripts use <code>junco start</code>.
+</p>
+<pre class="cmd">junco</pre>
+<p class="see">see also: <a href="#start">start</a> · <a href="#dashboard">dashboard</a> ·
+<a href="#config-init">config init</a></p>
+<h2 id="analyze"><code>junco analyze</code></h2>
+<pre class="synopsis">junco analyze &lt;owner/repo#N|url&gt;</pre>
+<p>Resolves one GitHub issue — <code>owner/repo#N</code> or a full issue URL; there is no local-path form — and queues a read-only investigation ticket: root cause, <code>file:line</code> evidence, reproduction steps, a suggested fix direction. The daemon <b>parks</b> the result as a comment draft, sanitized before it lands (HTML comments and control characters stripped, capped at 60,000 characters); nothing posts until the separate <code>junco analyze post</code> confirm. Works on owned and unowned repos alike — an unwatched repo is auto-forked, cloned into a managed directory, and added to the watchlist. One pending draft per issue: re-analyzing overwrites the old draft, and queuing while the same issue's ticket still waits in the inbox fails loud.</p>
+<pre class="cmd">junco analyze acme/reef-api#52</pre>
+<pre class="cmd">junco analyze https://github.com/upstream/reef-api/issues/52</pre>
+<p class="see">see also: <a href="#analyze-review">analyze review</a> · <a href="#analyze-post">analyze post</a> · <a href="/docs/analyze/">analyze guide</a></p>
+
+<h2 id="analyze-edit"><code>junco analyze edit</code></h2>
+<pre class="synopsis">junco analyze edit &lt;id&gt;</pre>
+<p>Opens the pending draft in <code>$VISUAL</code> (falling back to <code>$EDITOR</code>) as a temporary Markdown file, git-commit-message style. On save the text is re-sanitized — the same HTML-comment and control-character stripping and length cap the original draft got — and written back to the store. The disclosure footer is never part of the file; it's composed at post/preview time, not stored in the draft text. An editor that exits nonzero, or a draft that's empty after sanitizing, leaves the draft unchanged. With no editor configured, the command prints the draft's JSON file path instead of guessing.</p>
+<pre class="cmd">junco analyze edit analyze-acme-reef-api-52</pre>
+<pre class="out">draft updated — junco analyze review analyze-acme-reef-api-52 to preview</pre>
+<p class="see">see also: <a href="#analyze-review">analyze review</a> · <a href="#analyze-post">analyze post</a> · <a href="/docs/analyze/">analyze guide</a></p>
+
+<h2 id="analyze-post"><code>junco analyze post</code></h2>
+<pre class="synopsis">junco analyze post &lt;id&gt; [--no-footer]</pre>
+<p>The human confirm gate, and the only outward write in the analyze flow: composes the final comment — draft text plus the disclosure footer unless the draft has it off or <code>--no-footer</code> is passed — posts it under your own <code>gh</code> auth via <code>gh issue comment</code> (or queues it to the durable outbox when GitHub is unreachable), and archives the draft to <code>posted/</code> on either outcome. One draft, one deliberate action — there is no separate <code>--yes</code> flag. A non-network failure (locked issue, permission error) leaves the draft pending, so the same id can be retried after the fix.</p>
+<pre class="cmd">junco analyze post analyze-acme-reef-api-52</pre>
+<pre class="cmd">junco analyze post analyze-acme-reef-api-52 --no-footer</pre>
+<div class="note"><b>note —</b> the default footer reads <i>Analysis drafted with junco and human-reviewed before posting.</i> It's a flag on the parked draft, not baked-in text — the preview shows it exactly as it would post, and editing never has to string-match it out.</div>
+<p class="see">see also: <a href="#analyze-review">analyze review</a> · <a href="#outbox">outbox</a> · <a href="/docs/analyze/">analyze guide</a></p>
+
+<h2 id="analyze-review"><code>junco analyze review</code></h2>
+<pre class="synopsis">junco analyze review [&lt;id&gt;]</pre>
+<p>With no id: one line per pending draft — id, <code>nwo#issue</code>, <code>(owned)</code>/<code>(external)</code>, the parked timestamp, and the draft's first non-empty line truncated at 60 characters. With an id: the draft's <code>nwo#issue</code>, scope, and issue title, then <b>exactly what <code>junco analyze post</code> would post</b> — draft text plus the disclosure footer when the draft carries one — followed by a <code>post:</code> hint. Read-only; nothing posts from here. The same review is available in the dashboard under <code>v</code>: <code>enter</code> previews, <code>f</code>/<code>enter</code> posts, <code>x</code> discards.</p>
+<pre class="cmd">junco analyze review</pre>
+<pre class="cmd">junco analyze review analyze-acme-reef-api-52</pre>
+<p class="see">see also: <a href="#analyze-edit">analyze edit</a> · <a href="#analyze-post">analyze post</a> · <a href="/docs/analyze/">analyze guide</a></p>
+
+<h2 id="assess"><code>junco assess</code></h2>
+<pre class="synopsis">junco assess &lt;path|owner/repo|owner/repo#N&gt; [--auto-plan]</pre>
+<p>Queues a read-only audit ticket: <code>npm audit</code> over the dependency tree plus a read-only agent pass over the code, with findings validated, severity-filtered, deduped against your own most recent 500 issues on the repo, and <b>parked</b> for review — nothing is filed until you confirm with <code>junco assess file</code>. The target is a local path, an already-watched <code>owner/repo</code> (an unwatched one errors out rather than guessing a clone path), or <code>owner/repo#N</code> / an issue URL, which scopes the audit to the code that issue implicates and auto-provisions an unwatched repo. <code>--auto-plan</code> stamps the configured trigger label on every issue the batch later files — effective only on owned, bridge-watched repos; an external batch forces it off.</p>
+<pre class="cmd">junco assess acme/reef-api --auto-plan</pre>
+<pre class="cmd">junco assess acme/reef-api#52</pre>
+<div class="note"><b>note —</b> a batch that's never reviewed doesn't expire, and re-running assess on the same ticket id overwrites the batch instead of piling up duplicates.</div>
+<p class="see">see also: <a href="#assess-review">assess review</a> · <a href="#assess-file">assess file</a> · <a href="/docs/assess/">assess guide</a></p>
+
+<h2 id="assess-file"><code>junco assess file</code></h2>
+<pre class="synopsis">junco assess file &lt;id&gt; --all | --only &lt;fp,...&gt;</pre>
+<p>
+  The confirmation half of an audit: files reviewed findings from a parked batch as GitHub
+  issues, then archives the batch. There is no bare default — you choose
+  <code>--all</code> or an explicit <code>--only</code> list of fingerprints from
+  <code>junco assess review &lt;id&gt;</code>. Filed issues arrive fingerprinted,
+  severity-labeled, and deduped against your recent findings.
+</p>
+<pre class="cmd">junco assess file 20260718-093042 --all</pre>
+<pre class="cmd">junco assess file 20260718-093042 --only 9f2c01ab54ce77d1,4a11beef00c2d9e3</pre>
+<div class="warn"><b>warn —</b> closing a filed finding issue — even as wontfix — suppresses
+its fingerprint from every future audit, including a genuine regression that hashes the same.
+To make a finding filable again, delete the issue or edit out its
+<code>&lt;!-- junco:finding --&gt;</code> marker line.</div>
+<p class="see">see also: <a href="#assess">assess</a> · <a href="#assess-review">assess
+review</a> · <a href="/docs/assess/">assess guide</a></p>
+<h2 id="assess-review"><code>junco assess review</code></h2>
+<pre class="synopsis">junco assess review [&lt;id&gt;]</pre>
+<p>Read-only inspection of the parked-findings store. With no id: one line per pending batch — id, <code>owner/repo</code>, <code>(owned)</code>/<code>(external)</code>, finding count, and the audit's timestamp. With an id: the batch's repo and scope, then each finding's fingerprint, severity, and title, closing with two ready-to-run <code>junco assess file</code> hints (<code>--all</code>, and a <code>--only</code> example built from the first two fingerprints). Nothing is written; filing is the separate <code>junco assess file</code> confirm step. The same checklist review is available in the dashboard under <code>v</code>.</p>
+<pre class="cmd">junco assess review</pre>
+<pre class="cmd">junco assess review 20260718-093042</pre>
+<div class="note"><b>note —</b> a finding you don't select isn't suppressed — no issue and no marker exist yet, so the next audit re-parks it. Only a filed issue's marker suppresses a fingerprint.</div>
+<p class="see">see also: <a href="#assess">assess</a> · <a href="#assess-file">assess file</a> · <a href="/docs/assess/">assess guide</a></p>
+
+<h2 id="auth-grant"><code>junco auth grant</code></h2>
+<pre class="synopsis">junco auth grant &lt;owner/repo&gt;</pre>
+<p>Grants the bot push access to a repo by driving both identities junco holds: invites the bot as a collaborator with <code>permission=push</code> under your own ambient login (you need <b>admin</b> on the repo — anything less fails with a message saying so), switches to the bot's isolated <code>GH_CONFIG_DIR</code> to accept the matching pending invitation (bounded retry, since invitation propagation can lag), then verifies under the bot's identity that it now has push before reporting success. Idempotent — re-running on an already-granted repo skips straight to verification. The dashboard runs the same grant in the background after you watch a repo with the bot enabled; a failure there shows a toast naming this command as the fix.</p>
+<pre class="cmd">junco auth grant acme/reef-api</pre>
+<pre class="out">✓ junco-agent has write on acme/reef-api</pre>
+<div class="note"><b>note —</b> in a SAML-enforced org the grant fails with a SAML error regardless of identity. That's a one-time authorization, not a permission problem: sign in as the bot on github.com and authorize its <code>gh</code> OAuth token for the org — junco recognizes the error and prints this guidance.</div>
+<p class="see">see also: <a href="#auth-login">auth login</a> · <a href="#doctor">doctor</a> · <a href="/docs/bot-account/">bot account guide</a></p>
+
+<h2 id="auth-login"><code>junco auth login</code></h2>
+<pre class="synopsis">junco auth login</pre>
+<p>Logs the daemon's dedicated bot account in: runs <code>gh auth login</code>'s own device-flow into an isolated <code>GH_CONFIG_DIR</code> (default <code>~/.config/junco/gh</code>, fully separate from your personal <code>gh</code> config), verifies the resulting identity, and flips <code>botAccount.enabled</code> to <code>true</code> in <code>config.json</code> on success. It prints who junco now acts as and reminds you to run <code>junco restart</code> to apply it. <code>gh</code> owns token refresh — nothing secret lands in <code>config.json</code> or the daemon's environment; child processes only ever receive the config-dir path.</p>
+<pre class="cmd">junco auth login</pre>
+<div class="warn"><b>warn —</b> fails closed: with <code>botAccount.enabled</code> set but the bot's login missing or expired, <code>junco start</code> and <code>junco run-once</code> refuse to run at all — there is no silent fallback to your personal identity. Re-run <code>junco auth login</code>.</div>
+<p class="see">see also: <a href="#auth-grant">auth grant</a> · <a href="#restart">restart</a> · <a href="/docs/bot-account/">bot account guide</a></p>
+
+<h2 id="config-get"><code>junco config get</code></h2>
+<pre class="synopsis">junco config get &lt;path&gt;</pre>
+<p>Reads one lever by dotted path from the resolved <code>config.json</code> and prints its value. Read-only; nothing on disk changes.</p>
+<pre class="cmd">junco config get worker.maxConcurrent</pre>
+<p class="see">see also: <a href="#config-set">config set</a> · <a href="#config-list">config list</a> · <a href="/docs/config/">configuration reference</a></p>
+
+<h2 id="config-init"><code>junco config init</code></h2>
+<pre class="synopsis">junco config init</pre>
+<p>Headless default-config scaffold for scripting and CI: writes <code>config.json</code> with safe defaults and creates the queue directories, no prompts. With a config already present it only ensures the directories exist — it never overwrites an existing file. A fresh scaffold writes no legacy path keys, and writes <code>dataDir</code> only when it differs from the default. The interactive equivalent is the setup walkthrough in the dashboard.</p>
+<pre class="cmd">junco config init</pre>
+<pre class="cmd">junco config init --config ./config.json</pre>
+<p class="see">see also: <a href="#config-path">config path</a> · <a href="#doctor">doctor</a> · <a href="/docs/config/">configuration reference</a></p>
+
+<h2 id="config-list"><code>junco config list</code></h2>
+<pre class="synopsis">junco config list</pre>
+<p>Prints the full annotated reference: every config lever with its default, type, and one-line explanation. This is the always-current source of truth for the lever set. Levers marked <code>editable: false</code> (e.g. <code>tools</code>) are structural and require a direct edit of <code>config.json</code> rather than <a href="#config-set">config set</a>. Read-only.</p>
+<pre class="cmd">junco config list</pre>
+<p class="see">see also: <a href="#config-get">config get</a> · <a href="#config-set">config set</a> · <a href="/docs/config/">configuration reference</a></p>
+
+<h2 id="config-path"><code>junco config path</code></h2>
+<pre class="synopsis">junco config path</pre>
+<p>Prints the resolved config file location and exits: <code>./config.json</code> if present, else <code>~/.config/junco/config.json</code> (respects <code>XDG_CONFIG_HOME</code>); <code>--config &lt;path&gt;</code> overrides. Reads nothing else, writes nothing — the target for direct edits of structural fields.</p>
+<pre class="cmd">junco config path</pre>
+<p class="see">see also: <a href="#config-list">config list</a> · <a href="#config-init">config init</a> · <a href="/docs/config/">configuration reference</a></p>
+
+<h2 id="config-set"><code>junco config set</code></h2>
+<pre class="synopsis">junco config set &lt;path&gt; &lt;value&gt;</pre>
+<p>Writes one lever by dotted path through a validated read/mutate/write of <code>config.json</code>. The daemon re-reads the file on change, so live-safe levers apply at the next poll with no restart.</p>
+<pre class="cmd">junco config set model.id myprovider/my-model</pre>
+<pre class="cmd">junco config set sandbox.enabled false</pre>
+<div class="note"><b>note —</b> restart-kind levers (e.g. <code>dataDir</code>, <code>worker.maxConcurrent</code>) take effect only after <a href="#restart">restart</a>: with the daemon up, <code>set</code> prints a restart hint, and the pending change is reported in <code>pendingRestartFields</code> (<code>junco status</code>, <code>/health</code>) rather than silently ignored.</div>
+<p class="see">see also: <a href="#config-get">config get</a> · <a href="#restart">restart</a> · <a href="/docs/config/">configuration reference</a></p>
+
+<h2 id="dashboard"><code>junco dashboard</code></h2>
+<pre class="synopsis">junco dashboard</pre>
+<p>The fullscreen terminal UI, drawn in the terminal's alternate buffer and restored exactly on exit. Two modes, swapped with <code>m</code>: GITHUB — watched repos, their trigger-labeled issues, and junco-authored PRs — and LOCAL — the queue, the GitHub outbox, watched repos on disk, ticket worktrees, and the daemon itself. It observes without starting anything — the daemon runs separately — and the command palette (<code>:</code>) runs junco CLI subcommands without leaving it. With no config yet, the first run opens the guided setup walkthrough (re-run anytime from the palette's "setup").</p>
+<pre class="cmd">junco dashboard</pre>
+<div class="note"><b>note —</b> needs a real TTY — run it from a terminal, not piped or backgrounded. Bare <code>junco</code> also lands here after ensuring the supervised daemon is running.</div>
+<p class="see">see also: <a href="#junco">junco</a> · <a href="#status">status</a> · <a href="/docs/dashboard/">dashboard guide</a></p>
+
+<h2 id="data"><code>junco data</code></h2>
+<pre class="synopsis">junco data [--json]</pre>
+<p>Prints the resolved data tree under <code>dataDir</code>: every path with live counts, legacy-override provenance, and any pending migration. A pure read-only view — it never creates or moves anything. Absent nodes are still listed (<code>(absent)</code> is normal before the first daemon start); a legacy-overridden root prints its config key with a deprecation tag, and an unmigrated old-name directory prints the pending rename. <code>--json</code> emits the same information as <code>{ root, paths, counts, legacy, pendingMigrations, deprecations }</code> for scripts.</p>
+<pre class="cmd">junco data</pre>
+<pre class="cmd">junco data --json</pre>
+<pre class="out">junco data — root: /Users/you/.local/state/junco
+queue      /Users/you/.local/state/junco/queue
+  inbox 2 · processing 1 · done 148 · failed 9</pre>
+<p class="see">see also: <a href="#data-migrate">data migrate</a> · <a href="#doctor">doctor</a> · <a href="/docs/config/">configuration reference</a></p>
+
+<h2 id="data-migrate"><code>junco data migrate</code></h2>
+<pre class="synopsis">junco data migrate [--dry-run] [--force]</pre>
+<p>The opt-in full unification for a config still carrying legacy path keys — the ticket queue never moves automatically. Moves the queue directories into <code>&lt;dataDir&gt;/queue</code> (rename, falling back to copy+verify+delete across filesystems), runs the same in-place state-tree normalization the daemon performs at startup, then rewrites <code>config.json</code> to drop <code>vaultRoot</code> / <code>juncoSubdir</code> / <code>observability.stateDir</code> and set a non-default <code>dataDir</code>. Holds <code>&lt;dataDir&gt;/migrate.lock</code> so two migrations can't race; nothing already moved is ever rolled back, so fixing a conflict by hand and re-running picks up where it left off. <code>--dry-run</code> prints the full plan and changes nothing.</p>
+<pre class="cmd">junco data migrate --dry-run</pre>
+<pre class="cmd">junco data migrate</pre>
+<div class="warn"><b>warn —</b> refuses to run while the daemon appears up: any <code>/health</code> response (even non-200) counts, as does a live-held <code>worker.lock</code> next to <code>config.json</code>. <code>--force</code> skips both checks. A state-tree name collision where the destination holds real files is left untouched and exits non-zero — file-holding data is never deleted.</div>
+<p class="see">see also: <a href="#data">data</a> · <a href="#restart">restart</a> · <a href="/docs/config/">configuration reference</a></p>
+
+<dl class="flags">
+  <div><dt><code>--dry-run</code></dt><dd>Print every move without touching anything</dd></div>
+  <div><dt><code>--force</code></dt><dd>Skip the daemon-up refusal checks</dd></div>
+</dl>
+<h2 id="dispatch"><code>junco dispatch</code></h2>
+<pre class="synopsis">junco dispatch &lt;ref&gt;</pre>
+<p>Fetches a GitHub issue — <code>owner/repo#N</code> or a full issue URL — and queues a ticket for it; the daemon works the issue in an isolated worktree and opens a draft PR. Access decides the mode: with push access the clone is fork-less, branches land on the repo itself, and the repo is auto-onboarded to the watchlist as a first-class entry with no confirmation step; a public repo without push access is auto-forked, cloned into a managed directory, and watched as an external entry, with the draft PR opened against upstream — no labels or comments ever touch the upstream issue. A private repo without push access fails loud before anything is cloned. Ticket frontmatter is machine-built, never model output; the issue text rides in the ticket body as untrusted data, not instructions.</p>
+<pre class="cmd">junco dispatch acme/reef-api#52</pre>
+<pre class="cmd">junco dispatch https://github.com/upstream/reef-api/issues/52</pre>
+<div class="note"><b>note —</b> in fork-PR mode the draft PR is the single artifact that reaches upstream. Review its diff before marking it ready — that gate replaces the plan-review hop an owned repo gets. Re-dispatching the same issue collides on the existing branch by design; push follow-up commits with an <code>amends_pr</code> ticket instead.</div>
+<p class="see">see also: <a href="#prs">prs</a> · <a href="#submit">submit</a> · <a href="/docs/github-loop/">github loop guide</a></p>
+
+<h2 id="doctor"><code>junco doctor</code></h2>
+<pre class="synopsis">junco doctor</pre>
+<p>Preflight for the whole install: config parses, node/git/gh are present, <code>gh</code> is authenticated, the inference endpoint is reachable, the configured model is advertised, and the queue/worktree/data directories are writable. Also preflights the execution sandbox's backend binary.</p>
+<pre class="cmd">junco doctor</pre>
+<div class="warn"><b>warn —</b> the sandbox fails closed when its backend binary is missing (bubblewrap on Linux): install <code>bwrap</code>, or set <code>sandbox.backend: "none"</code> / <code>sandbox.enabled: false</code>.</div>
+<p class="see">see also: <a href="#status">status</a> · <a href="#config-list">config list</a> · <a href="/docs/operations/">operations guide</a></p>
+
+<h2 id="inbox-path"><code>junco inbox-path</code></h2>
+<pre class="synopsis">junco inbox-path</pre>
+<p>Prints the resolved inbox directory path and exits — the directory the daemon watches, resolved from the active <code>config.json</code>. Useful for tools that write ticket files directly instead of going through <code>submit</code>.</p>
+<pre class="cmd">junco inbox-path</pre>
+<div class="warn"><b>warn —</b> the inbox is a code-execution boundary: anyone who can write to it can act as you. Keep it on a local disk you own, never a synced or shared folder.</div>
+<p class="see">see also: <a href="#submit">submit</a> · <a href="#list">list</a> · <a href="/docs/tickets/">tickets guide</a></p>
+
+<h2 id="list"><code>junco list</code></h2>
+<pre class="synopsis">junco list [box]</pre>
+<p>Lists tickets newest-first per queue box — <code>inbox</code> | <code>processing</code> | <code>done</code> | <code>failed</code> — with terminal statuses; pass a box name to show just that one. Read-only: nothing moves on disk.</p>
+<pre class="cmd">junco list</pre>
+<pre class="cmd">junco list failed</pre>
+<p class="see">see also: <a href="#retry">retry</a> · <a href="#rm">rm</a> · <a href="#status">status</a></p>
+
+<h2 id="logs"><code>junco logs</code></h2>
+<pre class="synopsis">junco logs [-f] [-n N] [--json|--human]</pre>
+<p>Tails the worker log at <code>&lt;dataDir&gt;/worker.log</code> (default <code>~/.local/state/junco/worker.log</code>, rotated at 10 MB). <code>-f</code> follows, <code>-n N</code> bounds the tail. Output is human-readable on a TTY and raw JSON when piped or with <code>--json</code>; <code>--human</code> forces the readable format even when piped.</p>
+<pre class="cmd">junco logs -f</pre>
+<pre class="cmd">junco logs -n 200 --json</pre>
+<pre class="out">09:31:05 INFO  claimed {"src":"inbox/gh-acme-reef-api-52.md","dst":"processing/gh-acme-reef-api-52.md"}
+09:43:56 INFO  [gh-acme-reef-api-52] opened PR https://github.com/acme/reef-api/pull/57
+09:43:58 INFO  idle</pre>
+<p class="see">see also: <a href="#status">status</a> · <a href="#dashboard">dashboard</a> · <a href="/docs/operations/">operations guide</a></p>
+
+<h2 id="outbox"><code>junco outbox</code></h2>
+<pre class="synopsis">junco outbox [flush]</pre>
+<p>Lists the offline GitHub backlog: when GitHub is unreachable, lifecycle label flips, issue comments, filed assess findings, analyze comment posts, and the whole PR push+create sequence queue as durable per-op JSON files under <code>&lt;dataDir&gt;/outbox/</code>. The listing shows each op's type, target issue/branch, age, and attempt count, plus any dead-letter count; <code>junco outbox flush</code> pushes the backlog now instead of waiting for the next bridge sweep. Both forms work with the daemon down. Replay is FIFO and idempotent — a crash mid-flush won't double-post comments or duplicate labels — and a non-network failure dead-letters an op after 3 attempts to <code>&lt;dataDir&gt;/outbox/dead/</code>.</p>
+<pre class="cmd">junco outbox</pre>
+<pre class="cmd">junco outbox flush</pre>
+<div class="note"><b>note —</b> <code>junco doctor</code> warns while dead-lettered ops exist. To retry one: edit it by hand, move it from <code>outbox/dead/</code> back into <code>outbox/</code>, then run <code>junco outbox flush</code>.</div>
+<p class="see">see also: <a href="#status">status</a> · <a href="#doctor">doctor</a> · <a href="/docs/github-loop/">github loop guide</a></p>
+
+<h2 id="prs"><code>junco prs</code></h2>
+<pre class="synopsis">junco prs</pre>
+<p>Lists junco-authored pull requests across watched repos, sorted attention-first — checks-failing and changes-requested surface at the top, the same order as the dashboard's PRs view. External fork-PR entries count: a repo watched as <code>external: true</code> is excluded from the bridge's label sweep but stays watched for PR listing, so upstream draft PRs opened in fork-PR mode appear alongside PRs on repos you own. Read-only — it lists, nothing is posted or flipped.</p>
+<pre class="cmd">junco prs</pre>
+<p class="see">see also: <a href="#dispatch">dispatch</a> · <a href="#outbox">outbox</a> · <a href="/docs/github-loop/">github loop guide</a></p>
+
+<h2 id="restart"><code>junco restart</code></h2>
+<pre class="synopsis">junco restart</pre>
+<p>Restarts the supervised daemon so it picks up config and code changes. It validates the config first — refusing to bounce the daemon onto a config it can't parse — then finds the launchd plist / systemd user unit referencing the config path, kicks it with the platform-correct verb (<code>launchctl kickstart -k</code> / <code>systemctl --user restart</code>, the verbs that relaunch unconditionally), and confirms the pid changed before reporting success.</p>
+<pre class="cmd">junco restart</pre>
+<div class="note"><b>note —</b> a plain SIGTERM is not a restart: with launchd's <code>SuccessfulExit=false</code> keep-alive, a graceful exit stays down.</div>
+<p class="see">see also: <a href="#service">service</a> · <a href="#update">update</a> · <a href="/docs/operations/">operations guide</a></p>
+
+<h2 id="retry"><code>junco retry</code></h2>
+<pre class="synopsis">junco retry &lt;name…|--all&gt;</pre>
+<p>Moves failed tickets back to the inbox for a fresh run — the claim stamp, appended result blocks, and retry bookkeeping are stripped, so the ticket re-enters the queue as if newly submitted. Takes one or more ticket names, or <code>--all</code> to requeue everything in <code>failed/</code>.</p>
+<pre class="cmd">junco retry gh-acme-reef-api-52.md</pre>
+<pre class="cmd">junco retry --all</pre>
+<div class="note"><b>note —</b> a retried ticket is cut at the first appended <code>&lt;!-- junco-result</code> separator, so a ticket body containing that literal line would lose its tail on retry.</div>
+<p class="see">see also: <a href="#list">list</a> · <a href="#rm">rm</a> · <a href="/docs/tickets/">tickets guide</a></p>
+
+<h2 id="rm"><code>junco rm</code></h2>
+<pre class="synopsis">junco rm &lt;name&gt;</pre>
+<p>Best-effort delete of a queued ticket from <code>inbox/</code> only — it never touches <code>processing/</code> (the daemon owns it) and refuses any name that resolves outside the inbox. The name is fuzzy-matched against <code>inbox/*.md</code>, the same way <a href="#retry">retry</a> matches.</p>
+<pre class="cmd">junco rm add-util-2026-05-31.md</pre>
+<div class="note"><b>note —</b> a miss is not an error: the daemon can atomically claim a ticket into <code>processing/</code> between your listing and the delete, so "not present in inbox" exits 0. This is a best-effort inbox delete, not an authoritative kill.</div>
+<p class="see">see also: <a href="#list">list</a> · <a href="#retry">retry</a></p>
+
+<h2 id="run-once"><code>junco run-once</code></h2>
+<pre class="synopsis">junco run-once</pre>
+<p>Processes a single available task and exits — the one-shot form of the worker loop. Takes no lock, so it is safe for cron or by-hand runs alongside a running daemon.</p>
+<pre class="cmd">junco run-once</pre>
+<p class="see">see also: <a href="#start">start</a> · <a href="#submit">submit</a> · <a href="/docs/operations/">operations guide</a></p>
+
+<h2 id="schema"><code>junco schema</code></h2>
+<pre class="synopsis">junco schema</pre>
+<p>Prints the ticket-frontmatter JSON Schema — the typed contract for every frontmatter field — and exits. Read-only; nothing on disk changes. The reference for writing tickets by hand or validating them from other tools.</p>
+<pre class="cmd">junco schema</pre>
+<p class="see">see also: <a href="#submit">submit</a> · <a href="/docs/ticket-schema/">ticket schema reference</a></p>
+
+<h2 id="service"><code>junco service</code></h2>
+<pre class="synopsis">junco service</pre>
+<p>Renders a platform-native service file to stdout — a launchd plist or a systemd unit, defaulting to launchd on macOS and systemd elsewhere; <code>--platform launchd|systemd</code> overrides. Pipe it to the right location and load it; once supervised, <a href="#restart">restart</a> knows how to bounce the daemon.</p>
+<pre class="cmd">junco service --platform launchd &gt; ~/Library/LaunchAgents/com.junco.worker.plist</pre>
+<pre class="cmd">junco service --platform systemd &gt; ~/.config/systemd/user/junco.service</pre>
+<div class="note"><b>note —</b> after writing the file: <code>launchctl load</code> then <code>launchctl start com.junco.worker</code> on macOS; <code>systemctl --user daemon-reload</code> then <code>systemctl --user enable --now junco</code> on Linux.</div>
+<p class="see">see also: <a href="#start">start</a> · <a href="#restart">restart</a> · <a href="/docs/operations/">operations guide</a></p>
+
+<h2 id="start"><code>junco start</code></h2>
+<pre class="synopsis">junco start</pre>
+<p>Runs the daemon in the foreground: it polls the inbox forever, claiming and processing tickets, until Ctrl-C. On startup it acquires a single-instance lock (<code>worker.lock</code>, next to <code>config.json</code>); if another instance already holds the lock it exits 0 instead of erroring, so a supervisor (launchd, systemd) never enters a restart loop after a double start. <code>--once</code> processes one task and exits.</p>
+<pre class="cmd">junco start</pre>
+<pre class="cmd">junco start --once</pre>
+<div class="note"><b>note —</b> by default (<code>worker.startupWait = true</code>) startup blocks and retries every 30 s until the inference endpoint responds; set it to <code>false</code> to start immediately and fail individual tickets while the endpoint is down.</div>
+<p class="see">see also: <a href="#run-once">run-once</a> · <a href="#service">service</a> · <a href="#restart">restart</a> · <a href="/docs/operations/">operations guide</a></p>
+
+<h2 id="status"><code>junco status</code></h2>
+<pre class="synopsis">junco status</pre>
+<p>One-glance view of the runtime: daemon pid and uptime, inference-endpoint readiness, in-flight tickets, processed counts, and queue sizes — the full record behind the dashboard header's condensed pulse.</p>
+<pre class="cmd">junco status</pre>
+<p class="see">see also: <a href="#logs">logs</a> · <a href="#doctor">doctor</a> · <a href="#dashboard">dashboard</a> · <a href="/docs/operations/">operations guide</a></p>
+
+<h2 id="submit"><code>junco submit</code></h2>
+<pre class="synopsis">junco submit &lt;file|-&gt;</pre>
+<p>
+  Places a ticket into the inbox with an atomic write — the daemon can never claim a
+  half-written file. The filename comes from the ticket's <code>id</code> (falling back to
+  the source filename); <code>-</code> reads the ticket from stdin, which is how other tools
+  pipe work in.
+</p>
+<pre class="cmd">junco submit fix-tide-rounding.md</pre>
+<pre class="cmd">cat ticket.md | junco submit -</pre>
+<pre class="out">queued inbox/fix-tide-rounding.md</pre>
+<div class="warn"><b>warn —</b> the inbox is a code-execution boundary: a PR-flow ticket runs
+an agent against the repo it names, as you. Keep the inbox on a disk only you can write, and
+confine targets with <code>git.allowedRepoRoots</code>.</div>
+<p class="see">see also: <a href="#list">list</a> · <a href="#retry">retry</a> ·
+<a href="#schema">schema</a> · <a href="/docs/tickets/">tickets guide</a></p>
+<h2 id="update"><code>junco update</code></h2>
+<pre class="synopsis">junco update</pre>
+<p>Installs the latest npm release of junco, then drains and restarts the supervised daemon — a graceful stop drains in-flight work before the new version takes over.</p>
+<pre class="cmd">junco update</pre>
+<p class="see">see also: <a href="#restart">restart</a> · <a href="#service">service</a> · <a href="#status">status</a> · <a href="/docs/operations/">operations guide</a></p>
+
+<h2 id="worktree-prune"><code>junco worktree prune</code></h2>
+<pre class="synopsis">junco worktree prune &lt;path&gt;</pre>
+<p>Deletes a stale or backup ticket worktree by path (a failed ticket's preserved worktree lives at <code>&lt;worktreeRoot&gt;/&lt;id&gt;</code>). The prune runs under the daemon's own shared worktree lock with an in-lock liveness gate, so it can never race a ticket that just started using the tree — and it refuses a live worktree outright: the daemon owns those.</p>
+<pre class="cmd">junco worktree prune &lt;worktreeRoot&gt;/gh-acme-reef-api-52</pre>
+<div class="note"><b>note —</b> the dashboard's LOCAL → Worktrees section (<code>x</code>) runs this same command under the hood — no separate implementation.</div>
+<p class="see">see also: <a href="#dashboard">dashboard</a> · <a href="#status">status</a> · <a href="/docs/operations/">operations guide</a></p>
+      </main>
+    </div>
+
+    <footer class="wrap-docs foot">
+      <p>
+        <a href="https://github.com/ironforgesoftware/junco/blob/main/LICENSE">MIT</a> ·
+        <a href="https://github.com/ironforgesoftware/junco">GitHub</a> ·
+        <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a> ·
+        <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a>
+      </p>
+      <p class="stamp">
+        verified against junco 0.8.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/operations.md">docs/operations.md</a> ·
+        <a href="https://github.com/ironforgesoftware/junco-site/edit/main/docs-src/pages/cli.html">edit this page</a>
+      </p>
+    </footer>
+
+    <script type="module" src="/docs/docs.js"></script>
+  </body>
+</html>

@@ -1,0 +1,5 @@
+<p>Moves failed tickets back to the inbox for a fresh run — the claim stamp, appended result blocks, and retry bookkeeping are stripped, so the ticket re-enters the queue as if newly submitted. Takes one or more ticket names, or <code>--all</code> to requeue everything in <code>failed/</code>.</p>
+<pre class="cmd">junco retry gh-acme-reef-api-52.md</pre>
+<pre class="cmd">junco retry --all</pre>
+<div class="note"><b>note —</b> a retried ticket is cut at the first appended <code>&lt;!-- junco-result</code> separator, so a ticket body containing that literal line would lose its tail on retry.</div>
+<p class="see">see also: <a href="#list">list</a> · <a href="#rm">rm</a> · <a href="/docs/tickets/">tickets guide</a></p>

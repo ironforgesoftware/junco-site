@@ -1,0 +1,31 @@
+# junco documentation
+
+> junco is a harness-agnostic task-queue worker that turns Markdown tickets and
+> labeled GitHub issues into draft pull requests by driving a coding agent on
+> your own machine, against any OpenAI-compatible inference endpoint.
+
+## start
+
+- [Start here](https://junco.ironforgesoftware.com/docs/): What junco is, a sixty-second setup, and the map of these docs.
+- [How junco works](https://junco.ironforgesoftware.com/docs/how-it-works/): How a ticket moves from inbox to draft PR: queue, pipeline, loop guards, provider gate, spend cap, and outbox.
+- [Security model](https://junco.ironforgesoftware.com/docs/security/): junco's trust boundaries: inbox, OS sandbox, approval gate, untrusted issue text, and what leaves the machine.
+
+## guides
+
+- [The GitHub loop](https://junco.ironforgesoftware.com/docs/github-loop/): Label an issue junco: the daemon plans as an editable comment, executes on approval, and opens a draft PR.
+- [Tickets & the inbox](https://junco.ironforgesoftware.com/docs/tickets/): Markdown tickets with YAML frontmatter: flavors, the plan shape that avoids loops, plan-lint, submission.
+- [Assess](https://junco.ironforgesoftware.com/docs/assess/): junco assess audits a repo, parks findings for review, and files only what a human confirms as GitHub issues.
+- [Analyze](https://junco.ironforgesoftware.com/docs/analyze/): junco analyze investigates one issue read-only and parks a comment draft; only the confirmed post writes outward.
+- [The dashboard](https://junco.ironforgesoftware.com/docs/dashboard/): The fullscreen terminal UI: GITHUB and LOCAL modes, panes and key bindings, the command palette, repo watching.
+- [Operations](https://junco.ironforgesoftware.com/docs/operations/): Running the worker: daemon lifecycle, service files, health endpoints, the provider gate, spend, updates, recovery.
+- [Bot account](https://junco.ironforgesoftware.com/docs/bot-account/): A dedicated GitHub identity for the daemon: setup, per-repo grants, doctor checks, migration caveats.
+
+## reference
+
+- [CLI reference](https://junco.ironforgesoftware.com/docs/cli/): Every junco command and subcommand: synopsis, flags, examples.
+- [Configuration](https://junco.ironforgesoftware.com/docs/config/): Every config lever: type, default, live or restart, straight from junco's own registry.
+- [Ticket schema](https://junco.ironforgesoftware.com/docs/ticket-schema/): The frontmatter contract, field by field — junco schema rendered as a page.
+
+## field notes
+
+- [Field notes](https://junco.ironforgesoftware.com/docs/field-notes/): Tips, recipes, and answers from running junco in the field.

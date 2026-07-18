@@ -1,0 +1,365 @@
+{
+  "commands": [
+    {
+      "slug": "analyze",
+      "path": "analyze",
+      "synopsis": "junco analyze <owner/repo#N|url>",
+      "summary": "investigate an issue and park a comment draft for review",
+      "flags": []
+    },
+    {
+      "slug": "analyze-edit",
+      "path": "analyze edit",
+      "synopsis": "junco analyze edit <id>",
+      "summary": "edit a pending draft in $EDITOR",
+      "flags": []
+    },
+    {
+      "slug": "analyze-post",
+      "path": "analyze post",
+      "synopsis": "junco analyze post <id> [--no-footer]",
+      "summary": "post an approved draft as a comment on its issue",
+      "flags": [
+        {
+          "flag": "--no-footer",
+          "placeholder": null,
+          "description": null
+        }
+      ]
+    },
+    {
+      "slug": "analyze-review",
+      "path": "analyze review",
+      "synopsis": "junco analyze review [<id>]",
+      "summary": "list pending comment drafts, or preview one",
+      "flags": []
+    },
+    {
+      "slug": "assess",
+      "path": "assess",
+      "synopsis": "junco assess <path|owner/repo|owner/repo#N> [--auto-plan]",
+      "summary": "audit a repo — or scoped to one issue; findings await review",
+      "flags": [
+        {
+          "flag": "--auto-plan",
+          "placeholder": null,
+          "description": null
+        }
+      ]
+    },
+    {
+      "slug": "assess-file",
+      "path": "assess file",
+      "synopsis": "junco assess file <id> --all | --only <fp,...>",
+      "summary": "file reviewed findings as issues",
+      "flags": [
+        {
+          "flag": "--all",
+          "placeholder": null,
+          "description": null
+        },
+        {
+          "flag": "--only",
+          "placeholder": "<fp,...>",
+          "description": null
+        }
+      ]
+    },
+    {
+      "slug": "assess-review",
+      "path": "assess review",
+      "synopsis": "junco assess review [<id>]",
+      "summary": "list pending assess reviews, or show one",
+      "flags": []
+    },
+    {
+      "slug": "auth-grant",
+      "path": "auth grant",
+      "synopsis": "junco auth grant <owner/repo>",
+      "summary": "grant the bot write access to a repo",
+      "flags": []
+    },
+    {
+      "slug": "auth-login",
+      "path": "auth login",
+      "synopsis": "junco auth login",
+      "summary": "Bot-account login",
+      "flags": []
+    },
+    {
+      "slug": "config-get",
+      "path": "config get",
+      "synopsis": "junco config get <path>",
+      "summary": "Inspect/edit config.json knobs; init scaffolds defaults",
+      "flags": []
+    },
+    {
+      "slug": "config-init",
+      "path": "config init",
+      "synopsis": "junco config init",
+      "summary": "Inspect/edit config.json knobs; init scaffolds defaults",
+      "flags": []
+    },
+    {
+      "slug": "config-list",
+      "path": "config list",
+      "synopsis": "junco config list",
+      "summary": "Inspect/edit config.json knobs; init scaffolds defaults",
+      "flags": []
+    },
+    {
+      "slug": "config-path",
+      "path": "config path",
+      "synopsis": "junco config path",
+      "summary": "Inspect/edit config.json knobs; init scaffolds defaults",
+      "flags": []
+    },
+    {
+      "slug": "config-set",
+      "path": "config set",
+      "synopsis": "junco config set <path> <value>",
+      "summary": "Inspect/edit config.json knobs; init scaffolds defaults",
+      "flags": []
+    },
+    {
+      "slug": "dashboard",
+      "path": "dashboard",
+      "synopsis": "junco dashboard",
+      "summary": "Interactive dashboard — first run opens the guided setup walkthrough",
+      "flags": []
+    },
+    {
+      "slug": "data",
+      "path": "data",
+      "synopsis": "junco data [--json]",
+      "summary": "Print the data tree (paths, counts, provenance); 'data migrate' unifies legacy roots",
+      "flags": [
+        {
+          "flag": "--json",
+          "placeholder": null,
+          "description": null
+        }
+      ]
+    },
+    {
+      "slug": "data-migrate",
+      "path": "data migrate",
+      "synopsis": "junco data migrate [--dry-run] [--force]",
+      "summary": "Unify legacy data roots under dataDir: move the queue, normalize the state tree, rewrite config to drop legacy keys",
+      "flags": [
+        {
+          "flag": "--dry-run",
+          "placeholder": null,
+          "description": "Print every move without touching anything"
+        },
+        {
+          "flag": "--force",
+          "placeholder": null,
+          "description": "Skip the daemon-up refusal checks"
+        }
+      ]
+    },
+    {
+      "slug": "dispatch",
+      "path": "dispatch",
+      "synopsis": "junco dispatch <ref>",
+      "summary": "Fetch a GitHub issue (owner/repo#N or URL) and queue a ticket for it — forks & clones unowned repos automatically",
+      "flags": []
+    },
+    {
+      "slug": "doctor",
+      "path": "doctor",
+      "synopsis": "junco doctor",
+      "summary": "Preflight: config, node, git, gh auth, endpoint, model, dirs",
+      "flags": []
+    },
+    {
+      "slug": "inbox-path",
+      "path": "inbox-path",
+      "synopsis": "junco inbox-path",
+      "summary": "Print the inbox directory path and exit",
+      "flags": []
+    },
+    {
+      "slug": "junco",
+      "path": "",
+      "synopsis": "junco",
+      "summary": "ensures the supervised daemon is running (interactive terminal), then opens the dashboard; first run (no config) opens the setup walkthrough. Use 'junco start' for an explicit foreground daemon, 'junco dashboard' to observe without starting anything.",
+      "flags": []
+    },
+    {
+      "slug": "list",
+      "path": "list",
+      "synopsis": "junco list [box]",
+      "summary": "List tickets per queue box (inbox|processing|done|failed)",
+      "flags": []
+    },
+    {
+      "slug": "logs",
+      "path": "logs",
+      "synopsis": "junco logs [-f] [-n N] [--json|--human]",
+      "summary": "Show (or follow) the worker log",
+      "flags": [
+        {
+          "flag": "-f",
+          "placeholder": null,
+          "description": null
+        },
+        {
+          "flag": "-n",
+          "placeholder": "N",
+          "description": null
+        },
+        {
+          "flag": "--json",
+          "placeholder": null,
+          "description": null
+        },
+        {
+          "flag": "--human",
+          "placeholder": null,
+          "description": null
+        }
+      ]
+    },
+    {
+      "slug": "outbox",
+      "path": "outbox",
+      "synopsis": "junco outbox [flush]",
+      "summary": "List or push the offline GitHub backlog",
+      "flags": []
+    },
+    {
+      "slug": "prs",
+      "path": "prs",
+      "synopsis": "junco prs",
+      "summary": "List junco-authored pull requests across watched repos",
+      "flags": []
+    },
+    {
+      "slug": "restart",
+      "path": "restart",
+      "synopsis": "junco restart",
+      "summary": "Restart the supervised daemon (picks up config + code changes)",
+      "flags": []
+    },
+    {
+      "slug": "retry",
+      "path": "retry",
+      "synopsis": "junco retry <name…|--all>",
+      "summary": "Move failed tickets back to the inbox for a fresh run",
+      "flags": [
+        {
+          "flag": "--all",
+          "placeholder": null,
+          "description": null
+        }
+      ]
+    },
+    {
+      "slug": "rm",
+      "path": "rm",
+      "synopsis": "junco rm <name>",
+      "summary": "Delete a queued ticket from the inbox (best-effort)",
+      "flags": []
+    },
+    {
+      "slug": "run-once",
+      "path": "run-once",
+      "synopsis": "junco run-once",
+      "summary": "Process one task and exit (dev/cron convenience; no lock)",
+      "flags": []
+    },
+    {
+      "slug": "schema",
+      "path": "schema",
+      "synopsis": "junco schema",
+      "summary": "Print the ticket frontmatter JSON Schema and exit",
+      "flags": []
+    },
+    {
+      "slug": "service",
+      "path": "service",
+      "synopsis": "junco service",
+      "summary": "Render a service file to stdout (launchd plist or systemd unit)",
+      "flags": []
+    },
+    {
+      "slug": "start",
+      "path": "start",
+      "synopsis": "junco start",
+      "summary": "Start the daemon",
+      "flags": []
+    },
+    {
+      "slug": "status",
+      "path": "status",
+      "synopsis": "junco status",
+      "summary": "Show daemon / endpoint / queue health at a glance",
+      "flags": []
+    },
+    {
+      "slug": "submit",
+      "path": "submit",
+      "synopsis": "junco submit <file|->",
+      "summary": "Submit a ticket to the inbox (use - to read from stdin)",
+      "flags": []
+    },
+    {
+      "slug": "update",
+      "path": "update",
+      "synopsis": "junco update",
+      "summary": "Update junco to the latest npm release (drains, then restarts the daemon)",
+      "flags": []
+    },
+    {
+      "slug": "worktree-prune",
+      "path": "worktree prune",
+      "synopsis": "junco worktree prune <path>",
+      "summary": "Prune a stale/backup worktree (lock-guarded; refuses live)",
+      "flags": []
+    }
+  ],
+  "globalFlags": [
+    {
+      "flag": "--config",
+      "alias": null,
+      "placeholder": "<path>",
+      "scope": null,
+      "description": "Path to config.json",
+      "default": "./config.json if present, else ~/.config/junco/config.json"
+    },
+    {
+      "flag": "--once",
+      "alias": null,
+      "placeholder": null,
+      "scope": "start",
+      "description": "Process one task then exit",
+      "default": null
+    },
+    {
+      "flag": "--platform",
+      "alias": null,
+      "placeholder": "<name>",
+      "scope": "service",
+      "description": "Target platform: launchd | systemd",
+      "default": "launchd on macOS, systemd elsewhere"
+    },
+    {
+      "flag": "--help",
+      "alias": "-h",
+      "placeholder": null,
+      "scope": null,
+      "description": "Show this help message",
+      "default": null
+    },
+    {
+      "flag": "--version",
+      "alias": null,
+      "placeholder": null,
+      "scope": null,
+      "description": "Print junco's version and exit",
+      "default": null
+    }
+  ]
+}

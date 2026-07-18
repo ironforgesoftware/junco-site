@@ -1,0 +1,162 @@
+<!--meta {"title": "How junco works", "description": "How a ticket moves from inbox to draft PR: queue, pipeline, loop guards, provider gate, spend cap, and outbox.", "slug": "how-it-works", "navLabel": "How junco works", "source": "ARCHITECTURE.md", "keywords": ["task queue", "atomic rename", "PR flow", "worktree", "loop guards", "provider gate", "spend cap", "offline outbox"]} -->
+<p>junco is a local daemon that turns Markdown tickets — dropped
+in a folder, or bridged from labeled GitHub issues — into draft
+pull requests by driving a coding agent in-process against an
+OpenAI-compatible inference endpoint. This page follows a ticket
+end to end; trust boundaries live in
+<a href="/docs/security/">security model</a>.</p>
+
+<h2 id="the-queue">The queue</h2>
+<p>The queue is four directories under the data root:
+<code>inbox/</code>, <code>processing/</code>, <code>done/</code>,
+<code>failed/</code>. <a href="/docs/cli/#submit">junco submit</a> —
+or any tool that writes a file atomically — drops a ticket into
+<code>inbox/</code>. The daemon claims it by atomic rename into
+<code>processing/</code>: the rename succeeds for exactly one
+claimant or not at all, so two workers can never own the same
+ticket — no lock file, no window, no race.</p>
+<pre class="cmd">junco submit reef-color-fix.md
+junco list
+junco status</pre>
+<p>Claiming is gated twice more: a <code>not_before</code> stamp
+defers a ticket until that UTC instant, and endpoint readiness is
+probed before every claim — a down endpoint leaves work queued.
+Finalize appends a result block and renames the ticket
+into <code>done/</code> or <code>failed/</code>. Transient
+failures with no commits — connection errors, 5xx, truncated
+streams — requeue to <code>inbox/</code> with
+<code>retry_count</code> incremented and a <code>not_before</code>
+backoff, up to <code>worker.maxTransientRetries</code>.
+Crash-stranded tickets in <code>processing/</code> rejoin the
+inbox at startup under the same budget.</p>
+
+<h2 id="ticket-flavors">Ticket flavors</h2>
+<p>A ticket is Markdown with YAML frontmatter;
+<a href="/docs/ticket-schema/">junco schema</a> prints the typed
+contract. Selection is ordered: an <code>assess:</code> mapping
+selects a read-only audit whose findings park for review instead
+of filing; <code>analyze:</code> selects a read-only investigation
+of one issue whose drafted comment parks instead of posting — both
+are checked before <code>repo:</code>. A <code>repo:</code> path
+selects the PR flow: agent in an isolated worktree, draft PR on
+success. None of the three means Q&amp;A: read-only tool
+subset, answer appended to the ticket file, no git. Frontmatter
+reference in <a href="/docs/tickets/">tickets</a>.</p>
+
+<h2 id="the-pr-flow-pipeline">The PR-flow pipeline</h2>
+<pre class="diagram" aria-hidden="true">
+junco submit · github bridge
+            │
+            ▼
+     ┌─────────────┐
+     │   inbox/    │◄──────────────────────────────┐
+     └──────┬──────┘                               │
+            │ claim — atomic rename                │ requeue on transient
+            ▼                                      │ failure: retry_count++
+     ┌─────────────┐                               │ and not_before backoff
+     │ processing/ │───────────────────────────────┘
+     └──────┬──────┘
+            │ worktree off origin/base
+            ▼
+     ┌───────────────┐
+     │ agent session │  loop guards · supervisor
+     └──────┬────────┘
+            │ verification ─► critic ─► push
+            ▼
+        draft PR
+            │ finalize
+            ▼
+     done/ · failed/
+</pre>
+<p class="visually-hidden">Flow description: junco submit or the
+GitHub bridge places a ticket in inbox. The daemon claims it into
+processing by atomic rename. A git worktree is cut from the origin
+base branch and the agent session runs under loop guards.
+Verification, the critic, and the push follow; a draft PR opens
+and the ticket finalizes to done or failed. A transient failure
+returns the ticket from processing to inbox with retry_count
+incremented and a not_before backoff stamp.</p>
+<p>Plan-lint validates frontmatter deterministically before any
+agent runs: a <code>repo:</code> that is not a git repository,
+unknown label names, a <code>cd</code> inside
+<code>## Verification</code> — straight to <code>failed/</code>.</p>
+<div class="note"><b>note —</b> plan-lint rejections consume no
+agent tokens; the ticket's result block names the lint error.</div>
+<p>The claimed ticket gets a worktree carved off
+<code>origin/&lt;base_branch&gt;</code>, one per ticket id. The
+agent session runs in-process inside it, guards attached. Then the
+<code>## Verification</code> bash blocks run in the worktree, and
+the critic reads the final diff against the spec — PASS or
+MISSING. On MISSING with retries remaining, exactly one corrective
+agent pass is dispatched and re-evaluated. The branch is pushed;
+<code>gh pr create --draft</code> opens the pull request.</p>
+
+<h2 id="loop-guards-and-supervisor">Loop guards &amp; supervisor</h2>
+<p>Four guards subscribe to the agent's event stream: repetition,
+tool-call loop, tool-error loop, and output budget (a token
+ceiling). On a trip the supervisor nudges
+first — a mid-run steering prompt injected without aborting. A
+repeat trip inside the escalation window kills the session.</p>
+<p>A guard kill is a soft abort, and so is a timeout: both continue
+through post-processing, so commits made before the cutoff are
+salvaged — pushed and opened as a draft PR (statuses
+<code>aborted_partial</code> / <code>timeout_partial</code>,
+routed to <code>done/</code>). Every decision leaves a trace:
+log line, transcript entry, metrics increment.</p>
+
+<h2 id="the-provider-gate">The provider gate</h2>
+<p>junco classifies inference-endpoint failures and, for the ones
+only an operator fixes, pauses claiming across the whole daemon.
+Three states latch: <code>auth_error</code>,
+<code>quota_exhausted</code>, and <code>misconfig</code> (model
+not found) hold until a successful session, a config hot-reload
+apply, or a daemon restart — they never expire on their own. Two
+states back off and clear themselves: <code>rate_limited</code>
+doubles its delay on each further report, capped at 900 s;
+<code>outage_backoff</code> waits one
+<code>worker.retryBackoffSeconds</code> interval. A latch always
+outranks a backoff.</p>
+<p>A ticket that trips the gate requeues with a fresh
+<code>not_before</code> but an untouched retry counter — provider
+faults never burn a ticket's retry budget. <code>/health</code>
+reports the gate state; the full table is in
+<a href="/docs/operations/">operations</a>.</p>
+
+<h2 id="spend-ledger">The spend ledger</h2>
+<p>Every completed session's resolved cost — main run, critic
+pass, corrective re-dispatch, and Q&amp;A/assess/analyze runs
+alike — is tallied in USD against the local calendar day, cap or
+no cap.
+<code>worker.dailyBudgetUsd</code> (default 0, disabled) caps the
+day: at the cap the gate latches <code>budget_exhausted</code> and
+claiming pauses until local midnight, or until an operator raises
+the cap via config hot-reload.</p>
+<div class="note"><b>note —</b> <code>budget_exhausted</code> is
+the one gate state a successful session does not clear — finishing
+a session does not un-spend money.</div>
+
+<h2 id="the-data-root">The data root</h2>
+<p>Everything junco writes resolves under one root,
+<code>dataDir</code> (default <code>~/.local/state/junco</code>):
+the queue, parked review items, the outbox, managed clones,
+PR-flow worktrees, per-run transcripts, and top-level state files
+like <code>spend.json</code>. The tree is created eagerly at
+daemon startup, and the root writes itself a
+<code>.gitignore</code> containing <code>*</code> (when none
+exists) — a data root inside a git checkout never dirties a
+commit.
+<code>junco data</code> prints the tree, read-only. Layout and
+legacy overrides in <a href="/docs/config/">configuration</a>.</p>
+
+<h2 id="offline-outbox">The offline outbox</h2>
+<p>When GitHub is unreachable, side effects queue instead of
+failing: labels, comments, issue creation, and the push-plus-PR
+endgame land as FIFO op files under <code>outbox/</code>, and the
+ticket still finalizes to <code>done/</code> locally. Replay on
+reconnect is idempotent — comment ops carry idempotency markers,
+composite PR ops checkpoint — and an op that fails three attempts
+dead-letters under <code>outbox/dead/</code>.
+<code>junco outbox</code> lists the backlog;
+<code>junco outbox flush</code> pushes it now. Finished work is
+never lost to a dead network. The label-driven loop this feeds
+lives in <a href="/docs/github-loop/">the GitHub loop</a>.</p>

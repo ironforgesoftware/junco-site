@@ -1,0 +1,27 @@
+<!--meta {"title": "Bot account", "description": "A dedicated GitHub identity for the daemon: setup, per-repo grants, doctor checks, migration caveats.", "slug": "bot-account", "navLabel": "Bot account", "source": "docs/bot-account.md", "keywords": ["bot account", "machine account", "GH_CONFIG_DIR", "auth login", "auth grant", "attribution", "approval separation", "SAML"]} -->
+<p>By default every <code>gh</code> and <code>git</code> call junco makes runs under your ambient <code>gh auth</code> login — PRs, comments, labels, pushes, and commits all appear as you. <code>botAccount.enabled</code> routes daemon traffic through a dedicated machine account instead: a second, regular GitHub account (e.g. <code>junco-agent</code>), not a GitHub App. Off by default; behavior is unchanged until enabled.</p>
+
+<h2 id="why">Why</h2>
+<ul>
+<li><b>Attribution.</b> The daemon's traffic — <code>start</code>/<code>run-once</code> and everything downstream: the PR flow, worktree operations, the GitHub inbox/outbox/reporter — authenticates as the bot. Interactive commands stay on your personal login: dashboard actions, <code>assess</code>/<code>analyze</code> posting, <code>submit</code>, <code>doctor</code>'s ambient probes. Worktree commits author as the bot via <code>git config --worktree</code> and its noreply email; your host git identity is never touched.</li>
+<li><b>Approval separation.</b> The identity that dispatches work (the bot) and the identity that approves it (a human applying the approval label) are distinct. The approval check still verifies the human applier's write-plus permission — dispatcher and approver are no longer the same account. See <a href="/docs/github-loop/">the GitHub loop</a>.</li>
+</ul>
+<div class="note"><b>note —</b> with <code>botAccount.enabled</code> true but the bot's login missing or expired, <code>junco start</code> and <code>junco run-once</code> refuse to run, pointing at <code>junco auth login</code>. There is no silent fallback to your personal identity.</div>
+
+<h2 id="setup">Setup</h2>
+<p>Create the machine account on github.com, then log it in with <a href="/docs/cli/#auth-login"><code>junco auth login</code></a>: it runs <code>gh</code>'s own device-flow login into an isolated <code>GH_CONFIG_DIR</code> (default <code>~/.config/junco/gh</code>, separate from your own <code>gh</code> config), verifies the resulting identity, and flips <code>botAccount.enabled</code> to true on success. Nothing secret lands in <code>config.json</code> or the daemon's environment — <code>gh</code> owns token refresh, and the sandbox deny-lists the bot's config dir from agent reads (<a href="/docs/security/">Security</a>).</p>
+<p>Grant repo access with <a href="/docs/cli/#auth-grant"><code>junco auth grant</code></a>: it invites the bot as you (admin on the repo required), accepts the invitation as the bot from its isolated config dir (bounded retry — invitation propagation can lag), then verifies the bot has push before reporting success. Idempotent — re-running on a granted repo is a no-op. Restart the daemon to apply the identity, and let <code>junco doctor</code> verify: it resolves the bot's identity (hard failure if not logged in) and checks its permission on each watched repo — write/maintain/admin passes; triage warns that label edits work but branch pushes fail; anything less warns to invite the bot. Repos you don't own need no invite at all — fork-PR mode provisions the fork on the bot's account.</p>
+<pre class="cmd">junco auth login
+junco auth grant acme/reef-api
+junco restart
+junco doctor</pre>
+<pre class="out">✓ junco-agent has write on acme/reef-api</pre>
+
+<h2 id="caveats">Caveats</h2>
+<ul>
+<li><b>SAML/SSO orgs.</b> Grants fail with a SAML enforcement error regardless of identity. It is a one-time authorization, not a permission problem, and it happens in the bot's own browser session: sign in as the bot and authorize its <code>gh</code> OAuth token for the org. That click-through cannot be automated; <code>auth grant</code> and <code>doctor</code> recognize the error and print this guidance.</li>
+<li><b>Same-login bot.</b> Logging the bot in under your own account defeats attribution and approval separation; <code>doctor</code> warns.</li>
+<li><b>One-time duplicates.</b> Enabling the bot changes <code>@me</code> resolution for GitHub-side dedup, so a pre-existing thread may receive one duplicate plan comment or finding the first time it is touched. Documented behavior; it self-resolves — every subsequent dedup check runs consistently as the bot.</li>
+<li><b>Stale personal-fork remotes.</b> External clones from before the bot was enabled have a <code>fork</code> remote pointing at your fork; the bot cannot push there and fails loud. Remove the stale <code>fork</code> remote and junco re-provisions a fork on the bot's account.</li>
+</ul>
+<div class="warn"><b>warn —</b> dispatching, analyzing, or assessing an issue on an unwatched repo the bot can push to auto-onboards it: the repo is added to the watchlist as a first-class entry and the bridge sweeps it for trigger labels from then on — permanently, with no confirmation step. Unwatch it from the dashboard (<code>x</code> on the repo) or remove its entry from <code>&lt;dataDir&gt;/watchlist.json</code>.</div>

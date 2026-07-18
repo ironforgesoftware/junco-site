@@ -1,0 +1,14 @@
+<p>Everything junco keeps on disk resolves under this one root (default
+<code>~/.local/state/junco</code>):</p>
+<pre class="out">&lt;dataDir&gt;/
+  queue/            inbox · processing · done · failed
+  review/           parked assess findings · parked analyze drafts
+  outbox/           queued GitHub writes (+ dead/ after 3 attempts)
+  clones/           watched/ and external/ managed checkouts
+  worktrees/        ephemeral per-ticket build worktrees
+  transcripts/      &lt;ticket-id&gt;.jsonl per-run event streams
+  watchlist.json · spend.json · worker.log · migrated.json</pre>
+<p>The root writes itself a <code>.gitignore</code> (<code>*</code>), so pointing
+<code>dataDir</code> inside a git checkout can never dirty a commit. <code>junco data</code>
+prints the live tree with counts and provenance; <code>junco data migrate</code> folds any
+legacy-key layout into it.</p>

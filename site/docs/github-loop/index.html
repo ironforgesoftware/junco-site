@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>The GitHub loop — junco docs</title>
+    <meta name="description" content="Label an issue junco: the daemon plans as an editable comment, executes on approval, and opens a draft PR.">
+    <link rel="canonical" href="https://junco.ironforgesoftware.com/docs/github-loop/">
+    <meta property="og:title" content="The GitHub loop — junco docs">
+    <meta property="og:description" content="Label an issue junco: the daemon plans as an editable comment, executes on approval, and opens a draft PR.">
+    <meta property="og:url" content="https://junco.ironforgesoftware.com/docs/github-loop/">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://junco.ironforgesoftware.com/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f4f5">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#14171d">
+    <meta name="color-scheme" content="light dark">
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/CommitMono-400.woff2" crossorigin>
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/CommitMono-700.woff2" crossorigin>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/docs/docs.css">
+    <script>
+      (function () {
+        var t = localStorage.getItem("theme");
+        if (t) document.documentElement.setAttribute("data-theme", t);
+        document.documentElement.classList.add("js");
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="wrap-docs bar">
+      <a class="wordmark" href="/"
+        ><svg class="mark" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true">
+          <circle fill="currentColor" cx="13" cy="16" r="12"></circle>
+          <path fill="var(--accent)" d="M21 10 L32 16 L21 22 Z"></path></svg
+        >junco</a
+      >
+      <div class="search" role="search">
+        <input id="docs-search" type="search" placeholder="search docs" autocomplete="off"
+          role="combobox" aria-expanded="false" aria-controls="search-results"
+          aria-autocomplete="list" aria-label="Search docs">
+        <!-- [html-validate-disable-next prefer-native-element: ARIA combobox popup; a native select cannot host result links] -->
+        <ul id="search-results" role="listbox" aria-label="Search results" hidden></ul>
+      </div>
+      <nav aria-label="Site">
+        <a href="/docs/" aria-current="true">docs</a>
+        <a href="https://github.com/ironforgesoftware/junco">GitHub</a>
+        <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a>
+        <button id="theme-toggle" type="button" aria-pressed="false">dark</button>
+      </nav>
+    </header>
+
+    <div class="wrap-docs docs-grid">
+      <details class="side" open>
+        <summary>contents</summary>
+        <nav aria-label="Docs">
+      <section>
+        <p class="group">start</p>
+        <ul>
+        <li><a href="/docs/">Start here</a></li>
+        <li><a href="/docs/how-it-works/">How junco works</a></li>
+        <li><a href="/docs/security/">Security model</a></li>
+        </ul>
+      </section>
+      <section>
+        <p class="group">guides</p>
+        <ul>
+        <li><a aria-current="page" href="/docs/github-loop/">The GitHub loop</a></li>
+        <li><a href="/docs/tickets/">Tickets &amp; the inbox</a></li>
+        <li><a href="/docs/assess/">Assess</a></li>
+        <li><a href="/docs/analyze/">Analyze</a></li>
+        <li><a href="/docs/dashboard/">The dashboard</a></li>
+        <li><a href="/docs/operations/">Operations</a></li>
+        <li><a href="/docs/bot-account/">Bot account</a></li>
+        </ul>
+      </section>
+      <section>
+        <p class="group">reference</p>
+        <ul>
+        <li><a href="/docs/cli/">CLI</a></li>
+        <li><a href="/docs/config/">Configuration</a></li>
+        <li><a href="/docs/ticket-schema/">Ticket schema</a></li>
+        </ul>
+      </section>
+      <section>
+        <p class="group">field notes</p>
+        <ul>
+        <li><a href="/docs/field-notes/">Tips, recipes &amp; FAQ</a></li>
+        </ul>
+      </section>
+        </nav>
+      </details>
+      <main id="main">
+        <h1>The GitHub loop</h1>
+<p>
+  With <code>github.enabled</code> (default <code>false</code> — zero GitHub calls until then), GitHub
+  Issues become a dispatch surface for the same queue the folder inbox feeds (see
+  <a href="/docs/how-it-works/">how it works</a>). Junco never executes a raw issue directly; it
+  always plans first, and the plan is reviewed on the issue itself.
+</p>
+
+<h2 id="two-hop-flow">The two-hop flow</h2>
+<p>Every sweep (default 60s), junco lists open issues carrying the trigger label in each watched repo.</p>
+<ol>
+  <li><b>Dispatch → plan.</b> An eligible issue — trigger label <code>junco</code> present, no
+  lifecycle label yet — is verified first: who applied the label, and do they have write access?
+  A labeler without write access flips the issue to <code>junco:denied</code>. Verified, the issue
+  becomes a planning ticket: a read-only session at the mapped clone drafts a plan using the same
+  authoring discipline as the bundled junco-dispatch skill. The issue flips to
+  <code>junco:planning</code>.</li>
+  <li><b>Plan → review.</b> The plan posts as one issue comment — ordinary Markdown with a hidden
+  anchor so the bridge recovers it later — and the issue flips to <code>junco:plan-ready</code>.</li>
+  <li><b>Approve → execute.</b> A write+ collaborator applies <code>junco:approved</code> after
+  reading the plan. Junco verifies both that a write+ collaborator applied it <em>and</em> that the
+  approval postdates the plan comment — a stale approval from before a re-plan cannot push an old
+  plan through. The (possibly edited) comment text is read back into an execution ticket, and the
+  normal pipeline runs: atomic claim, isolated worktree, supervised agent, verification, critic.
+  <code>junco:queued</code>, then <code>junco:working</code>.</li>
+  <li><b>Finalize.</b> One closing comment — PR link plus summary, or the failure reason — and the
+  issue flips to <code>junco:done</code> or <code>junco:failed</code>. The draft PR body carries
+  <code>Closes acme/reef-api#52</code>, so merging auto-closes the issue.</li>
+</ol>
+<pre class="diagram" aria-hidden="true">label: junco            ──▶  plan as an editable comment · junco:plan-ready
+label: junco:approved   ──▶  worktree · agent · verify · critic
+                             │
+                             ▼
+                             draft PR · Closes acme/reef-api#52 · junco:done</pre>
+<p class="visually-hidden">Flow: a collaborator labels an issue junco; junco verifies the labeler
+and posts a plan as an editable issue comment (junco:plan-ready); a write-access collaborator
+applies junco:approved after the plan posted; an agent executes in a worktree with verification
+and a critic; a draft PR closes the issue and the label flips to junco:done.</p>
+<p>
+  With <code>github.requireApproval = false</code>, the plan executes automatically on the next
+  sweep — no human gate. Keep the default <code>true</code> anywhere but a private personal repo;
+  the full trust model is on the <a href="/docs/security/">security page</a>.
+</p>
+
+<h2 id="lifecycle-labels">Lifecycle labels</h2>
+<dl>
+  <dt><code>junco</code></dt><dd>The trigger. A write+ collaborator applying it vouches for the issue body as it stands.</dd>
+  <dt><code>junco:planning</code></dt><dd>A planning session is drafting a plan from the raw issue.</dd>
+  <dt><code>junco:plan-ready</code></dt><dd>Plan posted as a comment — awaiting review and approval.</dd>
+  <dt><code>junco:approved</code></dt><dd>Applied by a write+ collaborator after reading the plan; authorizes execution. Removed once dispatched.</dd>
+  <dt><code>junco:queued</code></dt><dd>An execution (or Q&amp;A) ticket is in the inbox, waiting for a worker slot.</dd>
+  <dt><code>junco:working</code></dt><dd>A session is on it right now.</dd>
+  <dt><code>junco:done</code></dt><dd>Finished — the closing comment carries the PR link or answer.</dd>
+  <dt><code>junco:failed</code></dt><dd>Failed — the closing comment carries the reason, planning or execution.</dd>
+  <dt><code>junco:denied</code></dt><dd>The trigger label was applied by someone without write access.</dd>
+  <dt><code>junco:ask</code></dt><dd>Added alongside the trigger: route to read-only Q&amp;A instead of planning.</dd>
+</dl>
+
+<h2 id="editing-and-re-planning">Editing and re-planning</h2>
+<p>
+  The plan comment is the executable text at approval time. Edit it before approval and the edit is
+  what executes, not the model's original draft. Remove <code>junco:plan-ready</code> (leave the
+  trigger label on) and a fresh planning session runs — when multiple plan comments exist, the
+  latest wins. Remove <code>junco:failed</code> and the issue re-enters at the top: fresh plan,
+  fresh review, fresh approval. All gestures take effect on the next sweep; no restart.
+</p>
+<div class="note"><b>note —</b> if the <code>junco:planning</code> → <code>junco:plan-ready</code>
+flip is lost offline <em>after</em> the plan comment posted, the issue strands in
+<code>junco:planning</code>. Apply <code>junco:plan-ready</code> by hand (the comment is already on
+the thread), or remove <code>junco:planning</code> to re-plan from scratch.</div>
+
+<h2 id="ask-mode">Ask mode</h2>
+<p>
+  Add <code>junco:ask</code> alongside the trigger label and the issue routes straight to the
+  read-only Q&amp;A path — <code>junco:queued</code> directly, no plan, no approval. The session
+  browses the mapped clone with read-only tools and posts its answer as the comment. No branch,
+  no PR.
+</p>
+
+<h2 id="external-repos">External repos (fork-PR mode)</h2>
+<p>
+  The label loop assumes push and label access. For an upstream repo you don't control, junco
+  <a href="/docs/cli/#dispatch">dispatches</a> in fork-PR mode instead: fork, clone the fork's
+  upstream into a managed directory, work the issue, push the branch to your fork, open a draft PR
+  upstream. It applies no labels and posts no comments on the upstream issue — the draft PR is the
+  single artifact that reaches the project.
+</p>
+<pre class="cmd">junco dispatch acme/reef-api#52</pre>
+<div class="warn"><b>warn —</b> an upstream issue body is untrusted input; no labeler vouched for
+it. Review the draft PR's diff before marking it ready — that draft gate replaces the plan-review
+hop an owned repo gets.</div>
+<p>
+  Re-dispatching the same issue collides on the existing branch by design. To push
+  review-feedback commits, submit a <a href="/docs/tickets/">ticket</a> with
+  <code>amends_pr: &lt;PR number&gt;</code>, <code>repo:</code> the managed clone, and
+  <code>push_remote: fork</code> — the upstream PR updates in place.
+</p>
+
+<h2 id="offline">Offline behavior</h2>
+<p>
+  When GitHub is unreachable, label flips, issue comments, and the PR push+create sequence queue as
+  durable ops under <code>&lt;dataDir&gt;/outbox/</code> — one JSON file per op, replayed FIFO,
+  idempotent, surviving daemon crashes. Tickets still finalize locally; the outbox is durability,
+  not gating. A non-network failure on one op dead-letters it after 3 attempts to
+  <code>outbox/dead/</code>, which <code>junco doctor</code> flags. See
+  <a href="/docs/operations/">operations</a>.
+</p>
+<pre class="cmd">junco outbox
+junco outbox flush</pre>
+      </main>
+    </div>
+
+    <footer class="wrap-docs foot">
+      <p>
+        <a href="https://github.com/ironforgesoftware/junco/blob/main/LICENSE">MIT</a> ·
+        <a href="https://github.com/ironforgesoftware/junco">GitHub</a> ·
+        <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a> ·
+        <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a>
+      </p>
+      <p class="stamp">
+        verified against junco 0.8.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/github-mode.md">docs/github-mode.md</a> ·
+        <a href="https://github.com/ironforgesoftware/junco-site/edit/main/docs-src/pages/github-loop.html">edit this page</a>
+      </p>
+    </footer>
+
+    <script type="module" src="/docs/docs.js"></script>
+  </body>
+</html>

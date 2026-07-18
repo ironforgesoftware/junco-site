@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>How junco works — junco docs</title>
+    <meta name="description" content="How a ticket moves from inbox to draft PR: queue, pipeline, loop guards, provider gate, spend cap, and outbox.">
+    <link rel="canonical" href="https://junco.ironforgesoftware.com/docs/how-it-works/">
+    <meta property="og:title" content="How junco works — junco docs">
+    <meta property="og:description" content="How a ticket moves from inbox to draft PR: queue, pipeline, loop guards, provider gate, spend cap, and outbox.">
+    <meta property="og:url" content="https://junco.ironforgesoftware.com/docs/how-it-works/">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://junco.ironforgesoftware.com/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f4f5">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#14171d">
+    <meta name="color-scheme" content="light dark">
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/CommitMono-400.woff2" crossorigin>
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/CommitMono-700.woff2" crossorigin>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/docs/docs.css">
+    <script>
+      (function () {
+        var t = localStorage.getItem("theme");
+        if (t) document.documentElement.setAttribute("data-theme", t);
+        document.documentElement.classList.add("js");
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="wrap-docs bar">
+      <a class="wordmark" href="/"
+        ><svg class="mark" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true">
+          <circle fill="currentColor" cx="13" cy="16" r="12"></circle>
+          <path fill="var(--accent)" d="M21 10 L32 16 L21 22 Z"></path></svg
+        >junco</a
+      >
+      <div class="search" role="search">
+        <input id="docs-search" type="search" placeholder="search docs" autocomplete="off"
+          role="combobox" aria-expanded="false" aria-controls="search-results"
+          aria-autocomplete="list" aria-label="Search docs">
+        <!-- [html-validate-disable-next prefer-native-element: ARIA combobox popup; a native select cannot host result links] -->
+        <ul id="search-results" role="listbox" aria-label="Search results" hidden></ul>
+      </div>
+      <nav aria-label="Site">
+        <a href="/docs/" aria-current="true">docs</a>
+        <a href="https://github.com/ironforgesoftware/junco">GitHub</a>
+        <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a>
+        <button id="theme-toggle" type="button" aria-pressed="false">dark</button>
+      </nav>
+    </header>
+
+    <div class="wrap-docs docs-grid">
+      <details class="side" open>
+        <summary>contents</summary>
+        <nav aria-label="Docs">
+      <section>
+        <p class="group">start</p>
+        <ul>
+        <li><a href="/docs/">Start here</a></li>
+        <li><a aria-current="page" href="/docs/how-it-works/">How junco works</a></li>
+        <li><a href="/docs/security/">Security model</a></li>
+        </ul>
+      </section>
+      <section>
+        <p class="group">guides</p>
+        <ul>
+        <li><a href="/docs/github-loop/">The GitHub loop</a></li>
+        <li><a href="/docs/tickets/">Tickets &amp; the inbox</a></li>
+        <li><a href="/docs/assess/">Assess</a></li>
+        <li><a href="/docs/analyze/">Analyze</a></li>
+        <li><a href="/docs/dashboard/">The dashboard</a></li>
+        <li><a href="/docs/operations/">Operations</a></li>
+        <li><a href="/docs/bot-account/">Bot account</a></li>
+        </ul>
+      </section>
+      <section>
+        <p class="group">reference</p>
+        <ul>
+        <li><a href="/docs/cli/">CLI</a></li>
+        <li><a href="/docs/config/">Configuration</a></li>
+        <li><a href="/docs/ticket-schema/">Ticket schema</a></li>
+        </ul>
+      </section>
+      <section>
+        <p class="group">field notes</p>
+        <ul>
+        <li><a href="/docs/field-notes/">Tips, recipes &amp; FAQ</a></li>
+        </ul>
+      </section>
+        </nav>
+      </details>
+      <main id="main">
+        <h1>How junco works</h1>
+<p>junco is a local daemon that turns Markdown tickets — dropped
+in a folder, or bridged from labeled GitHub issues — into draft
+pull requests by driving a coding agent in-process against an
+OpenAI-compatible inference endpoint. This page follows a ticket
+end to end; trust boundaries live in
+<a href="/docs/security/">security model</a>.</p>
+
+<h2 id="the-queue">The queue</h2>
+<p>The queue is four directories under the data root:
+<code>inbox/</code>, <code>processing/</code>, <code>done/</code>,
+<code>failed/</code>. <a href="/docs/cli/#submit">junco submit</a> —
+or any tool that writes a file atomically — drops a ticket into
+<code>inbox/</code>. The daemon claims it by atomic rename into
+<code>processing/</code>: the rename succeeds for exactly one
+claimant or not at all, so two workers can never own the same
+ticket — no lock file, no window, no race.</p>
+<pre class="cmd">junco submit reef-color-fix.md
+junco list
+junco status</pre>
+<p>Claiming is gated twice more: a <code>not_before</code> stamp
+defers a ticket until that UTC instant, and endpoint readiness is
+probed before every claim — a down endpoint leaves work queued.
+Finalize appends a result block and renames the ticket
+into <code>done/</code> or <code>failed/</code>. Transient
+failures with no commits — connection errors, 5xx, truncated
+streams — requeue to <code>inbox/</code> with
+<code>retry_count</code> incremented and a <code>not_before</code>
+backoff, up to <code>worker.maxTransientRetries</code>.
+Crash-stranded tickets in <code>processing/</code> rejoin the
+inbox at startup under the same budget.</p>
+
+<h2 id="ticket-flavors">Ticket flavors</h2>
+<p>A ticket is Markdown with YAML frontmatter;
+<a href="/docs/ticket-schema/">junco schema</a> prints the typed
+contract. Selection is ordered: an <code>assess:</code> mapping
+selects a read-only audit whose findings park for review instead
+of filing; <code>analyze:</code> selects a read-only investigation
+of one issue whose drafted comment parks instead of posting — both
+are checked before <code>repo:</code>. A <code>repo:</code> path
+selects the PR flow: agent in an isolated worktree, draft PR on
+success. None of the three means Q&amp;A: read-only tool
+subset, answer appended to the ticket file, no git. Frontmatter
+reference in <a href="/docs/tickets/">tickets</a>.</p>
+
+<h2 id="the-pr-flow-pipeline">The PR-flow pipeline</h2>
+<pre class="diagram" aria-hidden="true">
+junco submit · github bridge
+            │
+            ▼
+     ┌─────────────┐
+     │   inbox/    │◄──────────────────────────────┐
+     └──────┬──────┘                               │
+            │ claim — atomic rename                │ requeue on transient
+            ▼                                      │ failure: retry_count++
+     ┌─────────────┐                               │ and not_before backoff
+     │ processing/ │───────────────────────────────┘
+     └──────┬──────┘
+            │ worktree off origin/base
+            ▼
+     ┌───────────────┐
+     │ agent session │  loop guards · supervisor
+     └──────┬────────┘
+            │ verification ─► critic ─► push
+            ▼
+        draft PR
+            │ finalize
+            ▼
+     done/ · failed/
+</pre>
+<p class="visually-hidden">Flow description: junco submit or the
+GitHub bridge places a ticket in inbox. The daemon claims it into
+processing by atomic rename. A git worktree is cut from the origin
+base branch and the agent session runs under loop guards.
+Verification, the critic, and the push follow; a draft PR opens
+and the ticket finalizes to done or failed. A transient failure
+returns the ticket from processing to inbox with retry_count
+incremented and a not_before backoff stamp.</p>
+<p>Plan-lint validates frontmatter deterministically before any
+agent runs: a <code>repo:</code> that is not a git repository,
+unknown label names, a <code>cd</code> inside
+<code>## Verification</code> — straight to <code>failed/</code>.</p>
+<div class="note"><b>note —</b> plan-lint rejections consume no
+agent tokens; the ticket's result block names the lint error.</div>
+<p>The claimed ticket gets a worktree carved off
+<code>origin/&lt;base_branch&gt;</code>, one per ticket id. The
+agent session runs in-process inside it, guards attached. Then the
+<code>## Verification</code> bash blocks run in the worktree, and
+the critic reads the final diff against the spec — PASS or
+MISSING. On MISSING with retries remaining, exactly one corrective
+agent pass is dispatched and re-evaluated. The branch is pushed;
+<code>gh pr create --draft</code> opens the pull request.</p>
+
+<h2 id="loop-guards-and-supervisor">Loop guards &amp; supervisor</h2>
+<p>Four guards subscribe to the agent's event stream: repetition,
+tool-call loop, tool-error loop, and output budget (a token
+ceiling). On a trip the supervisor nudges
+first — a mid-run steering prompt injected without aborting. A
+repeat trip inside the escalation window kills the session.</p>
+<p>A guard kill is a soft abort, and so is a timeout: both continue
+through post-processing, so commits made before the cutoff are
+salvaged — pushed and opened as a draft PR (statuses
+<code>aborted_partial</code> / <code>timeout_partial</code>,
+routed to <code>done/</code>). Every decision leaves a trace:
+log line, transcript entry, metrics increment.</p>
+
+<h2 id="the-provider-gate">The provider gate</h2>
+<p>junco classifies inference-endpoint failures and, for the ones
+only an operator fixes, pauses claiming across the whole daemon.
+Three states latch: <code>auth_error</code>,
+<code>quota_exhausted</code>, and <code>misconfig</code> (model
+not found) hold until a successful session, a config hot-reload
+apply, or a daemon restart — they never expire on their own. Two
+states back off and clear themselves: <code>rate_limited</code>
+doubles its delay on each further report, capped at 900 s;
+<code>outage_backoff</code> waits one
+<code>worker.retryBackoffSeconds</code> interval. A latch always
+outranks a backoff.</p>
+<p>A ticket that trips the gate requeues with a fresh
+<code>not_before</code> but an untouched retry counter — provider
+faults never burn a ticket's retry budget. <code>/health</code>
+reports the gate state; the full table is in
+<a href="/docs/operations/">operations</a>.</p>
+
+<h2 id="spend-ledger">The spend ledger</h2>
+<p>Every completed session's resolved cost — main run, critic
+pass, corrective re-dispatch, and Q&amp;A/assess/analyze runs
+alike — is tallied in USD against the local calendar day, cap or
+no cap.
+<code>worker.dailyBudgetUsd</code> (default 0, disabled) caps the
+day: at the cap the gate latches <code>budget_exhausted</code> and
+claiming pauses until local midnight, or until an operator raises
+the cap via config hot-reload.</p>
+<div class="note"><b>note —</b> <code>budget_exhausted</code> is
+the one gate state a successful session does not clear — finishing
+a session does not un-spend money.</div>
+
+<h2 id="the-data-root">The data root</h2>
+<p>Everything junco writes resolves under one root,
+<code>dataDir</code> (default <code>~/.local/state/junco</code>):
+the queue, parked review items, the outbox, managed clones,
+PR-flow worktrees, per-run transcripts, and top-level state files
+like <code>spend.json</code>. The tree is created eagerly at
+daemon startup, and the root writes itself a
+<code>.gitignore</code> containing <code>*</code> (when none
+exists) — a data root inside a git checkout never dirties a
+commit.
+<code>junco data</code> prints the tree, read-only. Layout and
+legacy overrides in <a href="/docs/config/">configuration</a>.</p>
+
+<h2 id="offline-outbox">The offline outbox</h2>
+<p>When GitHub is unreachable, side effects queue instead of
+failing: labels, comments, issue creation, and the push-plus-PR
+endgame land as FIFO op files under <code>outbox/</code>, and the
+ticket still finalizes to <code>done/</code> locally. Replay on
+reconnect is idempotent — comment ops carry idempotency markers,
+composite PR ops checkpoint — and an op that fails three attempts
+dead-letters under <code>outbox/dead/</code>.
+<code>junco outbox</code> lists the backlog;
+<code>junco outbox flush</code> pushes it now. Finished work is
+never lost to a dead network. The label-driven loop this feeds
+lives in <a href="/docs/github-loop/">the GitHub loop</a>.</p>
+      </main>
+    </div>
+
+    <footer class="wrap-docs foot">
+      <p>
+        <a href="https://github.com/ironforgesoftware/junco/blob/main/LICENSE">MIT</a> ·
+        <a href="https://github.com/ironforgesoftware/junco">GitHub</a> ·
+        <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a> ·
+        <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a>
+      </p>
+      <p class="stamp">
+        verified against junco 0.8.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/ARCHITECTURE.md">ARCHITECTURE.md</a> ·
+        <a href="https://github.com/ironforgesoftware/junco-site/edit/main/docs-src/pages/how-it-works.html">edit this page</a>
+      </p>
+    </footer>
+
+    <script type="module" src="/docs/docs.js"></script>
+  </body>
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>The dashboard — junco docs</title>
+    <meta name="description" content="The fullscreen terminal UI: GITHUB and LOCAL modes, panes and key bindings, the command palette, repo watching.">
+    <link rel="canonical" href="https://junco.ironforgesoftware.com/docs/dashboard/">
+    <meta property="og:title" content="The dashboard — junco docs">
+    <meta property="og:description" content="The fullscreen terminal UI: GITHUB and LOCAL modes, panes and key bindings, the command palette, repo watching.">
+    <meta property="og:url" content="https://junco.ironforgesoftware.com/docs/dashboard/">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://junco.ironforgesoftware.com/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f4f5">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#14171d">
+    <meta name="color-scheme" content="light dark">
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/CommitMono-400.woff2" crossorigin>
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/CommitMono-700.woff2" crossorigin>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/docs/docs.css">
+    <script>
+      (function () {
+        var t = localStorage.getItem("theme");
+        if (t) document.documentElement.setAttribute("data-theme", t);
+        document.documentElement.classList.add("js");
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="wrap-docs bar">
+      <a class="wordmark" href="/"
+        ><svg class="mark" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true">
+          <circle fill="currentColor" cx="13" cy="16" r="12"></circle>
+          <path fill="var(--accent)" d="M21 10 L32 16 L21 22 Z"></path></svg
+        >junco</a
+      >
+      <div class="search" role="search">
+        <input id="docs-search" type="search" placeholder="search docs" autocomplete="off"
+          role="combobox" aria-expanded="false" aria-controls="search-results"
+          aria-autocomplete="list" aria-label="Search docs">
+        <!-- [html-validate-disable-next prefer-native-element: ARIA combobox popup; a native select cannot host result links] -->
+        <ul id="search-results" role="listbox" aria-label="Search results" hidden></ul>
+      </div>
+      <nav aria-label="Site">
+        <a href="/docs/" aria-current="true">docs</a>
+        <a href="https://github.com/ironforgesoftware/junco">GitHub</a>
+        <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a>
+        <button id="theme-toggle" type="button" aria-pressed="false">dark</button>
+      </nav>
+    </header>
+
+    <div class="wrap-docs docs-grid">
+      <details class="side" open>
+        <summary>contents</summary>
+        <nav aria-label="Docs">
+      <section>
+        <p class="group">start</p>
+        <ul>
+        <li><a href="/docs/">Start here</a></li>
+        <li><a href="/docs/how-it-works/">How junco works</a></li>
+        <li><a href="/docs/security/">Security model</a></li>
+        </ul>
+      </section>
+      <section>
+        <p class="group">guides</p>
+        <ul>
+        <li><a href="/docs/github-loop/">The GitHub loop</a></li>
+        <li><a href="/docs/tickets/">Tickets &amp; the inbox</a></li>
+        <li><a href="/docs/assess/">Assess</a></li>
+        <li><a href="/docs/analyze/">Analyze</a></li>
+        <li><a aria-current="page" href="/docs/dashboard/">The dashboard</a></li>
+        <li><a href="/docs/operations/">Operations</a></li>
+        <li><a href="/docs/bot-account/">Bot account</a></li>
+        </ul>
+      </section>
+      <section>
+        <p class="group">reference</p>
+        <ul>
+        <li><a href="/docs/cli/">CLI</a></li>
+        <li><a href="/docs/config/">Configuration</a></li>
+        <li><a href="/docs/ticket-schema/">Ticket schema</a></li>
+        </ul>
+      </section>
+      <section>
+        <p class="group">field notes</p>
+        <ul>
+        <li><a href="/docs/field-notes/">Tips, recipes &amp; FAQ</a></li>
+        </ul>
+      </section>
+        </nav>
+      </details>
+      <main id="main">
+        <h1>The dashboard</h1>
+<p>The dashboard runs fullscreen in the terminal's alternate buffer, adapts its layout to the window (a third pane appears at 110 columns and up), and restores the terminal exactly on exit. It needs a real TTY — not piped, not backgrounded. Flags: <a href="/docs/cli/#dashboard">CLI reference</a>.</p>
+<pre class="cmd">junco dashboard</pre>
+
+<h2 id="two-modes">Two modes</h2>
+<p>Swap modes any time with <code>m</code> / <code>Shift+Tab</code>, or click the header's tab pair.</p>
+<ul>
+<li><b>GITHUB</b> — an interactive UI over the <a href="/docs/github-loop/">GitHub loop</a>: watched repos, their trigger-labeled issues, and junco-authored PRs.</li>
+<li><b>LOCAL</b> — the machine-local runtime under either mode: the local queue, the GitHub outbox backlog, watched repos on disk, ticket worktrees, and the daemon itself.</li>
+</ul>
+<p>With <code>github.enabled = false</code> the dashboard opens into LOCAL — there is nothing for GITHUB mode to show. A shared header carries a live daemon pulse in both modes: issues awaiting review, PRs needing attention, the processed record, daemon up/down, queue depth, and unpushed outbox ops.</p>
+
+<h2 id="panes-and-keys">The panes and keys</h2>
+<p>GITHUB mode has three zones: the <b>repos pane</b> (pane 1, with the queue card at top), the <b>issues pane</b> (pane 2, the selected repo's trigger-labeled issues with state badges), and the <b>PR monitor</b> (pane 3, wide terminals only, the selected repo's junco-authored PRs). A persistent shortcut bar shows the keys for wherever focus is.</p>
+<ul>
+<li><code>1</code> / <code>2</code> / <code>3</code> — jump to pane (pane 3 in wide mode only)</li>
+<li>arrow keys (or <code>j</code>/<code>k</code>) — move selection; <code>h</code>/<code>l</code> or <code>tab</code> — switch panes; <code>g</code>/<code>G</code> — first/last</li>
+<li><code>enter</code> — fullscreen detail overlay: issue body plus posted plan comment, or a PR's fuller card</li>
+<li><code>d</code> — dispatch (adds the trigger label); <code>D</code> — dispatch as ask: read-only Q&amp;A, no plan, no PR</li>
+<li><code>a</code> — approve the posted plan (available once a plan is ready)</li>
+<li><code>R</code> — re-plan or re-cycle, per the issue's current state</li>
+<li><code>/</code> — filter issues (<code>enter</code> applies, <code>esc</code> clears)</li>
+<li><code>w</code> — add a repo to the watchlist; <code>x</code> — unwatch (watchlist entries only)</li>
+<li><code>i</code> — jump to the issues pane (alias of <code>2</code>); <code>[</code>/<code>]</code> — scroll detail, queue, and command-output views</li>
+<li><code>c</code> — draft an analysis comment on the selected issue; parked for review, never posted directly</li>
+<li><code>s</code>/<code>S</code> — assess the selected repo, or the selected issue when pane 2 is focused (<code>S</code> adds <code>--auto-plan</code>); findings park for review</li>
+<li><code>v</code> — review view: pending assess finding batches and analyze comment drafts</li>
+<li><code>t</code> — queue view; <code>p</code> — PRs view, cross-repo and attention-first; <code>o</code> — open the selection in the browser</li>
+<li><code>r</code> — run the refresh cycle now</li>
+<li><code>,</code> — config editor; <code>:</code> — command palette; <code>?</code> — full key reference; <code>q</code> — quit</li>
+</ul>
+<p>LOCAL mode replaces the panes with a section rail (Queue, Outbox, Repos, Worktrees, Daemon) and a body:</p>
+<ul>
+<li>arrow keys (<code>j</code>/<code>k</code>) — move the section on the rail or the cursor in the body; <code>l</code>/<code>enter</code> enters the body, <code>h</code>/<code>esc</code> returns; <code>[</code>/<code>]</code> scroll the daemon panel</li>
+<li><code>R</code> — requeue a failed ticket</li>
+<li><code>x</code> — remove under the cursor: delete a queued ticket, prune a stale worktree, or unwatch a repo (confirmed when destructive)</li>
+<li><code>f</code> — flush the GitHub outbox; <code>o</code> — open a repo's origin/fork in the browser</li>
+<li><code>X</code> — restart the daemon (confirmed; in-flight tickets soft-abort, committed work salvaged)</li>
+<li><code>r</code> — full local refresh; <code>g</code>/<code>G</code> — first/last</li>
+</ul>
+<p>Rows the daemon owns — running queue entries, live worktrees — render but are never selectable; the cursor skips them.</p>
+<div class="note"><b>note —</b> every GITHUB-mode action is an ordinary label mutation made through your own <code>gh</code> auth. Dispatch, approve, and re-plan run nothing themselves; they move labels the daemon's sweep acts on — see <a href="/docs/github-loop/">the GitHub loop</a>.</div>
+
+<h2 id="command-palette">The command palette</h2>
+<p><code>:</code> opens the palette: type to filter, <code>enter</code> to run. Commands that take arguments — <code>list</code>, <code>retry</code>, <code>outbox</code>, <code>submit</code>, <code>logs</code>, <code>service</code> — get an args field first. Each run spawns the actual <code>junco</code> CLI as a subprocess against the dashboard's own config — no reimplementation, no drift, no shell in the middle. The command's real output appears in a scrollable pane with its exit code; <code>r</code> re-runs, <code>esc</code> returns. <code>logs</code> runs bounded (<code>-n 200</code>); <code>init</code>, <code>start</code>, and <code>dashboard</code> are greyed out with the reason they can't run here (use <code>restart</code> for the daemon). LOCAL-mode mutations — requeue, delete, flush, restart, prune — use the same subprocess model.</p>
+
+<h2 id="mouse-support">Mouse support</h2>
+<p>In GITHUB mode the mouse works throughout: clicking a row focuses its pane and selects it; clicking the already-selected row opens it, exactly like <code>enter</code>. Clicking blank pane space focuses the pane without moving the selection. The wheel acts on whatever pane is under the cursor. Detail views carry a clickable <code>owner/repo#n</code> line (cmd+click in OSC 8 terminals, or <code>o</code>) to open the item on GitHub. Hold shift while dragging to select terminal text. In LOCAL mode only the header tab is clickable; local rows are keyboard-first in v1.</p>
+
+<h2 id="first-run-walkthrough">The first-run walkthrough</h2>
+<p>With no config yet, bare <code>junco</code> or <code>junco dashboard</code> opens a guided setup in chapters: workspace, model setup (an inference endpoint with live discovery, or a hosted provider from the built-in catalog), repo containment, the GitHub bridge, an Account chapter for the dedicated bot identity, and the recommended extras. It then creates the queue, verifies the result with a flight check, and lands in the dashboard. Re-run it anytime from the palette ("setup") — it only writes what changes. The headless equivalent is <code>junco config init</code>; the full key reference is <a href="/docs/config/">Configuration</a>.</p>
+
+<h2 id="watching-repos">Watching repos</h2>
+<p><code>w</code> prompts for <code>owner/repo</code> or a github.com URL; an empty clone path clones into <code>&lt;dataDir&gt;/clones/watched/&lt;owner&gt;/&lt;repo&gt;</code>. It validates the clone's origin, confirms reachability via <code>gh</code>, and creates the trigger label if missing. Entries live in <code>&lt;dataDir&gt;/watchlist.json</code>, separate from <code>github.repos</code> in <code>config.json</code>; the daemon's bridge sweep re-reads the file every sweep, so watchlist changes apply without a restart. Where a repo appears in both, the config entry wins — config-sourced repos carry a <code>(cfg)</code> marker, are read-only in the dashboard, and <code>x</code> reports where they're defined instead of removing them.</p>
+      </main>
+    </div>
+
+    <footer class="wrap-docs foot">
+      <p>
+        <a href="https://github.com/ironforgesoftware/junco/blob/main/LICENSE">MIT</a> ·
+        <a href="https://github.com/ironforgesoftware/junco">GitHub</a> ·
+        <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a> ·
+        <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a>
+      </p>
+      <p class="stamp">
+        verified against junco 0.8.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/dashboard.md">docs/dashboard.md</a> ·
+        <a href="https://github.com/ironforgesoftware/junco-site/edit/main/docs-src/pages/dashboard.html">edit this page</a>
+      </p>
+    </footer>
+
+    <script type="module" src="/docs/docs.js"></script>
+  </body>
+</html>

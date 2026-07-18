@@ -1,0 +1,4 @@
+<p>Best-effort delete of a queued ticket from <code>inbox/</code> only — it never touches <code>processing/</code> (the daemon owns it) and refuses any name that resolves outside the inbox. The name is fuzzy-matched against <code>inbox/*.md</code>, the same way <a href="#retry">retry</a> matches.</p>
+<pre class="cmd">junco rm add-util-2026-05-31.md</pre>
+<div class="note"><b>note —</b> a miss is not an error: the daemon can atomically claim a ticket into <code>processing/</code> between your listing and the delete, so "not present in inbox" exits 0. This is a best-effort inbox delete, not an authoritative kill.</div>
+<p class="see">see also: <a href="#list">list</a> · <a href="#retry">retry</a></p>

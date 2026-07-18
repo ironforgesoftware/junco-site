@@ -1,0 +1,4 @@
+<p>Deletes a stale or backup ticket worktree by path (a failed ticket's preserved worktree lives at <code>&lt;worktreeRoot&gt;/&lt;id&gt;</code>). The prune runs under the daemon's own shared worktree lock with an in-lock liveness gate, so it can never race a ticket that just started using the tree — and it refuses a live worktree outright: the daemon owns those.</p>
+<pre class="cmd">junco worktree prune &lt;worktreeRoot&gt;/gh-acme-reef-api-52</pre>
+<div class="note"><b>note —</b> the dashboard's LOCAL → Worktrees section (<code>x</code>) runs this same command under the hood — no separate implementation.</div>
+<p class="see">see also: <a href="#dashboard">dashboard</a> · <a href="#status">status</a> · <a href="/docs/operations/">operations guide</a></p>

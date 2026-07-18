@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Assess — junco docs</title>
+    <meta name="description" content="junco assess audits a repo, parks findings for review, and files only what a human confirms as GitHub issues.">
+    <link rel="canonical" href="https://junco.ironforgesoftware.com/docs/assess/">
+    <meta property="og:title" content="Assess — junco docs">
+    <meta property="og:description" content="junco assess audits a repo, parks findings for review, and files only what a human confirms as GitHub issues.">
+    <meta property="og:url" content="https://junco.ironforgesoftware.com/docs/assess/">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://junco.ironforgesoftware.com/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f4f5">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#14171d">
+    <meta name="color-scheme" content="light dark">
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/CommitMono-400.woff2" crossorigin>
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/CommitMono-700.woff2" crossorigin>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/docs/docs.css">
+    <script>
+      (function () {
+        var t = localStorage.getItem("theme");
+        if (t) document.documentElement.setAttribute("data-theme", t);
+        document.documentElement.classList.add("js");
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="wrap-docs bar">
+      <a class="wordmark" href="/"
+        ><svg class="mark" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true">
+          <circle fill="currentColor" cx="13" cy="16" r="12"></circle>
+          <path fill="var(--accent)" d="M21 10 L32 16 L21 22 Z"></path></svg
+        >junco</a
+      >
+      <div class="search" role="search">
+        <input id="docs-search" type="search" placeholder="search docs" autocomplete="off"
+          role="combobox" aria-expanded="false" aria-controls="search-results"
+          aria-autocomplete="list" aria-label="Search docs">
+        <!-- [html-validate-disable-next prefer-native-element: ARIA combobox popup; a native select cannot host result links] -->
+        <ul id="search-results" role="listbox" aria-label="Search results" hidden></ul>
+      </div>
+      <nav aria-label="Site">
+        <a href="/docs/" aria-current="true">docs</a>
+        <a href="https://github.com/ironforgesoftware/junco">GitHub</a>
+        <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a>
+        <button id="theme-toggle" type="button" aria-pressed="false">dark</button>
+      </nav>
+    </header>
+
+    <div class="wrap-docs docs-grid">
+      <details class="side" open>
+        <summary>contents</summary>
+        <nav aria-label="Docs">
+      <section>
+        <p class="group">start</p>
+        <ul>
+        <li><a href="/docs/">Start here</a></li>
+        <li><a href="/docs/how-it-works/">How junco works</a></li>
+        <li><a href="/docs/security/">Security model</a></li>
+        </ul>
+      </section>
+      <section>
+        <p class="group">guides</p>
+        <ul>
+        <li><a href="/docs/github-loop/">The GitHub loop</a></li>
+        <li><a href="/docs/tickets/">Tickets &amp; the inbox</a></li>
+        <li><a aria-current="page" href="/docs/assess/">Assess</a></li>
+        <li><a href="/docs/analyze/">Analyze</a></li>
+        <li><a href="/docs/dashboard/">The dashboard</a></li>
+        <li><a href="/docs/operations/">Operations</a></li>
+        <li><a href="/docs/bot-account/">Bot account</a></li>
+        </ul>
+      </section>
+      <section>
+        <p class="group">reference</p>
+        <ul>
+        <li><a href="/docs/cli/">CLI</a></li>
+        <li><a href="/docs/config/">Configuration</a></li>
+        <li><a href="/docs/ticket-schema/">Ticket schema</a></li>
+        </ul>
+      </section>
+      <section>
+        <p class="group">field notes</p>
+        <ul>
+        <li><a href="/docs/field-notes/">Tips, recipes &amp; FAQ</a></li>
+        </ul>
+      </section>
+        </nav>
+      </details>
+      <main id="main">
+        <h1>Assess</h1>
+<p>
+  <a href="/docs/cli/#assess"><code>junco assess</code></a> audits a repository and parks what it
+  finds; filing findings as GitHub issues is a separate, human-confirmed step. Junco authors
+  issues — it never merges anything on its own.
+</p>
+
+<h2 id="what-a-run-does">What a run does</h2>
+<pre class="cmd">junco assess acme/reef-api
+junco assess acme/reef-api#52 --auto-plan</pre>
+<p>
+  The command composes and queues a machine-owned ticket; the audit itself runs when the daemon
+  claims it — the daemon must be running. The run is read-only: <code>npm audit --json</code> for
+  the dependency tree plus a read-only agent pass over the code, then validate, sanitize,
+  severity-filter (<code>assess.minSeverity</code>), dedup, and park every survivor in a durable
+  review store keyed by the ticket id. Three target shapes: a local path; <code>owner/repo</code>,
+  matched against the watched-repo list (an unwatched name errors rather than guessing a clone
+  path); or <code>owner/repo#N</code> / an issue URL, which scopes the audit to the code that
+  issue implicates and — unlike the bare form — auto-provisions an unwatched repo (fork, managed
+  clone, watchlist add). A scoped run posts no comment on the issue; each filed finding instead
+  carries a <code>Context: acme/reef-api#52</code> line GitHub cross-references onto the issue's
+  timeline.
+</p>
+
+<h2 id="review-and-file">Review and file</h2>
+<pre class="cmd">junco assess review
+junco assess review &lt;id&gt;
+junco assess file &lt;id&gt; --all
+junco assess file &lt;id&gt; --only &lt;fingerprint&gt;,&lt;fingerprint&gt;</pre>
+<p>
+  <code>review</code> lists pending batches; with an id it shows each finding's fingerprint,
+  severity, and title. <code>file</code> is the confirm step — no bare default, since these are
+  writes on an issue tracker: pass <code>--all</code> or <code>--only</code>. Each selected finding
+  files as one issue titled <code>[&lt;severity&gt;] &lt;title&gt; (&lt;ruleId&gt;)</code>, with a
+  machine-readable JSON block and a marker as the literal last line. On a repo you own, issues get
+  <code>junco:finding</code> + <code>severity/&lt;level&gt;</code> labels, best-effort; on a repo
+  you don't own they file label-free — junco never assumes triage rights it doesn't have.
+  Unselected findings stay unreviewed and re-park on the next audit; they are not suppressed.
+</p>
+
+<h2 id="dedup">Dedup semantics</h2>
+<p>
+  Each finding's fingerprint is <code>sha256("&lt;kind&gt;|&lt;ruleId&gt;|&lt;locus&gt;")</code>
+  truncated to 16 hex characters — locus is the package name for dependency findings, else the file
+  path, else the title; line numbers are excluded so the fingerprint survives code drift. Both the
+  audit-time pre-filter and the authoritative file-time check scan your own most recent 500 issues
+  on the target repo — closed ones included — for
+  <code>&lt;!-- junco:finding:&lt;fingerprint&gt; --&gt;</code> markers, skipping any fingerprint
+  already present. Offline filing re-runs that scan fresh at outbox flush time, so two offline runs
+  converge on one issue.
+</p>
+<div class="warn"><b>warn —</b> because closed issues still count toward the scan, closing a
+finding issue — wontfix included — suppresses that fingerprint forever, including a genuine future
+regression that hashes the same. To let junco re-file it, delete the issue or edit the
+<code>&lt;!-- junco:finding:… --&gt;</code> marker line out of its body.</div>
+
+<h2 id="auto-plan">--auto-plan</h2>
+<p>
+  <code>--auto-plan</code> adds the configured trigger label to every issue the batch files, so
+  each one feeds straight into the <a href="/docs/github-loop/">label → plan → approve → PR
+  loop</a> on the bridge's next sweep. It is only effective on owned, bridge-watched repos with
+  <code>github.enabled</code>: an external batch forces it off, and on an unwatched repo the label
+  sits inert until the repo is watched.
+</p>
+      </main>
+    </div>
+
+    <footer class="wrap-docs foot">
+      <p>
+        <a href="https://github.com/ironforgesoftware/junco/blob/main/LICENSE">MIT</a> ·
+        <a href="https://github.com/ironforgesoftware/junco">GitHub</a> ·
+        <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a> ·
+        <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a>
+      </p>
+      <p class="stamp">
+        verified against junco 0.8.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/assess.md">docs/assess.md</a> ·
+        <a href="https://github.com/ironforgesoftware/junco-site/edit/main/docs-src/pages/assess.html">edit this page</a>
+      </p>
+    </footer>
+
+    <script type="module" src="/docs/docs.js"></script>
+  </body>
+</html>
