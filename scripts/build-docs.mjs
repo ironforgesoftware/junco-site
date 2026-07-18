@@ -18,6 +18,7 @@ import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { homedir } from "node:os";
+import MiniSearch from "../site/docs/assets/minisearch.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SRC = join(ROOT, "docs-src");
@@ -393,6 +394,55 @@ ${body.trimEnd()}
 `;
 }
 
+// --------------------------------------------------------------------- search
+
+export const SEARCH_OPTIONS = {
+  fields: ["title", "heading", "text", "keywords"],
+  storeFields: ["title", "heading", "url", "snippet"],
+};
+
+function stripTags(html) {
+  return html
+    .replace(/<[^>]+>/g, " ")
+    .replaceAll("&lt;", "<")
+    .replaceAll("&gt;", ">")
+    .replaceAll("&quot;", '"')
+    .replaceAll("&amp;", "&")
+    .replace(/\s+/g, " ")
+    .replace(/ ([.,;:)])(?=\s|$)/g, "$1")
+    .trim();
+}
+
+export function extractSections(html, slug, { title, keywords = [] }) {
+  const main = html.match(/<main id="main">([\s\S]*?)<\/main>/)?.[1] ?? "";
+  const url = pageUrl(slug);
+  const kw = keywords.join(" ");
+  const parts = main.split(/(?=<h[23] id=")/);
+  const sections = [];
+  for (const part of parts) {
+    const h = part.match(/^<h[23] id="([^"]+)">([\s\S]*?)<\/h[23]>/);
+    const bodyHtml = h ? part.slice(h[0].length) : part.replace(/<h1>[\s\S]*?<\/h1>/, "");
+    const text = stripTags(bodyHtml);
+    if (!text) continue;
+    sections.push({
+      id: h ? `${slug}#${h[1]}` : slug,
+      url: h ? `${url}#${h[1]}` : url,
+      title,
+      heading: h ? stripTags(h[2]) : null,
+      text,
+      snippet: text.length > 120 ? `${text.slice(0, 117)}…` : text,
+      keywords: kw,
+    });
+  }
+  return sections;
+}
+
+export function buildSearchIndexJson(sections) {
+  const index = new MiniSearch(SEARCH_OPTIONS);
+  index.addAll(sections);
+  return JSON.stringify(index);
+}
+
 // Per-slug generated content appended after the fragment body (Tasks 6–7).
 const GENERATORS = {};
 
@@ -415,6 +465,7 @@ export function buildPages(outRoot) {
   const { nav, meta, subs, pages } = loadDocsSource();
   const navLabels = Object.fromEntries(pages.map((p) => [p.meta.slug, p.meta.navLabel]));
   const written = [];
+  const sections = [];
   for (const page of pages) {
     let body = page.body;
     if (GENERATORS[page.meta.slug]) body += GENERATORS[page.meta.slug]({ subs });
@@ -432,7 +483,16 @@ export function buildPages(outRoot) {
     mkdirSync(dirname(outPath), { recursive: true });
     writeFileSync(outPath, html);
     written.push(outPath);
+    sections.push(
+      ...extractSections(html, page.meta.slug, {
+        title: page.meta.title,
+        keywords: page.meta.keywords ?? [],
+      })
+    );
   }
+  const indexPath = join(outRoot, "search-index.json");
+  writeFileSync(indexPath, `${buildSearchIndexJson(sections)}\n`);
+  written.push(indexPath);
   return written;
 }
 

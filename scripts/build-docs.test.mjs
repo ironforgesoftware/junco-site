@@ -11,6 +11,9 @@ import {
   slugify,
   parseFragment,
   renderPage,
+  extractSections,
+  buildSearchIndexJson,
+  SEARCH_OPTIONS,
 } from "./build-docs.mjs";
 
 const HELP_FIXTURE = `Usage: junco <subcommand> [options]
@@ -254,6 +257,46 @@ test("renderPage: chrome contract", () => {
   // body present, h1 from title
   assert.match(html, /<h1>The GitHub loop<\/h1>/);
   assert.match(html, /Body prose with <code>junco:approved<\/code>/);
+});
+
+test("extractSections: h2/h3 sections with anchors, intro, stripped text", () => {
+  const html = `<html><body><main id="main"><h1>CLI</h1><p>Intro <code>junco</code> prose.</p>
+<h2 id="submit">junco submit</h2><p>Places a ticket in the <code>inbox/</code>.</p>
+<pre class="cmd">junco submit ./t.md</pre>
+<h3 id="submit-stdin">stdin form</h3><p>Use &lt;file&gt; or -.</p></main></body></html>`;
+  const sections = extractSections(html, "cli", { title: "CLI", keywords: ["submit"] });
+  assert.equal(sections.length, 3);
+  assert.deepEqual(sections[0], {
+    id: "cli",
+    url: "/docs/cli/",
+    title: "CLI",
+    heading: null,
+    text: "Intro junco prose.",
+    snippet: "Intro junco prose.",
+    keywords: "submit",
+  });
+  assert.equal(sections[1].id, "cli#submit");
+  assert.equal(sections[1].url, "/docs/cli/#submit");
+  assert.equal(sections[1].heading, "junco submit");
+  assert.match(sections[1].text, /Places a ticket in the inbox\/\./);
+  assert.match(sections[1].text, /junco submit \.\/t\.md/);
+  assert.equal(sections[2].heading, "stdin form");
+  assert.equal(sections[2].text, "Use <file> or -.");
+});
+
+test("search index round-trip: build → loadJSON → query", async () => {
+  const { default: MiniSearch } = await import("../site/docs/assets/minisearch.js");
+  const sections = [
+    { id: "cli#assess", url: "/docs/cli/#assess", title: "CLI", heading: "junco assess",
+      text: "audit a repo and park findings", snippet: "audit a repo", keywords: "" },
+    { id: "config", url: "/docs/config/", title: "Configuration", heading: null,
+      text: "levers and defaults", snippet: "levers", keywords: "" },
+  ];
+  const json = buildSearchIndexJson(sections);
+  const loaded = MiniSearch.loadJSON(json, SEARCH_OPTIONS);
+  const hits = loaded.search("assess", { prefix: true });
+  assert.equal(hits[0].id, "cli#assess");
+  assert.equal(hits[0].url, "/docs/cli/#assess");
 });
 
 test("renderPage: index canonical is /docs/", () => {
