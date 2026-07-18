@@ -265,6 +265,177 @@ export function extract() {
   );
 }
 
+// ----------------------------------------------------------- fragments/pages
+
+export function parseFragment(text) {
+  const m = text.match(/^<!--meta (\{[\s\S]*?\}) -->\r?\n([\s\S]*)$/);
+  if (!m) throw new Error("fragment must start with a meta comment: <!--meta {…} -->");
+  return { meta: JSON.parse(m[1]), body: m[2] };
+}
+
+function pageUrl(slug) {
+  return slug === "index" ? "/docs/" : `/docs/${slug}/`;
+}
+
+function renderNav(nav, navLabels, currentSlug) {
+  const groups = nav.groups
+    .map((group) => {
+      const links = group.slugs
+        .filter((slug) => navLabels[slug]) // pages not yet built stay absent — never dead links
+        .map((slug) => {
+          const current = slug === currentSlug ? 'aria-current="page" ' : "";
+          return `        <li><a ${current}href="${pageUrl(slug)}">${escapeHtml(navLabels[slug])}</a></li>`;
+        })
+        .join("\n");
+      if (!links) return null;
+      return `      <section>\n        <p class="group">${escapeHtml(group.label)}</p>\n        <ul>\n${links}\n        </ul>\n      </section>`;
+    })
+    .filter(Boolean)
+    .join("\n");
+  return groups;
+}
+
+// Same FOUC-free theme init the landing page inlines.
+const THEME_SNIPPET = `      (function () {
+        var t = localStorage.getItem("theme");
+        if (t) document.documentElement.setAttribute("data-theme", t);
+        document.documentElement.classList.add("js");
+      })();`;
+
+export function renderPage({ meta, body, nav, navLabels, juncoVersion }) {
+  const url = pageUrl(meta.slug);
+  const title = `${meta.title} — junco docs`;
+  const sourceBit = meta.source
+    ? ` · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/${escapeHtml(meta.source)}">${escapeHtml(meta.source)}</a>`
+    : "";
+  return `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>${escapeHtml(title)}</title>
+    <meta name="description" content="${escapeHtml(meta.description)}">
+    <link rel="canonical" href="https://junco.ironforgesoftware.com${url}">
+    <meta property="og:title" content="${escapeHtml(title)}">
+    <meta property="og:description" content="${escapeHtml(meta.description)}">
+    <meta property="og:url" content="https://junco.ironforgesoftware.com${url}">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://junco.ironforgesoftware.com/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f4f5">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#14171d">
+    <meta name="color-scheme" content="light dark">
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/CommitMono-400.woff2" crossorigin>
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/CommitMono-700.woff2" crossorigin>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/docs/docs.css">
+    <script>
+${THEME_SNIPPET}
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="wrap-docs bar">
+      <a class="wordmark" href="/"
+        ><svg class="mark" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true">
+          <circle fill="currentColor" cx="13" cy="16" r="12"></circle>
+          <path fill="var(--accent)" d="M21 10 L32 16 L21 22 Z"></path></svg
+        >junco</a
+      >
+      <div class="search" role="search">
+        <input id="docs-search" type="search" placeholder="search docs" autocomplete="off"
+          role="combobox" aria-expanded="false" aria-controls="search-results"
+          aria-autocomplete="list" aria-label="Search docs">
+        <!-- [html-validate-disable-next prefer-native-element: ARIA combobox popup; a native select cannot host result links] -->
+        <ul id="search-results" role="listbox" aria-label="Search results" hidden></ul>
+      </div>
+      <nav aria-label="Site">
+        <a href="/docs/" aria-current="${meta.slug === "index" ? "page" : "true"}">docs</a>
+        <a href="https://github.com/ironforgesoftware/junco">GitHub</a>
+        <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a>
+        <button id="theme-toggle" type="button" aria-pressed="false">dark</button>
+      </nav>
+    </header>
+
+    <div class="wrap-docs docs-grid">
+      <details class="side" open>
+        <summary>contents</summary>
+        <nav aria-label="Docs">
+${renderNav(nav, navLabels, meta.slug)}
+        </nav>
+      </details>
+      <main id="main">
+        <h1>${escapeHtml(meta.title)}</h1>
+${body.trimEnd()}
+      </main>
+    </div>
+
+    <footer class="wrap-docs foot">
+      <p>
+        <a href="https://github.com/ironforgesoftware/junco/blob/main/LICENSE">MIT</a> ·
+        <a href="https://github.com/ironforgesoftware/junco">GitHub</a> ·
+        <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a> ·
+        <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a>
+      </p>
+      <p class="stamp">
+        verified against junco ${escapeHtml(juncoVersion)}${sourceBit} ·
+        <a href="https://github.com/ironforgesoftware/junco-site/edit/main/docs-src/pages/${escapeHtml(meta.slug)}.html">edit this page</a>
+      </p>
+    </footer>
+
+    <script type="module" src="/docs/docs.js"></script>
+  </body>
+</html>
+`;
+}
+
+// Per-slug generated content appended after the fragment body (Tasks 6–7).
+const GENERATORS = {};
+
+export function loadDocsSource() {
+  const nav = JSON.parse(readFileSync(join(SRC, "nav.json"), "utf8"));
+  const meta = JSON.parse(readFileSync(join(EXTRACTED, "meta.json"), "utf8"));
+  const subs = JSON.parse(readFileSync(join(SRC, "render-substitutions.json"), "utf8"));
+  const pages = [];
+  for (const group of nav.groups) {
+    for (const slug of group.slugs) {
+      const path = join(SRC, "pages", `${slug}.html`);
+      if (!existsSync(path)) continue;
+      pages.push(parseFragment(readFileSync(path, "utf8")));
+    }
+  }
+  return { nav, meta, subs, pages };
+}
+
+export function buildPages(outRoot) {
+  const { nav, meta, subs, pages } = loadDocsSource();
+  const navLabels = Object.fromEntries(pages.map((p) => [p.meta.slug, p.meta.navLabel]));
+  const written = [];
+  for (const page of pages) {
+    let body = page.body;
+    if (GENERATORS[page.meta.slug]) body += GENERATORS[page.meta.slug]({ subs });
+    const html = renderPage({
+      meta: page.meta,
+      body,
+      nav,
+      navLabels,
+      juncoVersion: meta.juncoVersion,
+    });
+    const outPath =
+      page.meta.slug === "index"
+        ? join(outRoot, "index.html")
+        : join(outRoot, page.meta.slug, "index.html");
+    mkdirSync(dirname(outPath), { recursive: true });
+    writeFileSync(outPath, html);
+    written.push(outPath);
+  }
+  return written;
+}
+
 // ----------------------------------------------------------------------- cli
 
 const invokedDirectly =
@@ -273,7 +444,10 @@ const invokedDirectly =
 if (invokedDirectly) {
   const mode = process.argv[2] ?? "build";
   if (mode === "--extract") extract();
-  else if (mode === "build") { console.error("build mode: not implemented yet (Task 2)"); process.exit(1); }
+  else if (mode === "build") {
+    const written = buildPages(join(ROOT, "site", "docs"));
+    console.log(`built ${written.length} page(s)`);
+  }
   else if (mode === "--check") { console.error("--check: not implemented yet (Task 4)"); process.exit(1); }
   else if (mode === "--release") { console.error("--release: not implemented yet (Task 4)"); process.exit(1); }
   else { console.error(`unknown mode: ${mode}`); process.exit(2); }

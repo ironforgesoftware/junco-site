@@ -1,0 +1,339 @@
+/* junco docs — layout + components on top of styles.css.
+   No colors here beyond var() references; tokens live in styles.css only. */
+
+.wrap-docs {
+  max-width: 116ch;
+  margin-inline: auto;
+  padding-inline: 2ch;
+}
+
+/* ---------- docs grid & sidebar ---------- */
+
+.docs-grid {
+  display: grid;
+  grid-template-columns: 24ch minmax(0, 84ch);
+  gap: 0 4ch;
+  align-items: start;
+  padding-block: var(--lh) calc(2 * var(--lh));
+}
+
+.side {
+  position: sticky;
+  top: var(--lh);
+}
+.side summary {
+  display: none;
+}
+.side .group {
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  line-height: var(--lh);
+  margin-block-start: var(--lh);
+}
+.side section:first-child .group {
+  margin-block-start: 0;
+}
+.side ul {
+  list-style: none;
+  padding: 0;
+}
+.side a {
+  display: block;
+  text-decoration: none;
+  color: var(--ink-muted);
+  font-size: 0.875rem;
+  line-height: var(--lh);
+  padding-inline-start: 1ch;
+  border-left: 2px solid transparent;
+}
+.side a:hover {
+  color: var(--accent);
+}
+.side a[aria-current="page"] {
+  color: var(--ink);
+  font-weight: 700;
+  border-left-color: var(--accent);
+}
+
+main h1 {
+  font-size: 1.5rem;
+  line-height: var(--lh);
+  margin-block-end: var(--lh);
+  letter-spacing: -0.02em;
+}
+main h2 {
+  margin-block-start: calc(1.5 * var(--lh));
+}
+main h3 {
+  font-size: 0.875rem;
+  line-height: var(--lh);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+  margin-block: var(--lh) calc(0.5 * var(--lh));
+}
+main > p,
+main section > p {
+  max-width: 68ch;
+  margin-block-end: calc(0.5 * var(--lh));
+}
+main ul,
+main ol {
+  padding-inline-start: 3ch;
+  max-width: 68ch;
+  margin-block-end: calc(0.5 * var(--lh));
+}
+main li::marker {
+  color: var(--accent);
+}
+
+@media (max-width: 720px) {
+  .docs-grid {
+    grid-template-columns: 1fr;
+    gap: var(--lh) 0;
+  }
+  .side {
+    position: static;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    padding: calc(0.5 * var(--lh)) 2ch;
+  }
+  .side summary {
+    display: list-item;
+    cursor: pointer;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.75rem;
+    line-height: var(--lh);
+  }
+}
+
+/* ---------- heading anchors ---------- */
+
+main h2,
+main h3 {
+  position: relative;
+}
+a.anchor {
+  text-decoration: none;
+  color: var(--ink-muted);
+  margin-inline-start: 1ch;
+  opacity: 0;
+}
+h2:hover a.anchor,
+h3:hover a.anchor,
+a.anchor:focus-visible {
+  opacity: 1;
+}
+a.anchor:hover {
+  color: var(--accent);
+}
+
+/* ---------- code blocks: commands, output, synopsis ---------- */
+
+pre.cmd,
+pre.out,
+pre.synopsis {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  padding: calc(0.5 * var(--lh)) 2ch;
+  margin-block: calc(0.5 * var(--lh)) var(--lh);
+  overflow-x: auto;
+}
+pre.cmd {
+  font-weight: 700;
+}
+pre.out {
+  color: var(--ink-muted);
+}
+pre.synopsis {
+  background: transparent;
+  border-inline-start: 2px solid var(--accent);
+  border-block: 0;
+  border-inline-end: 0;
+}
+.cmd-wrap {
+  position: relative;
+}
+.cmd-wrap .copy {
+  position: absolute;
+  top: calc(0.25 * var(--lh));
+  right: 1ch;
+  background: var(--panel);
+}
+
+/* ---------- flags / levers definition lists ---------- */
+
+dl.flags > div {
+  display: grid;
+  grid-template-columns: 26ch minmax(0, 1fr);
+  gap: 0 2ch;
+  border-top: 1px solid var(--line);
+  padding-block: calc(0.25 * var(--lh));
+}
+dl.flags > div:last-child {
+  border-bottom: 1px solid var(--line);
+}
+dl.flags dt {
+  font-weight: 700;
+  font-size: 0.875rem;
+  line-height: var(--lh);
+  overflow-wrap: break-word;
+}
+dl.flags dt .ph {
+  color: var(--ink-muted);
+  font-weight: 400;
+}
+dl.flags dd {
+  font-size: 0.875rem;
+  line-height: var(--lh);
+  color: var(--ink-muted);
+}
+dl.flags dd .default {
+  color: var(--ink);
+}
+@media (max-width: 720px) {
+  dl.flags > div {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- callouts ---------- */
+
+aside.note,
+aside.warn {
+  border: 1px solid var(--line);
+  border-inline-start: 2px solid var(--ink-muted);
+  background: var(--panel);
+  padding: calc(0.5 * var(--lh)) 2ch;
+  margin-block: calc(0.5 * var(--lh)) var(--lh);
+  max-width: 68ch;
+  font-size: 0.875rem;
+}
+aside.warn {
+  border-inline-start-color: var(--accent);
+}
+aside.note > b:first-child {
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+}
+aside.warn > b:first-child {
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+}
+
+/* ---------- search ---------- */
+
+.search {
+  position: relative;
+  flex: 1;
+  max-width: 32ch;
+}
+html:not(.js) .search {
+  display: none;
+}
+.search input {
+  width: 100%;
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  padding: 0 1ch;
+  line-height: var(--lh);
+}
+.search input:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+.search ul {
+  position: absolute;
+  z-index: 2;
+  inset-inline: 0;
+  top: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  box-shadow: 1ch 1lh 0 0 var(--shadow);
+  max-height: calc(12 * var(--lh));
+  overflow-y: auto;
+  min-width: 40ch;
+}
+.search li {
+  padding: calc(0.25 * var(--lh)) 1ch;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+.search li .where {
+  color: var(--ink-muted);
+  display: block;
+  font-size: 0.75rem;
+}
+.search li[aria-selected="true"],
+.search li:hover {
+  background: var(--bg);
+  color: var(--accent);
+}
+.search .hint {
+  position: absolute;
+  right: 1ch;
+  top: 0;
+  line-height: var(--lh);
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+  pointer-events: none;
+}
+@media (max-width: 720px) {
+  .search {
+    max-width: none;
+  }
+  .search ul {
+    min-width: 0;
+  }
+}
+
+/* ---------- header/footer tweaks ---------- */
+
+.wrap-docs.bar {
+  flex-wrap: wrap;
+}
+.bar .search {
+  align-self: center;
+}
+@media (max-width: 720px) {
+  .bar .search {
+    order: 9;
+    flex-basis: 100%;
+  }
+}
+.stamp {
+  margin-block-start: calc(0.5 * var(--lh));
+}
+
+/* ---------- see-also + stamp ---------- */
+
+p.see {
+  color: var(--ink-muted);
+  font-size: 0.875rem;
+}
+
+/* ---------- print ---------- */
+
+@media print {
+  .side,
+  .search {
+    display: none;
+  }
+  .docs-grid {
+    grid-template-columns: 1fr;
+  }
+}

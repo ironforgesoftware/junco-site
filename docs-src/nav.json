@@ -1,0 +1,8 @@
+{
+  "groups": [
+    { "label": "start", "slugs": ["index", "how-it-works", "security"] },
+    { "label": "guides", "slugs": ["github-loop", "tickets", "assess", "analyze", "dashboard", "operations", "bot-account"] },
+    { "label": "reference", "slugs": ["cli", "config", "ticket-schema"] },
+    { "label": "field notes", "slugs": ["field-notes"] }
+  ]
+}

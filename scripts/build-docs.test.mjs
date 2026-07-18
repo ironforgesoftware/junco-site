@@ -9,6 +9,8 @@ import {
   applySubstitutions,
   escapeHtml,
   slugify,
+  parseFragment,
+  renderPage,
 } from "./build-docs.mjs";
 
 const HELP_FIXTURE = `Usage: junco <subcommand> [options]
@@ -203,4 +205,65 @@ test("slugify: command paths to kebab slugs", () => {
   assert.equal(slugify("assess file"), "assess-file");
   assert.equal(slugify("worktree prune"), "worktree-prune");
   assert.equal(slugify(""), "junco");
+});
+
+// ------------------------------------------------------------ Task 2: stitch
+
+const FRAGMENT_FIXTURE = `<!--meta {"title":"The GitHub loop","description":"Label, plan, approve, PR.","slug":"github-loop","navLabel":"The GitHub loop","source":"docs/github-mode.md"} -->
+<p>Body prose with <code>junco:approved</code>.</p>
+`;
+
+const NAV_FIXTURE = {
+  groups: [
+    { label: "start", slugs: ["index"] },
+    { label: "guides", slugs: ["github-loop", "tickets"] },
+  ],
+};
+
+test("parseFragment: meta comment + body", () => {
+  const { meta, body } = parseFragment(FRAGMENT_FIXTURE);
+  assert.equal(meta.title, "The GitHub loop");
+  assert.equal(meta.slug, "github-loop");
+  assert.match(body, /^<p>Body prose/);
+  assert.throws(() => parseFragment("<p>no meta</p>"), /meta comment/);
+});
+
+test("renderPage: chrome contract", () => {
+  const { meta, body } = parseFragment(FRAGMENT_FIXTURE);
+  const html = renderPage({
+    meta,
+    body,
+    nav: NAV_FIXTURE,
+    navLabels: { index: "Start here", "github-loop": "The GitHub loop" },
+    juncoVersion: "0.8.0",
+  });
+  assert.match(html, /<title>The GitHub loop — junco docs<\/title>/);
+  assert.match(html, /rel="canonical" href="https:\/\/junco\.ironforgesoftware\.com\/docs\/github-loop\/"/);
+  assert.match(html, /href="\/styles\.css"/);
+  assert.match(html, /href="\/docs\/docs\.css"/);
+  assert.match(html, /src="\/docs\/docs\.js"/);
+  // own nav link is current; the other is not
+  assert.match(html, /<a aria-current="page" href="\/docs\/github-loop\/">The GitHub loop<\/a>/);
+  assert.match(html, /<a href="\/docs\/">Start here<\/a>/);
+  // nav skips slugs with no fragment yet (tickets absent from navLabels)
+  assert.doesNotMatch(html, /\/docs\/tickets\//);
+  // stamp with version, source, edit link
+  assert.match(html, /verified against junco 0\.8\.0/);
+  assert.match(html, /docs\/github-mode\.md/);
+  assert.match(html, /edit\/main\/docs-src\/pages\/github-loop\.html/);
+  // body present, h1 from title
+  assert.match(html, /<h1>The GitHub loop<\/h1>/);
+  assert.match(html, /Body prose with <code>junco:approved<\/code>/);
+});
+
+test("renderPage: index canonical is /docs/", () => {
+  const html = renderPage({
+    meta: { title: "Start here", description: "d", slug: "index", navLabel: "Start here" },
+    body: "<p>x</p>",
+    nav: NAV_FIXTURE,
+    navLabels: { index: "Start here" },
+    juncoVersion: "0.8.0",
+  });
+  assert.match(html, /rel="canonical" href="https:\/\/junco\.ironforgesoftware\.com\/docs\/"/);
+  assert.match(html, /<a aria-current="page" href="\/docs\/">Start here<\/a>/);
 });
