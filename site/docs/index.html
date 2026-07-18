@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Start here — junco docs</title>
-    <meta name="description" content="What junco is, a sixty-second setup, and a map of these docs.">
+    <meta name="description" content="What junco is, a sixty-second setup, and the map of these docs.">
     <link rel="canonical" href="https://junco.ironforgesoftware.com/docs/">
     <meta property="og:title" content="Start here — junco docs">
-    <meta property="og:description" content="What junco is, a sixty-second setup, and a map of these docs.">
+    <meta property="og:description" content="What junco is, a sixty-second setup, and the map of these docs.">
     <meta property="og:url" content="https://junco.ironforgesoftware.com/docs/">
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://junco.ironforgesoftware.com/assets/og-image.png">
@@ -63,6 +63,8 @@
         <p class="group">start</p>
         <ul>
         <li><a aria-current="page" href="/docs/">Start here</a></li>
+        <li><a href="/docs/how-it-works/">How junco works</a></li>
+        <li><a href="/docs/security/">Security model</a></li>
         </ul>
       </section>
       <section>
@@ -95,9 +97,53 @@
       </details>
       <main id="main">
         <h1>Start here</h1>
-<p>junco is a harness-agnostic task-queue worker that turns Markdown tickets and labeled
-GitHub issues into draft pull requests by driving a coding agent on your own machine.
-This page will grow into the sixty-second quickstart and the map of these docs.</p>
+<p>
+  junco is a harness-agnostic task-queue worker: a local daemon that turns Markdown tickets
+  and labeled GitHub issues into draft pull requests by driving a coding agent on your own
+  machine, against any OpenAI-compatible inference endpoint or a hosted provider from its
+  built-in catalog. Issues in. Pull requests out. Nothing runs anywhere but your hardware,
+  under your own <code>git</code> and <code>gh</code> identity.
+</p>
+<p>
+  Prerequisites: Node ≥ 22.19, git, and an authenticated <code>gh</code> for the PR flows.
+</p>
+
+<h2 id="sixty-seconds">Sixty seconds to a running worker</h2>
+<pre class="cmd">npx @ironforgesoftware/junco</pre>
+<p>
+  The first run opens the guided setup walkthrough: workspace, model endpoint, repo
+  containment, the GitHub bridge, and an optional dedicated bot identity — safe defaults for
+  everything else. It ends with a flight check and lands in the dashboard. From there, work
+  arrives two ways:
+</p>
+<pre class="cmd">junco submit my-task.md</pre>
+<p>
+  — a <a href="/docs/tickets/">Markdown ticket</a> dropped into the queue, or a GitHub issue
+  labeled <code>junco</code>: the daemon plans it as an editable issue comment, waits for your
+  <code>junco:approved</code>, and opens a draft PR
+  (<a href="/docs/github-loop/">the GitHub loop</a>). Watch either from the
+  <a href="/docs/dashboard/">dashboard</a>:
+</p>
+<pre class="cmd">junco</pre>
+<div class="note"><b>note —</b> the daemon and every agent session run sandboxed and
+fail closed; nothing executes a raw issue without a reviewed plan and a verified approval.
+The <a href="/docs/security/">security model</a> is short and worth the read.</div>
+<h2 id="the-map">The map</h2>
+<dl class="flags">
+  <div><dt><a href="/docs/how-it-works/">How junco works</a></dt><dd>How a ticket moves from inbox to draft PR: queue, pipeline, loop guards, provider gate, spend cap, and outbox.</dd></div>
+  <div><dt><a href="/docs/security/">Security model</a></dt><dd>junco's trust boundaries: inbox, OS sandbox, approval gate, untrusted issue text, and what leaves the machine.</dd></div>
+  <div><dt><a href="/docs/github-loop/">The GitHub loop</a></dt><dd>Label an issue junco: the daemon plans as an editable comment, executes on approval, and opens a draft PR.</dd></div>
+  <div><dt><a href="/docs/tickets/">Tickets &amp; the inbox</a></dt><dd>Markdown tickets with YAML frontmatter: flavors, the plan shape that avoids loops, plan-lint, submission.</dd></div>
+  <div><dt><a href="/docs/assess/">Assess</a></dt><dd>junco assess audits a repo, parks findings for review, and files only what a human confirms as GitHub issues.</dd></div>
+  <div><dt><a href="/docs/analyze/">Analyze</a></dt><dd>junco analyze investigates one issue read-only and parks a comment draft; only the confirmed post writes outward.</dd></div>
+  <div><dt><a href="/docs/dashboard/">The dashboard</a></dt><dd>The fullscreen terminal UI: GITHUB and LOCAL modes, panes and key bindings, the command palette, repo watching.</dd></div>
+  <div><dt><a href="/docs/operations/">Operations</a></dt><dd>Running the worker: daemon lifecycle, service files, health endpoints, the provider gate, spend, updates, recovery.</dd></div>
+  <div><dt><a href="/docs/bot-account/">Bot account</a></dt><dd>A dedicated GitHub identity for the daemon: setup, per-repo grants, doctor checks, migration caveats.</dd></div>
+  <div><dt><a href="/docs/cli/">CLI</a></dt><dd>Every junco command and subcommand: synopsis, flags, examples.</dd></div>
+  <div><dt><a href="/docs/config/">Configuration</a></dt><dd>Every config lever: type, default, live or restart, straight from junco's own registry.</dd></div>
+  <div><dt><a href="/docs/ticket-schema/">Ticket schema</a></dt><dd>The frontmatter contract, field by field — junco schema rendered as a page.</dd></div>
+  <div><dt><a href="/docs/field-notes/">Tips, recipes &amp; FAQ</a></dt><dd>Tips, recipes, and answers from running junco in the field.</dd></div>
+</dl>
       </main>
     </div>
 

@@ -6,7 +6,9 @@
 
 ## start
 
-- [Start here](https://junco.ironforgesoftware.com/docs/): What junco is, a sixty-second setup, and a map of these docs.
+- [Start here](https://junco.ironforgesoftware.com/docs/): What junco is, a sixty-second setup, and the map of these docs.
+- [How junco works](https://junco.ironforgesoftware.com/docs/how-it-works/): How a ticket moves from inbox to draft PR: queue, pipeline, loop guards, provider gate, spend cap, and outbox.
+- [Security model](https://junco.ironforgesoftware.com/docs/security/): junco's trust boundaries: inbox, OS sandbox, approval gate, untrusted issue text, and what leaves the machine.
 
 ## guides
 

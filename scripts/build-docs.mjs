@@ -559,6 +559,25 @@ export function renderCliReference(surface, subs, fragments) {
 
 // Per-slug generated content appended after the fragment body.
 const GENERATORS = {
+  index: () => {
+    // The docs map, generated from nav.json + page descriptions — never drifts.
+    const nav = JSON.parse(readFileSync(join(SRC, "nav.json"), "utf8"));
+    const out = ['<h2 id="the-map">The map</h2>', '<dl class="flags">'];
+    for (const group of nav.groups) {
+      for (const slug of group.slugs) {
+        if (slug === "index") continue;
+        const path = join(SRC, "pages", `${slug}.html`);
+        if (!existsSync(path)) continue;
+        const { meta } = parseFragment(readFileSync(path, "utf8"));
+        out.push(
+          `  <div><dt><a href="${pageUrl(slug)}">${escapeHtml(meta.navLabel)}</a></dt>` +
+            `<dd>${escapeHtml(meta.description)}</dd></div>`
+        );
+      }
+    }
+    out.push("</dl>");
+    return `\n${out.join("\n")}\n`;
+  },
   cli: ({ subs }) => {
     const surface = JSON.parse(readFileSync(join(EXTRACTED, "surface.json"), "utf8"));
     return renderCliReference(surface, subs, cliFragmentsFromDisk());

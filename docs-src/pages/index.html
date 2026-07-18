@@ -1,4 +1,32 @@
-<!--meta {"title":"Start here","description":"What junco is, a sixty-second setup, and a map of these docs.","slug":"index","navLabel":"Start here","source":"README.md"} -->
-<p>junco is a harness-agnostic task-queue worker that turns Markdown tickets and labeled
-GitHub issues into draft pull requests by driving a coding agent on your own machine.
-This page will grow into the sixty-second quickstart and the map of these docs.</p>
+<!--meta {"title":"Start here","description":"What junco is, a sixty-second setup, and the map of these docs.","slug":"index","navLabel":"Start here","source":"README.md","keywords":["install","quickstart","setup","getting started","npx","walkthrough","prerequisites"]} -->
+<p>
+  junco is a harness-agnostic task-queue worker: a local daemon that turns Markdown tickets
+  and labeled GitHub issues into draft pull requests by driving a coding agent on your own
+  machine, against any OpenAI-compatible inference endpoint or a hosted provider from its
+  built-in catalog. Issues in. Pull requests out. Nothing runs anywhere but your hardware,
+  under your own <code>git</code> and <code>gh</code> identity.
+</p>
+<p>
+  Prerequisites: Node ≥ 22.19, git, and an authenticated <code>gh</code> for the PR flows.
+</p>
+
+<h2 id="sixty-seconds">Sixty seconds to a running worker</h2>
+<pre class="cmd">npx @ironforgesoftware/junco</pre>
+<p>
+  The first run opens the guided setup walkthrough: workspace, model endpoint, repo
+  containment, the GitHub bridge, and an optional dedicated bot identity — safe defaults for
+  everything else. It ends with a flight check and lands in the dashboard. From there, work
+  arrives two ways:
+</p>
+<pre class="cmd">junco submit my-task.md</pre>
+<p>
+  — a <a href="/docs/tickets/">Markdown ticket</a> dropped into the queue, or a GitHub issue
+  labeled <code>junco</code>: the daemon plans it as an editable issue comment, waits for your
+  <code>junco:approved</code>, and opens a draft PR
+  (<a href="/docs/github-loop/">the GitHub loop</a>). Watch either from the
+  <a href="/docs/dashboard/">dashboard</a>:
+</p>
+<pre class="cmd">junco</pre>
+<div class="note"><b>note —</b> the daemon and every agent session run sandboxed and
+fail closed; nothing executes a raw issue without a reviewed plan and a verified approval.
+The <a href="/docs/security/">security model</a> is short and worth the read.</div>
