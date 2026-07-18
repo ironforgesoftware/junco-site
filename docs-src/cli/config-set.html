@@ -1,0 +1,5 @@
+<p>Writes one lever by dotted path through a validated read/mutate/write of <code>config.json</code>. The daemon re-reads the file on change, so live-safe levers apply at the next poll with no restart.</p>
+<pre class="cmd">junco config set model.id myprovider/my-model</pre>
+<pre class="cmd">junco config set sandbox.enabled false</pre>
+<div class="note"><b>note —</b> restart-kind levers (e.g. <code>dataDir</code>, <code>worker.maxConcurrent</code>) take effect only after <a href="#restart">restart</a>: with the daemon up, <code>set</code> prints a restart hint, and the pending change is reported in <code>pendingRestartFields</code> (<code>junco status</code>, <code>/health</code>) rather than silently ignored.</div>
+<p class="see">see also: <a href="#config-get">config get</a> · <a href="#restart">restart</a> · <a href="/docs/config/">configuration reference</a></p>

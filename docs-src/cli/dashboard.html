@@ -1,0 +1,4 @@
+<p>The fullscreen terminal UI, drawn in the terminal's alternate buffer and restored exactly on exit. Two modes, swapped with <code>m</code>: GITHUB — watched repos, their trigger-labeled issues, and junco-authored PRs — and LOCAL — the queue, the GitHub outbox, watched repos on disk, ticket worktrees, and the daemon itself. It observes without starting anything — the daemon runs separately — and the command palette (<code>:</code>) runs junco CLI subcommands without leaving it. With no config yet, the first run opens the guided setup walkthrough (re-run anytime from the palette's "setup").</p>
+<pre class="cmd">junco dashboard</pre>
+<div class="note"><b>note —</b> needs a real TTY — run it from a terminal, not piped or backgrounded. Bare <code>junco</code> also lands here after ensuring the supervised daemon is running.</div>
+<p class="see">see also: <a href="#junco">junco</a> · <a href="#status">status</a> · <a href="/docs/dashboard/">dashboard guide</a></p>

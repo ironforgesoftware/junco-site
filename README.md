@@ -52,7 +52,7 @@ Grep gates (banned words, vendors, openai):
 cd /Users/alxedelweiss/junco-site
 grep -rniE 'blazing|seamless|revolutionary|supercharge|magical|\beasy\b|\bsimply\b|powerful' site/ og.html; echo "banned-words exit: $?"   # expected: 1 (no matches)
 grep -rniE 'anthropic|claude|gpt|gemini|llama|mistral|deepseek|qwen|ollama|vllm|lm.?studio|mlx' site/ og.html .github/; echo "vendor exit: $?"  # expected: 1
-grep -rni 'openai' site/ og.html | grep -vi 'openai-compatible'; echo "openai exit: $?"  # expected: 1
+grep -rni 'openai' site/ og.html | grep -viE 'openai-(compatible|completions)'; echo "openai exit: $?"  # expected: 1 ("openai-completions" is junco's factual model.api value)
 ```
 
 Emoji and hex gates:

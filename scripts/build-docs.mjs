@@ -517,8 +517,52 @@ function extendedConfigProse() {
   return map;
 }
 
+export function renderCliReference(surface, subs, fragments) {
+  const out = [];
+
+  out.push('<h2 id="global-flags">global flags</h2>', '<dl class="flags">');
+  for (const f of surface.globalFlags) {
+    const name = [f.flag, f.alias].filter(Boolean).join(", ");
+    const ph = f.placeholder ? ` <span class="ph">${escapeHtml(f.placeholder)}</span>` : "";
+    const scope = f.scope ? `(<code>${escapeHtml(f.scope)}</code>) ` : "";
+    const def = f.default ? ` <span class="default">default ${subEsc(f.default, subs)}</span>` : "";
+    out.push(
+      `  <div><dt><code>${escapeHtml(name)}</code>${ph}</dt><dd>${scope}${subEsc(f.description, subs)}${def}</dd></div>`
+    );
+  }
+  out.push("</dl>");
+
+  // launcher first, then alphabetical by slug
+  const ordered = [
+    ...surface.commands.filter((c) => c.slug === "junco"),
+    ...surface.commands.filter((c) => c.slug !== "junco"),
+  ];
+  for (const cmd of ordered) {
+    const name = cmd.path === "" ? "junco" : `junco ${cmd.path}`;
+    out.push(`<h2 id="${cmd.slug}"><code>${escapeHtml(name)}</code></h2>`);
+    out.push(`<pre class="synopsis">${escapeHtml(cmd.synopsis)}</pre>`);
+    out.push(fragments.get(cmd.slug) ?? "");
+    const described = cmd.flags.filter((f) => f.description);
+    if (described.length) {
+      out.push('<dl class="flags">');
+      for (const f of described) {
+        const ph = f.placeholder ? ` <span class="ph">${escapeHtml(f.placeholder)}</span>` : "";
+        out.push(
+          `  <div><dt><code>${escapeHtml(f.flag)}</code>${ph}</dt><dd>${subEsc(f.description, subs)}</dd></div>`
+        );
+      }
+      out.push("</dl>");
+    }
+  }
+  return `\n${out.join("\n")}\n`;
+}
+
 // Per-slug generated content appended after the fragment body.
 const GENERATORS = {
+  cli: ({ subs }) => {
+    const surface = JSON.parse(readFileSync(join(EXTRACTED, "surface.json"), "utf8"));
+    return renderCliReference(surface, subs, cliFragmentsFromDisk());
+  },
   config: ({ subs }) => {
     const levers = JSON.parse(readFileSync(join(EXTRACTED, "levers.json"), "utf8"));
     return renderConfigReference(levers, subs, extendedConfigProse());
@@ -625,8 +669,10 @@ export function checkContentGates(text) {
       violations.push(`banned word "${b[0].toLowerCase()}": ${line.trim().slice(0, 80)}`);
     }
     for (const m of line.matchAll(OPENAI_RE)) {
-      const ctx = line.slice(Math.max(0, m.index - 1), m.index + 17);
-      if (!/openai-compatible/i.test(ctx)) {
+      const ctx = line.slice(Math.max(0, m.index - 1), m.index + 19);
+      // "openai-completions" is junco's factual model.api value — allowed
+      // alongside "OpenAI-compatible", same as the README gate.
+      if (!/openai-(compatible|completions)/i.test(ctx)) {
         violations.push(`openai outside "OpenAI-compatible": ${line.trim().slice(0, 80)}`);
       }
     }

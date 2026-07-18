@@ -1,0 +1,14 @@
+<p>
+  Places a ticket into the inbox with an atomic write — the daemon can never claim a
+  half-written file. The filename comes from the ticket's <code>id</code> (falling back to
+  the source filename); <code>-</code> reads the ticket from stdin, which is how other tools
+  pipe work in.
+</p>
+<pre class="cmd">junco submit fix-tide-rounding.md</pre>
+<pre class="cmd">cat ticket.md | junco submit -</pre>
+<pre class="out">queued inbox/fix-tide-rounding.md</pre>
+<div class="warn"><b>warn —</b> the inbox is a code-execution boundary: a PR-flow ticket runs
+an agent against the repo it names, as you. Keep the inbox on a disk only you can write, and
+confine targets with <code>git.allowedRepoRoots</code>.</div>
+<p class="see">see also: <a href="#list">list</a> · <a href="#retry">retry</a> ·
+<a href="#schema">schema</a> · <a href="/docs/tickets/">tickets guide</a></p>

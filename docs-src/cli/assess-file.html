@@ -1,0 +1,15 @@
+<p>
+  The confirmation half of an audit: files reviewed findings from a parked batch as GitHub
+  issues, then archives the batch. There is no bare default — you choose
+  <code>--all</code> or an explicit <code>--only</code> list of fingerprints from
+  <code>junco assess review &lt;id&gt;</code>. Filed issues arrive fingerprinted,
+  severity-labeled, and deduped against your recent findings.
+</p>
+<pre class="cmd">junco assess file 20260718-093042 --all</pre>
+<pre class="cmd">junco assess file 20260718-093042 --only 9f2c01ab54ce77d1,4a11beef00c2d9e3</pre>
+<div class="warn"><b>warn —</b> closing a filed finding issue — even as wontfix — suppresses
+its fingerprint from every future audit, including a genuine regression that hashes the same.
+To make a finding filable again, delete the issue or edit out its
+<code>&lt;!-- junco:finding --&gt;</code> marker line.</div>
+<p class="see">see also: <a href="#assess">assess</a> · <a href="#assess-review">assess
+review</a> · <a href="/docs/assess/">assess guide</a></p>

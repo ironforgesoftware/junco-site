@@ -1,0 +1,4 @@
+<p>Opens the pending draft in <code>$VISUAL</code> (falling back to <code>$EDITOR</code>) as a temporary Markdown file, git-commit-message style. On save the text is re-sanitized — the same HTML-comment and control-character stripping and length cap the original draft got — and written back to the store. The disclosure footer is never part of the file; it's composed at post/preview time, not stored in the draft text. An editor that exits nonzero, or a draft that's empty after sanitizing, leaves the draft unchanged. With no editor configured, the command prints the draft's JSON file path instead of guessing.</p>
+<pre class="cmd">junco analyze edit analyze-acme-reef-api-52</pre>
+<pre class="out">draft updated — junco analyze review analyze-acme-reef-api-52 to preview</pre>
+<p class="see">see also: <a href="#analyze-review">analyze review</a> · <a href="#analyze-post">analyze post</a> · <a href="/docs/analyze/">analyze guide</a></p>

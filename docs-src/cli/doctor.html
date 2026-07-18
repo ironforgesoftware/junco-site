@@ -1,0 +1,4 @@
+<p>Preflight for the whole install: config parses, node/git/gh are present, <code>gh</code> is authenticated, the inference endpoint is reachable, the configured model is advertised, and the queue/worktree/data directories are writable. Also preflights the execution sandbox's backend binary.</p>
+<pre class="cmd">junco doctor</pre>
+<div class="warn"><b>warn —</b> the sandbox fails closed when its backend binary is missing (bubblewrap on Linux): install <code>bwrap</code>, or set <code>sandbox.backend: "none"</code> / <code>sandbox.enabled: false</code>.</div>
+<p class="see">see also: <a href="#status">status</a> · <a href="#config-list">config list</a> · <a href="/docs/operations/">operations guide</a></p>

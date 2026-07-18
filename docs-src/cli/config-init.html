@@ -1,0 +1,4 @@
+<p>Headless default-config scaffold for scripting and CI: writes <code>config.json</code> with safe defaults and creates the queue directories, no prompts. With a config already present it only ensures the directories exist — it never overwrites an existing file. A fresh scaffold writes no legacy path keys, and writes <code>dataDir</code> only when it differs from the default. The interactive equivalent is the setup walkthrough in the dashboard.</p>
+<pre class="cmd">junco config init</pre>
+<pre class="cmd">junco config init --config ./config.json</pre>
+<p class="see">see also: <a href="#config-path">config path</a> · <a href="#doctor">doctor</a> · <a href="/docs/config/">configuration reference</a></p>

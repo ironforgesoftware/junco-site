@@ -1,0 +1,5 @@
+<p>Read-only inspection of the parked-findings store. With no id: one line per pending batch — id, <code>owner/repo</code>, <code>(owned)</code>/<code>(external)</code>, finding count, and the audit's timestamp. With an id: the batch's repo and scope, then each finding's fingerprint, severity, and title, closing with two ready-to-run <code>junco assess file</code> hints (<code>--all</code>, and a <code>--only</code> example built from the first two fingerprints). Nothing is written; filing is the separate <code>junco assess file</code> confirm step. The same checklist review is available in the dashboard under <code>v</code>.</p>
+<pre class="cmd">junco assess review</pre>
+<pre class="cmd">junco assess review 20260718-093042</pre>
+<div class="note"><b>note —</b> a finding you don't select isn't suppressed — no issue and no marker exist yet, so the next audit re-parks it. Only a filed issue's marker suppresses a fingerprint.</div>
+<p class="see">see also: <a href="#assess">assess</a> · <a href="#assess-file">assess file</a> · <a href="/docs/assess/">assess guide</a></p>

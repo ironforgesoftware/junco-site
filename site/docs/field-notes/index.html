@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Field notes — junco docs</title>
+    <meta name="description" content="Tips, recipes, and answers from running junco in the field.">
+    <link rel="canonical" href="https://junco.ironforgesoftware.com/docs/field-notes/">
+    <meta property="og:title" content="Field notes — junco docs">
+    <meta property="og:description" content="Tips, recipes, and answers from running junco in the field.">
+    <meta property="og:url" content="https://junco.ironforgesoftware.com/docs/field-notes/">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://junco.ironforgesoftware.com/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f4f5">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#14171d">
+    <meta name="color-scheme" content="light dark">
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/CommitMono-400.woff2" crossorigin>
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/CommitMono-700.woff2" crossorigin>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/docs/docs.css">
+    <script>
+      (function () {
+        var t = localStorage.getItem("theme");
+        if (t) document.documentElement.setAttribute("data-theme", t);
+        document.documentElement.classList.add("js");
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="wrap-docs bar">
+      <a class="wordmark" href="/"
+        ><svg class="mark" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true">
+          <circle fill="currentColor" cx="13" cy="16" r="12"></circle>
+          <path fill="var(--accent)" d="M21 10 L32 16 L21 22 Z"></path></svg
+        >junco</a
+      >
+      <div class="search" role="search">
+        <input id="docs-search" type="search" placeholder="search docs" autocomplete="off"
+          role="combobox" aria-expanded="false" aria-controls="search-results"
+          aria-autocomplete="list" aria-label="Search docs">
+        <!-- [html-validate-disable-next prefer-native-element: ARIA combobox popup; a native select cannot host result links] -->
+        <ul id="search-results" role="listbox" aria-label="Search results" hidden></ul>
+      </div>
+      <nav aria-label="Site">
+        <a href="/docs/" aria-current="true">docs</a>
+        <a href="https://github.com/ironforgesoftware/junco">GitHub</a>
+        <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a>
+        <button id="theme-toggle" type="button" aria-pressed="false">dark</button>
+      </nav>
+    </header>
+
+    <div class="wrap-docs docs-grid">
+      <details class="side" open>
+        <summary>contents</summary>
+        <nav aria-label="Docs">
+      <section>
+        <p class="group">start</p>
+        <ul>
+        <li><a href="/docs/">Start here</a></li>
+        </ul>
+      </section>
+      <section>
+        <p class="group">reference</p>
+        <ul>
+        <li><a href="/docs/cli/">CLI</a></li>
+        <li><a href="/docs/config/">Configuration</a></li>
+        <li><a href="/docs/ticket-schema/">Ticket schema</a></li>
+        </ul>
+      </section>
+      <section>
+        <p class="group">field notes</p>
+        <ul>
+        <li><a aria-current="page" href="/docs/field-notes/">Tips, recipes &amp; FAQ</a></li>
+        </ul>
+      </section>
+        </nav>
+      </details>
+      <main id="main">
+        <h1>Field notes</h1>
+<p>
+  Cross-cutting notes that live above any single command. Command-specific warnings sit on
+  the <a href="/docs/cli/">CLI reference</a> next to their command; this page is the rest —
+  the habits that keep runs short and queues moving.
+</p>
+
+<h2 id="plan-discipline">Plan-authoring discipline</h2>
+<p>
+  The agent runs unattended; the plan is the only steering you get. What loops an agent is
+  almost never missing skill — it is an underspecified or self-doubting plan.
+</p>
+<ul>
+  <li>Never write "think carefully", "consider all cases", "be thorough" — they feed
+    second-guessing loops. State the change; name the files.</li>
+  <li>No "TBD", no "similar to Step N", no invented labels — plan-lint rejects them before
+    a token is spent.</li>
+  <li>Every step ends in exactly one commit. Reference function signatures, not just paths.</li>
+  <li>Copy the strict Notes block from the shipped template verbatim — it is the single
+    biggest anti-loop lever. Dropping it turns minutes into twenty.</li>
+  <li>Defensive timeout inflation buys nothing: a stuck session is killed by the guards, and
+    commits made before the cutoff are salvaged into a draft PR either way.</li>
+</ul>
+
+<h2 id="portable-verification">Portable verification blocks</h2>
+<p>
+  The <code>## Verification</code> block runs with the worktree as its working directory, on
+  whatever OS the daemon lives on. BSD and GNU userlands disagree just enough to hurt:
+  <code>wc -l</code> pads differently, <code>sed -i</code> wants <code>''</code> on macOS,
+  <code>date -v</code> vs <code>date -d</code>. Prefer <code>awk</code>, Python one-liners, or
+  the project's own test runner.
+</p>
+<pre class="cmd">npm test</pre>
+
+<h2 id="which-failures-retry">Which failures spend retries</h2>
+<p>
+  Transient endpoint trouble — dropped connections, 5xx, truncated responses — requeues the
+  ticket with backoff, up to <code>worker.maxTransientRetries</code>. Provider faults — bad
+  key, empty quota, rate limit, unknown model — latch the provider gate and pause claiming
+  <b>without</b> touching any ticket's retry budget. Plan-lint failures, verification
+  failures, and guard kills fail immediately; the ticket's <code>## Result</code> block names
+  the reason.
+</p>
+
+<h2 id="operating-habits">Operating habits</h2>
+<ul>
+  <li><code>junco restart</code>, not SIGTERM: under launchd's keep-alive a graceful exit
+    stays down; restart validates config first and verifies the pid changed.</li>
+  <li>Merged is not running: the daemon executes the code it started with. After an update,
+    check the queue is idle, then <a href="/docs/cli/#restart"><code>junco restart</code></a>.</li>
+  <li><code>metrics.totalCostUsd</code> resets on restart; <code>spend.todayUsd</code>
+    persists until midnight. They legitimately diverge — the ledger is the one the budget cap
+    reads.</li>
+  <li>Ctrl-C is a ladder: once finishes the in-flight ticket then exits; twice aborts the
+    session and salvages commits; a third is a hard exit.</li>
+</ul>
+
+<h2 id="recipes">Recipes</h2>
+<h3 id="recipe-launchd">Run headless under launchd</h3>
+<pre class="cmd">junco service --platform launchd > ~/Library/LaunchAgents/com.ironforgesoftware.junco.plist
+launchctl load ~/Library/LaunchAgents/com.ironforgesoftware.junco.plist</pre>
+<p>The rendered unit sizes its stop timeout to the longest reachable ticket timeout, so a
+draining worker is never SIGKILLed mid-run. systemd: same command with
+<code>--platform systemd</code>.</p>
+<h3 id="recipe-cron">Cron a single sweep</h3>
+<pre class="cmd">junco run-once</pre>
+<p><code>run-once</code> takes no lock — safe beside a running daemon, and the cron-friendly
+way to process a queue on a machine that sleeps.</p>
+<h3 id="recipe-contain">Confine what tickets may touch</h3>
+<pre class="cmd">junco config set git.allowedRepoRoots '["~/code"]'</pre>
+<p>PR-flow tickets naming a repo outside the roots fail plan-lint before any agent runs.</p>
+<h3 id="recipe-pipe">Pipe work in from another tool</h3>
+<pre class="cmd">my-planner | junco submit -</pre>
+<p>Anything that can write Markdown can dispatch junco — the frontmatter contract is stable
+and additive-only (<a href="/docs/ticket-schema/">ticket schema</a>).</p>
+
+<h2 id="faq">FAQ</h2>
+<dl class="flags">
+  <div><dt>Nothing is claiming — why?</dt>
+    <dd>Check <a href="/docs/cli/#status"><code>junco status</code></a>: a latched provider
+    gate (bad key, spent quota) or a reached daily budget pauses claiming loudly.
+    <code>/ready</code> returns 503 while latched; fix the cause, or wait for local midnight
+    on a budget stop.</dd></div>
+  <div><dt>My ticket failed before the agent even ran.</dt>
+    <dd>Plan-lint. The ticket in <code>failed/</code> carries a <code>## Result</code> block
+    naming the rule — most often a <code>cd</code> in the Verification block, a label that
+    does not exist on the repo, or a <code>repo:</code> that is not a git checkout.</dd></div>
+  <div><dt>Where is the full story of a run?</dt>
+    <dd><code>&lt;dataDir&gt;/transcripts/&lt;ticket-id&gt;.jsonl</code> — the per-run event
+    stream. <code>junco logs -f</code> is the live view; the transcript is the record.</dd></div>
+  <div><dt>Does junco phone home?</dt>
+    <dd>The daemon never does. The daily update check runs CLI/TUI-side against the npm
+    registry and turns off with <code>updateCheck: false</code>.</dd></div>
+  <div><dt>Can I run two workers against one queue?</dt>
+    <dd>Claiming is an atomic rename — two processes can never win the same ticket. Within
+    one daemon, <code>worker.maxConcurrent</code> adds slots; same-repo tickets always
+    serialize.</dd></div>
+</dl>
+      </main>
+    </div>
+
+    <footer class="wrap-docs foot">
+      <p>
+        <a href="https://github.com/ironforgesoftware/junco/blob/main/LICENSE">MIT</a> ·
+        <a href="https://github.com/ironforgesoftware/junco">GitHub</a> ·
+        <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a> ·
+        <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a>
+      </p>
+      <p class="stamp">
+        verified against junco 0.8.0 ·
+        <a href="https://github.com/ironforgesoftware/junco-site/edit/main/docs-src/pages/field-notes.html">edit this page</a>
+      </p>
+    </footer>
+
+    <script type="module" src="/docs/docs.js"></script>
+  </body>
+</html>

@@ -10,5 +10,10 @@
 
 ## reference
 
+- [CLI reference](https://junco.ironforgesoftware.com/docs/cli/): Every junco command and subcommand: synopsis, flags, examples.
 - [Configuration](https://junco.ironforgesoftware.com/docs/config/): Every config lever: type, default, live or restart, straight from junco's own registry.
 - [Ticket schema](https://junco.ironforgesoftware.com/docs/ticket-schema/): The frontmatter contract, field by field — junco schema rendered as a page.
+
+## field notes
+
+- [Field notes](https://junco.ironforgesoftware.com/docs/field-notes/): Tips, recipes, and answers from running junco in the field.

@@ -1,0 +1,7 @@
+<p>Prints the resolved data tree under <code>dataDir</code>: every path with live counts, legacy-override provenance, and any pending migration. A pure read-only view — it never creates or moves anything. Absent nodes are still listed (<code>(absent)</code> is normal before the first daemon start); a legacy-overridden root prints its config key with a deprecation tag, and an unmigrated old-name directory prints the pending rename. <code>--json</code> emits the same information as <code>{ root, paths, counts, legacy, pendingMigrations, deprecations }</code> for scripts.</p>
+<pre class="cmd">junco data</pre>
+<pre class="cmd">junco data --json</pre>
+<pre class="out">junco data — root: /Users/you/.local/state/junco
+queue      /Users/you/.local/state/junco/queue
+  inbox 2 · processing 1 · done 148 · failed 9</pre>
+<p class="see">see also: <a href="#data-migrate">data migrate</a> · <a href="#doctor">doctor</a> · <a href="/docs/config/">configuration reference</a></p>
