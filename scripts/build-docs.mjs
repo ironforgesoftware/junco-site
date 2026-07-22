@@ -296,13 +296,6 @@ function renderNav(nav, navLabels, currentSlug) {
   return groups;
 }
 
-// Same FOUC-free theme init the landing page inlines.
-const THEME_SNIPPET = `      (function () {
-        var t = localStorage.getItem("theme");
-        if (t) document.documentElement.setAttribute("data-theme", t);
-        document.documentElement.classList.add("js");
-      })();`;
-
 export function renderPage({ meta, body, nav, navLabels, juncoVersion }) {
   const url = pageUrl(meta.slug);
   const title = `${meta.title} — junco docs`;
@@ -324,17 +317,17 @@ export function renderPage({ meta, body, nav, navLabels, juncoVersion }) {
     <meta property="og:image" content="https://junco.ironforgesoftware.com/assets/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f4f5">
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#14171d">
-    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#14171d">
+    <meta name="color-scheme" content="dark">
     <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
     <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
     <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/CommitMono-400.woff2" crossorigin>
     <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/CommitMono-700.woff2" crossorigin>
     <link rel="stylesheet" href="/styles.css">
     <link rel="stylesheet" href="/docs/docs.css">
+    <script src="/glyphs.js" defer></script>
     <script>
-${THEME_SNIPPET}
+      document.documentElement.classList.add("js");
     </script>
   </head>
   <body>
@@ -342,9 +335,12 @@ ${THEME_SNIPPET}
 
     <header class="wrap-docs bar">
       <a class="wordmark" href="/"
-        ><svg class="mark" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true">
-          <circle fill="currentColor" cx="13" cy="16" r="12"></circle>
-          <path fill="var(--accent)" d="M21 10 L32 16 L21 22 Z"></path></svg
+        ><svg class="mark" width="20" height="16" viewBox="0 0 200 160" aria-hidden="true">
+          <path fill="var(--junco-tail)" d="M82 100 L30 142 L40 150 L90 116 Z"></path>
+          <path fill="var(--ink)" d="M160 52 C160 28 138 14 114 14 C82 15 58 34 55 64 C52 94 66 124 102 128 C132 131 154 114 159 86 C161 74 160 62 160 52 Z"></path>
+          <path fill="var(--junco-mantle-2)" d="M104 14.5 C80 16 58 34 55 64 C53.5 79 56 95 64 108 C68 114 73 117 78 118 C84 102 88 80 96 60 C97 44 99 26 104 14.5 Z"></path>
+          <path fill="var(--junco-hood-1)" d="M104 14.5 C108 14 111 14 114 14 C138 13 160 30 160 52 C160 58 158 62 154 65 C148 76 141 87 134 94 C122 88 106 74 96 60 C97 44 99 26 104 14.5 Z"></path>
+          <path fill="var(--accent)" d="M157 46 L178 52 L157 59 C154 55 154 50 157 46 Z"></path></svg
         >junco</a
       >
       <div class="search" role="search">
@@ -358,7 +354,6 @@ ${THEME_SNIPPET}
         <a href="/docs/" aria-current="${meta.slug === "index" ? "page" : "true"}">docs</a>
         <a href="https://github.com/ironforgesoftware/junco">GitHub</a>
         <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a>
-        <button id="theme-toggle" type="button" aria-pressed="false">dark</button>
       </nav>
     </header>
 

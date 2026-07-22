@@ -74,8 +74,8 @@ for f in files:
         bad += [(f,i,c) for c in pat.findall(line) if c not in allowed]
 print(bad if bad else 'emoji gate OK'); assert not bad
 EOF
-grep -rn '#[0-9a-fA-F]\{3,8\}\b' site/ --include='*.html'  # expected: ONLY theme-color metas (two per page)
-grep -n '#[0-9a-fA-F]\{6\}' site/styles.css       # expected: hits only inside :root, [data-theme=dark], the dark @media, and @media print blocks — verify by eye
+grep -rn '#[0-9a-fA-F]\{3,8\}\b' site/ --include='*.html' | grep -vE '\(#[0-9]+[,)]'  # expected: ONLY theme-color metas (one per page); issue refs like (#161) are excluded
+grep -n '#[0-9a-fA-F]\{6\}' site/styles.css       # expected: hits only inside :root and @media print blocks — verify by eye
 grep -n '#[0-9a-fA-F]\{3,8\}\b' site/docs/docs.css  # expected: 1 (no matches — docs.css is var()-only)
 ```
 

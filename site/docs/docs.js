@@ -1,29 +1,5 @@
-// junco docs behavior: theme toggle, copy buttons, heading anchors, search.
+// junco docs behavior: copy buttons, heading anchors, search.
 // Loaded as a module at the end of every docs page; the page works without it.
-
-function initTheme() {
-  const doc = document.documentElement;
-  const toggle = document.getElementById("theme-toggle");
-  if (!toggle) return;
-  const current = () => {
-    const set = doc.getAttribute("data-theme");
-    if (set) return set;
-    return matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  };
-  const paint = () => {
-    const dark = current() === "dark";
-    toggle.textContent = dark ? "light" : "dark";
-    toggle.setAttribute("aria-pressed", String(dark));
-  };
-  toggle.addEventListener("click", () => {
-    const next = current() === "dark" ? "light" : "dark";
-    doc.setAttribute("data-theme", next);
-    localStorage.setItem("theme", next);
-    paint();
-  });
-  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", paint);
-  paint();
-}
 
 function initCopy() {
   document.querySelectorAll("pre.cmd").forEach((pre) => {
@@ -178,7 +154,6 @@ function initSearch() {
   });
 }
 
-initTheme();
 initCopy();
 initAnchors();
 initSidebar();
