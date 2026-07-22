@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Changelog — junco docs</title>
+    <meta name="description" content="Release history for junco — every version's notable changes.">
+    <link rel="canonical" href="https://junco.ironforgesoftware.com/docs/changelog/">
+    <meta property="og:title" content="Changelog — junco docs">
+    <meta property="og:description" content="Release history for junco — every version's notable changes.">
+    <meta property="og:url" content="https://junco.ironforgesoftware.com/docs/changelog/">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://junco.ironforgesoftware.com/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f4f5">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#14171d">
+    <meta name="color-scheme" content="light dark">
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/CommitMono-400.woff2" crossorigin>
+    <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/CommitMono-700.woff2" crossorigin>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/docs/docs.css">
+    <script>
+      (function () {
+        var t = localStorage.getItem("theme");
+        if (t) document.documentElement.setAttribute("data-theme", t);
+        document.documentElement.classList.add("js");
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="wrap-docs bar">
+      <a class="wordmark" href="/"
+        ><svg class="mark" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true">
+          <circle fill="currentColor" cx="13" cy="16" r="12"></circle>
+          <path fill="var(--accent)" d="M21 10 L32 16 L21 22 Z"></path></svg
+        >junco</a
+      >
+      <div class="search" role="search">
+        <input id="docs-search" type="search" placeholder="search docs" autocomplete="off"
+          role="combobox" aria-expanded="false" aria-controls="search-results"
+          aria-autocomplete="list" aria-label="Search docs">
+        <!-- [html-validate-disable-next prefer-native-element: ARIA combobox popup; a native select cannot host result links] -->
+        <ul id="search-results" role="listbox" aria-label="Search results" hidden></ul>
+      </div>
+      <nav aria-label="Site">
+        <a href="/docs/" aria-current="true">docs</a>
+        <a href="https://github.com/ironforgesoftware/junco">GitHub</a>
+        <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a>
+        <button id="theme-toggle" type="button" aria-pressed="false">dark</button>
+      </nav>
+    </header>
+
+    <div class="wrap-docs docs-grid">
+      <details class="side" open>
+        <summary>contents</summary>
+        <nav aria-label="Docs">
+      <section>
+        <p class="group">start</p>
+        <ul>
+        <li><a href="/docs/">Start here</a></li>
+        <li><a href="/docs/how-it-works/">How junco works</a></li>
+        <li><a href="/docs/security/">Security model</a></li>
+        </ul>
+      </section>
+      <section>
+        <p class="group">guides</p>
+        <ul>
+        <li><a href="/docs/github-loop/">The GitHub loop</a></li>
+        <li><a href="/docs/tickets/">Tickets &amp; the inbox</a></li>
+        <li><a href="/docs/assess/">Assess</a></li>
+        <li><a href="/docs/analyze/">Analyze</a></li>
+        <li><a href="/docs/dashboard/">The dashboard</a></li>
+        <li><a href="/docs/operations/">Operations</a></li>
+        <li><a href="/docs/bot-account/">Bot account</a></li>
+        </ul>
+      </section>
+      <section>
+        <p class="group">reference</p>
+        <ul>
+        <li><a href="/docs/cli/">CLI</a></li>
+        <li><a href="/docs/config/">Configuration</a></li>
+        <li><a href="/docs/ticket-schema/">Ticket schema</a></li>
+        <li><a aria-current="page" href="/docs/changelog/">Changelog</a></li>
+        </ul>
+      </section>
+      <section>
+        <p class="group">field notes</p>
+        <ul>
+        <li><a href="/docs/field-notes/">Tips, recipes &amp; FAQ</a></li>
+        </ul>
+      </section>
+        </nav>
+      </details>
+      <main id="main">
+        <h1>Changelog</h1>
+<p>
+  Every release's notable changes, generated from junco's canonical
+  <code>CHANGELOG.md</code> and refreshed by <code>node scripts/build-docs.mjs</code> on every
+  build — this page cannot drift from the source of truth.
+</p>
+<h2 id="v0-9-0">0.9.0 — 2026-07-22</h2>
+<h3>Changed</h3>
+<ul>
+  <li><strong>Breaking:</strong> dashboard shortcuts are now derived mnemonics. Every named option's hotkey is the highlighted letter inside its own footer chip (first letter when free, cascading otherwise; uppercase = shift-guarded destructive verbs, which keep their confirm modals; <code>q</code> quit and <code>?</code> help reserved everywhere). Notable changes: browser <code>o</code>→<code>b</code>, approve <code>a</code>→<code>o</code>, analyze <code>c</code>→<code>n</code>, add-repo <code>w</code>→<code>a</code>, unwatch <code>x</code>→<code>u</code>, queue-jump <code>t</code>→<code>e</code>, requeue <code>R</code>→<code>t</code> (retry), delete <code>x</code>→<code>D</code>, prune <code>x</code>→<code>P</code>, restart <code>X</code>→<code>R</code>, review discard <code>x</code>→<code>D</code>, assess auto-plan <code>S</code>→<code>A</code>. One derived table per view drives the chips, the help modal, and key dispatch, so they can never disagree.</li>
+  <li><strong>Breaking:</strong> the dashboard's GITHUB/LOCAL two-mode split is gone — one unified view. The rail lists every repo junco knows about (watched GitHub repos _and_ local checkouts discovered on disk) with a pinned <code>system</code> group (queue, outbox, worktrees, daemon, logs) below; the body follows the cursor. The <code>m</code>/Shift+Tab mode toggle and the header tab pair are removed; <code>t</code> now jumps to the queue system row instead of opening a separate queue view; <code>enter</code> on a rail repo row opens a new repo detail panel (path, origin, branch@sha, dirty flag, worktrees, recent queue activity — also the body for local-only checkouts, and for every repo when <code>github.enabled = false</code>). Queue snapshot rows now carry the ticket's <code>repo:</code> path so the panel can scope queue activity per repo.</li>
+  <li><code>junco assess</code> filing (CLI <code>assess file</code>, TUI <code>f</code>) stamps per-finding filed accounting (created/queued/deduped — shown as &quot;dup&quot; in the TUI — + timestamp + URL) and keeps the batch in the review list; the TUI review view shows batch age, <code>filed n/m</code> chips, and per-finding ✓ accounting, and <code>x</code> discards an open batch.</li>
+  <li>Dashboard polish: digit-free panes (1/2/3 keys removed), grouped live-metric top bar (24h record, running ticket, ETA, gate/restart warnings; breadcrumb trail), columnar issue/PR tables with header strips and state pills, always-reserved third column (activity card), daemon panel stat grid with refresh stamp and spend gauge, scrollbars, clickable confirm buttons, bot-authored rows highlighted.</li>
+  <li>The dashboard re-renders far less: its large components — the issue and PR lists, the unified rail, and the repo/daemon detail panels — now re-paint only when their own data changes, not on every background health/queue poll. The view is memoized and its callback props are stabilized.</li>
+</ul>
+<h3>Added</h3>
+<ul>
+  <li><code>junco assess discard &lt;id&gt;</code> — explicitly archive a pending review batch; filing no longer auto-archives.</li>
+  <li>Durable per-task history: every finalized ticket (PR flow, ask, assess, analyze, or a crash-containment path) appends a record — kind, terminal status, duration, tokens, cost, and (for GitHub-bridged tickets) <code>nwo</code>/issue/PR url — to <code>&lt;dataDir&gt;/history/</code> (UTC-month JSONL shards). Requeues never append.</li>
+  <li>Queue monitoring in the dashboard's queue view (<code>t</code>, and the LOCAL queue section): a <code>▸ paused — &lt;reason&gt;</code> banner when the daemon's provider gate is backed off or blocked (rate limit, outage, budget, or an auth/config problem), a <code>↻ poll Ns ago</code> heartbeat on the RUNNING header, <code>warn: no activity Nm</code> stall warnings on a wedged running task, deferred/oldest-wait context on the WAITING header plus a <code>queued Nm</code> age per row, real result status + duration on RECENT rows, and an always-on STATS section (24h ok/failed counts and success rate, avg duration, ETA, a 7-day sparkline, spend and token totals, guard/requeue counts, outbox depth, and a pending-restart notice) built from the new history ledger with a done/failed-dir-mtime fallback when the ledger is still empty.</li>
+  <li>The rail's queue card and <code>junco status</code> pick up the same signals: a paused line and <code>oldest Nm</code> on the waiting line in the rail, and a <code>stats:</code> line (24h ok/failed · avg duration · oldest wait) plus a <code>gate:</code> line (when not healthy) in <code>junco status</code>.</li>
+  <li>Live daemon-log view in the TUI: a compact <code>logs</code> section in the LOCAL rail tails the latest lines, and Enter/click expands it into a full-screen overlay with level-threshold, ticket, and text filters, a follow toggle, and scrollback. <code>junco logs</code> and the TUI now share one tail implementation.</li>
+</ul>
+<h3>Internal</h3>
+<ul>
+  <li>Behaviour-preserving engineering work under the hood: the test suite's duplicated scaffolding was consolidated into one shared <code>Config</code>/harness fixture layer behind a <code>@vitest/coverage-v8</code> floor; the ~3,000-line dashboard <code>App</code> component was decomposed into per-domain hooks; and <code>eslint-plugin-react-hooks</code> (rules-of-hooks + exhaustive-deps) is now enforced across the dashboard.</li>
+</ul>
+<h2 id="v0-8-0">0.8.0 — 2026-07-17</h2>
+<h3>Added</h3>
+<ul>
+  <li>Full-TUI mouse control with hover feedback: config editor, command palette, queue, review, help, add-repo, LOCAL dashboard, plus clickable footer hint chips in every view.</li>
+  <li>First-run setup lives in the dashboard: <code>junco dashboard</code> (or bare <code>junco</code>) with no config opens the guided walkthrough, then lands in the dashboard. Re-run it anytime from the command palette (&quot;setup&quot;).</li>
+  <li><code>junco config init</code> — headless default-config scaffold (the old <code>junco init --yes</code>).</li>
+  <li>Mouse support in the setup walkthrough: clickable choices, back/quit chips, click-to-finish.</li>
+  <li>Dedicated bot-account identity for daemon GitHub traffic (<code>junco auth login</code>, wizard Account chapter, <code>botAccount</code> config block).</li>
+  <li>Permission-aware repo access: <code>junco auth grant &lt;owner/repo&gt;</code> (invite as you, accept as the bot), dashboard auto-grant after adding a watched repo, and doctor/wizard grant hints. Dispatch to an unwatched repo the bot can push to now goes direct instead of forking — and <strong>auto-onboards</strong> that repo permanently into the watchlist (bridge-swept from then on, no confirmation step); this includes <code>junco assess</code> scoped to a single issue on such a repo. Fork-PR mode is unchanged for public repos the bot can't push to.</li>
+  <li><code>junco assess</code> now records a per-repo history (last successful audit, its finding counts, and a marker when the most recent attempt failed), surfaced as a column in the dashboard rail and in <code>junco status</code> / <code>junco doctor</code>. Issue-scoped runs (<code>junco assess owner/repo#N</code>) deliberately do not refresh a repo's freshness — they audit only the code the issue implicates. The history lives at <code>&lt;dataDir&gt;/assess-history/</code> (one file per repo).</li>
+  <li><strong>Unified data root:</strong> a new top-level <code>dataDir</code> config key (default <code>~/.local/state/junco</code>) that every on-disk path — the ticket queue, parked <code>assess</code>/<code>analyze</code> review items, the GitHub outbox, cloned repos, PR-flow worktrees, transcripts, and watchlist/spend/metrics/log files — now resolves under. The tree is materialized eagerly at daemon startup — every directory except <code>clones/external/</code> and <code>worktrees/</code> (still created on demand, since a legacy override can point them outside the root) — and the root gets a self-<code>.gitignore</code> (<code>*</code>, written only when absent) so pointing <code>dataDir</code> inside a git checkout — including junco's own — can never dirty a commit.</li>
+  <li><code>junco data [--json]</code> — a pure, read-only view of the resolved tree: live counts per node, legacy-override provenance, pending migrations, and config deprecations.</li>
+  <li><code>junco data migrate [--dry-run|--force]</code> — the opt-in full unification for a config still carrying legacy path keys: moves the queue into <code>&lt;dataDir&gt;/queue</code>, normalizes the state tree, rewrites <code>config.json</code> to drop the legacy keys, and prints a receipt. Refuses while the daemon looks like it's running (<code>--force</code> to override).</li>
+  <li>An in-place state-tree migration (old directory names → new ones, e.g. <code>assess-review</code> → <code>review/assess</code>) runs automatically at every daemon startup — journaled, idempotent, and never destructive on a name conflict.</li>
+  <li>Daemon startup logs a one-line warning per deprecated legacy config key set, plus a warning for any state-tree migration conflict it had to skip; <code>junco doctor</code> and <code>junco data</code> additionally report pending (not-yet-run) migrations as informational findings, pointing at <code>junco data migrate</code>.</li>
+  <li>Update notification: the dashboard header, <code>junco status</code>, and <code>junco doctor</code> now surface a newer npm release (best-effort daily check against the npm registry, cached in <code>&lt;dataDir&gt;/update-check.json</code>; opt out with <code>&quot;updateCheck&quot;: false</code>).</li>
+  <li><code>junco update</code> — install the latest release and drain-restart the supervised daemon.</li>
+  <li><code>junco --version</code>.</li>
+  <li>Tickets can request a bot-created tracking issue: <code>github_request: { create_issue: true }</code> makes the worker create the issue at claim time (own gh identity — bot account when configured) and link the PR (<code>Closes owner/repo#N</code>), so merging closes it. Best-effort; fork-push tickets are skipped.</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+  <li>Bare <code>junco</code> now ensures the supervised daemon is up, then opens the dashboard. On an interactive terminal, if the daemon is down and a launchd/systemd service references your config, it starts that service and waits briefly for it to come up before landing in the dashboard; with no service installed it opens the dashboard and points you at <code>junco service</code>. Previously bare <code>junco</code> with a config ran the daemon in the foreground (blocking the terminal). Never starts an unsupervised daemon, and non-interactive invocations (pipes/CI) skip the pre-flight entirely. <code>junco start</code> (explicit foreground daemon) and <code>junco dashboard</code> (observe without starting anything) are unchanged.</li>
+  <li>Dashboard mouse protocol upgraded to SGR any-motion tracking (hover); click targets now resolve via a render-time hit-region registry.</li>
+  <li><p>Default on-disk locations moved under the unified <code>dataDir</code> root (existing configs are unaffected — see Deprecated below):</p><pre>| What                      | Old default                           | New default                  |
+| ------------------------- | ------------------------------------- | ---------------------------- |
+| Ticket queue              | `&lt;vaultRoot&gt;/&lt;juncoSubdir&gt;/{inbox,…}` | `&lt;dataDir&gt;/queue/{inbox,…}`  |
+| Assess review parking     | `&lt;stateDir&gt;/assess-review/`           | `&lt;dataDir&gt;/review/assess/`   |
+| Analyze review parking    | `&lt;stateDir&gt;/comment-review/`          | `&lt;dataDir&gt;/review/comments/` |
+| GitHub outbox             | `&lt;stateDir&gt;/github-outbox/`           | `&lt;dataDir&gt;/outbox/`          |
+| Dashboard-cloned repos    | `&lt;stateDir&gt;/repos/`                   | `&lt;dataDir&gt;/clones/watched/`  |
+| External (fork-PR) clones | `&lt;stateDir&gt;/external/`                | `&lt;dataDir&gt;/clones/external/` |
+| PR-flow worktrees         | `~/junco/worktrees`                   | `&lt;dataDir&gt;/worktrees/`       |
+| Watchlist                 | `&lt;stateDir&gt;/github-watchlist.json`    | `&lt;dataDir&gt;/watchlist.json`   |</pre><p><code>worker.log</code>, <code>transcripts/</code>, and <code>spend.json</code> were already under <code>stateDir</code> and move with it to <code>dataDir</code>. <code>metrics.json</code> is a reserved, forward-looking path — listed in the tree (and by <code>junco data</code>) now, written by a planned metrics-persistence follow-up.</p></li>
+  <li>The setup wizard's Workspace question now scaffolds <code>dataDir</code> into a fresh <code>config.json</code>, but only when it differs from the default — a fully-default fresh config still carries no path keys at all.</li>
+</ul>
+<h3>Deprecated</h3>
+<ul>
+  <li>Four legacy, single-purpose path keys are now optional per-subtree overrides — each still works exactly as before, but logs a one-line deprecation warning at daemon startup and is flagged by <code>junco doctor</code>/<code>junco data</code>: <code>vaultRoot</code> + <code>juncoSubdir</code> (queue root), <code>observability.stateDir</code> (the whole data root), <code>git.worktreeRoot</code> (worktrees root), and <code>github.externalReposRoot</code> (external-clones root). Run <code>junco data migrate</code> to drop them and unify onto <code>dataDir</code>.</li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+  <li>Dashboard rail: the <code>▌</code> selection bar could be squeezed to zero width by a long <code>owner/repo</code> name, leaving no visible selection — and no fallback on <code>NO_COLOR</code> terminals, where <code>▌</code> is the only selection cue. The rail row now pins the selection bar and the assess column and truncates the repo name between them.</li>
+</ul>
+<h3>Removed</h3>
+<ul>
+  <li><strong>Breaking:</strong> the <code>junco init</code> subcommand. Interactive setup → <code>junco dashboard</code>; scripted scaffold → <code>junco config init</code>.</li>
+</ul>
+<h2 id="v0-7-0">0.7.0 — 2026-07-12</h2>
+<h3>Added</h3>
+<ul>
+  <li>Hosted catalog model resolution: a provider-prefixed <code>model.id</code> (e.g. <code>&lt;provider&gt;/&lt;model-name&gt;</code>) with no explicit <code>model.baseUrl</code> now resolves from the embedded SDK's builtin provider catalog (real endpoint, cost, and context-window metadata). <code>model.source</code> (<code>auto</code>/<code>catalog</code>/<code>inline</code>) pins the behavior explicitly.</li>
+  <li><code>model.apiKey</code> may be omitted (the provider's environment variable, e.g. <code>&lt;PROVIDER&gt;_API_KEY</code>, applies at request time) or set to an <code>&quot;$ENV_VAR&quot;</code> reference; <code>&quot;!command&quot;</code> values are rejected.</li>
+  <li><code>model.retry.maxRetries</code> / <code>model.retry.baseDelayMs</code> — SDK auto-retry levers.</li>
+  <li>Endpoint probing (startup wait, readiness, doctor) is skipped for hosted catalog models.</li>
+  <li><strong>Provider gate:</strong> infrastructure failures from the inference endpoint now pause ticket claiming instead of quietly retrying against a provider that will keep saying no. Seven states — <code>ok</code>, <code>auth_error</code>, <code>quota_exhausted</code>, <code>misconfig</code>, <code>rate_limited</code>, <code>outage_backoff</code>, <code>budget_exhausted</code> — are latched or backed off based on the failure text (auth/quota/model-not-found/ rate-limit/outage/daily-budget); any successful session, a config hot-reload apply, or a daemon restart clears the gate, and <code>rate_limited</code>/ <code>outage_backoff</code> also expire on their own once their backoff window passes (<code>budget_exhausted</code> is the one exception — see below).</li>
+  <li><code>worker.endpointProbe</code> (<code>&quot;auto&quot;</code> / <code>&quot;always&quot;</code> / <code>&quot;never&quot;</code>) controls whether the inference endpoint is probed for reachability, overriding the catalog-skip default; probe results are cached for ~10 seconds and shared across the claim gate, <code>/health</code>, and <code>/ready</code>.</li>
+  <li><code>/health</code> gains a <code>gate: {state, reason, since, until}</code> field (<code>null</code> when no gate is wired); <code>/ready</code> returns its 503 body with the gate's reason whenever the gate is latched or backed off.</li>
+  <li>The interactive dashboard (<code>junco dashboard</code>) shows the provider gate's state as a colored dot on the daemon panel (red for a latch, yellow for a backoff) plus a reason line when the gate isn't <code>ok</code>.</li>
+  <li><strong>Cost accounting.</strong> Every completed session (main run, critic pass, corrective re-dispatch) records its resolved USD cost to a per-day spend ledger. A Q&amp;A/assess/analyze ticket's <code>## Result</code> footer gains a <code>cost=$X.XXXX</code> field alongside elapsed time and tokens; <code>/health</code> gains a <code>spend: {todayUsd, dailyBudgetUsd} | null</code> field; the dashboard's daemon panel prints a <code>spend $X.XX today</code> line (<code>/ $Y.YY budget</code> once a cap is configured).</li>
+  <li><code>worker.dailyBudgetUsd</code> (default <code>0</code>, disabled): once today's spend reaches the cap, the provider gate enters <code>budget_exhausted</code> and pauses ticket claiming until local midnight or an operator's config hot-reload raises the cap — unlike every other gate state, a successful session does NOT clear it, since finishing a session doesn't un-spend money.</li>
+  <li><code>junco doctor</code> runs a hosted-aware preflight for a catalog-resolved model: echoes the resolved provider and base URL, reports the api-key source (a <code>$ENV_VAR</code> reference, a config literal, or the provider's own environment variable), and — when a key is configured — runs a live per-provider auth check against the resolved endpoint.</li>
+  <li><code>junco init</code> gains a &quot;hosted provider from the built-in catalog&quot; model-source option alongside the inline-endpoint and models.json paths: pick a provider then a model straight from the embedded catalog, then the same shared api-key step (a blank key defers to the provider's own environment variable at runtime).</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+  <li><strong>Behavior:</strong> auth, quota, model-not-found, and rate-limit failures no longer consume the ticket's <code>retry_count</code> budget. Previously every infrastructure failure went through the same budgeted transient-retry path; now these four classes are recognized as the provider's fault, not the ticket's — the ticket is stamped with a fresh <code>not_before</code> and returned to the inbox with <code>retry_count</code> untouched. Outage (network/5xx) and unclassified failures keep the existing budgeted transient-retry path.</li>
+  <li><code>junco init</code> is now a full-screen guided walkthrough (Ink): chapter rail, machine preflight, live model discovery, repo-containment and GitHub-bridge setup, an extras multiselect, a review-before-write step, and a post-write flight check. Re-running <code>junco init</code> on an existing config enters a tune-up mode that pre-fills current values and writes only what changed (all other keys preserved). <code>--yes</code> still scaffolds the same minimal default config non-interactively.</li>
+  <li><strong>Behavior:</strong> a provider-prefixed <code>model.id</code> without an explicit <code>model.baseUrl</code> previously bound to the local default endpoint (<code>http://127.0.0.1:1234/v1</code>); it now resolves from the builtin catalog. Explicitly set <code>model.baseUrl</code> (or <code>model.source: &quot;inline&quot;</code>) to keep the old binding. A provider-prefixed id that is NOT actually in the builtin catalog falls through to inline resolution — an explicit <code>model.baseUrl</code> + <code>model.apiKey</code> are then required, and the session build fails with an actionable error if the key is missing; endpoint probing is still skipped for any catalog-eligible config, including this fall-through case.</li>
+  <li>The agent session no longer reads or creates <code>~/.pi/agent/auth.json</code>, <code>~/.pi/agent/settings.json</code>, or a target repo's <code>.pi/settings.json</code> — auth and settings are fully injected from junco config.</li>
+</ul>
+<h3>Removed</h3>
+<ul>
+  <li><code>@clack/prompts</code> dependency — the old prompt-based wizard is gone, replaced by the Ink walkthrough above.</li>
+</ul>
+<h2 id="v0-6-0">0.6.0 — 2026-07-11</h2>
+<h3>Added</h3>
+<ul>
+  <li><code>junco config path|list|get|set</code> and an in-dashboard config editor (press <code>,</code>), backed by a single lever registry that also powers <code>junco config list</code> (#161).</li>
+  <li>Daemon hot-reload: live-safe settings apply at the next poll; structural changes surface <code>pendingRestartFields</code> in <code>junco status</code> / <code>/health</code> (#161).</li>
+  <li><strong>Agent execution sandbox (<code>sandbox</code>).</strong> Native OS isolation of the Pi agent's tool execution — <strong>Seatbelt</strong> on macOS, <strong>bubblewrap</strong> on Linux, no container runtime, works fully offline. Confines tool writes to the worktree + a per-session scratch dir, denies network by default (per-ticket <code>network: true</code> frontmatter opts one ticket in), scrubs credentials (<code>GH_TOKEN</code>/API keys) from the agent's environment, applies a read deny-list over <code>~/.ssh</code>/<code>~/.config/gh</code>/etc., and freezes ambient <code>~/.pi</code> extension loading. <strong>On by default</strong>; <strong>fails closed</strong> when a required backend binary is unavailable — never a silent unsandboxed run. <code>junco doctor</code> preflights availability. Toggle it (and <code>backend</code>/<code>network</code>) live from the in-dashboard config editor (<code>,</code> → sandbox section) or <code>junco config set sandbox.enabled false</code>; changes apply to the next ticket with no restart. Pair with a dedicated GitHub identity for full credential separation (see <code>docs/operations.md</code> § Security model) (#160).</li>
+  <li><strong>Two-phase assess with a review queue.</strong> <code>junco assess</code> no longer files issues straight from the audit — the daemon <strong>parks</strong> every finding for review, and nothing lands on a tracker until a human confirms the batch (<code>junco assess review</code> to inspect, <code>junco assess file &lt;id&gt; --all | --only &lt;fingerprints&gt;</code> to file). Filing runs under your own <code>gh</code> auth and works on <strong>any watched repo, owned or not</strong> — owned repos get <code>junco:finding</code> + <code>severity/&lt;level&gt;</code> labels best-effort; repos you don't own get label-free issues. An authoritative dedup re-runs at file time so a finding filed by hand in the interim is skipped, not duplicated (#95).</li>
+  <li><strong>Dashboard assess review view.</strong> Press <code>v</code> in the dashboard to open a per-finding checklist with the same select-and-confirm-to-file flow as the CLI (#96).</li>
+  <li><strong><code>junco analyze owner/repo#N</code></strong> — a read-only issue investigation that parks a comment draft for review and <strong>never posts without operator confirmation</strong>. Shares the issue-target resolution (<code>gh issue view</code>, then watched-repo lookup or auto-provision) that dispatch uses (#98).</li>
+  <li><strong>Issue-scoped assess: <code>junco assess owner/repo#N</code>.</strong> Steers the audit to the code an issue implicates, auto-provisions an unwatched repo (fork, clone, watchlist add), and stamps each filed finding's body with a <code>Context: owner/repo#N</code> cross-reference so it shows up on the original issue's timeline. Dedup stays shared, not scoped — an issue-scoped run and a whole-repo run never double-file the same defect (#99).</li>
+  <li><strong>Two-mode dashboard</strong> with an actionable LOCAL runtime-visibility mode alongside the GitHub-integrated view (#97).</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+  <li><strong>The execution sandbox is now ON by default</strong> (<code>sandbox.enabled</code> defaults to <code>true</code>). On macOS this is transparent (Seatbelt is always available). On Linux without <code>bwrap</code> installed, tickets <strong>fail closed</strong> with a clear error — install bubblewrap, or set <code>sandbox.enabled: false</code> / <code>sandbox.backend: &quot;none&quot;</code> (via <code>junco config set</code> or the <code>,</code> config editor). Run <code>junco doctor</code> to preflight. See <code>docs/operations.md</code> § Sandboxing the agent (#166).</li>
+  <li><strong>BREAKING:</strong> configuration is now <code>config.json</code> (camelCase) instead of <code>config.toml</code>; the <code>smol-toml</code> dependency is removed. Convert existing <code>config.toml</code> files by hand (see docs/configuration.md); junco errors with a pointer if it finds a leftover <code>config.toml</code>. Legacy <code>[pi]</code>/<code>[legacy-local]</code> sections are gone — set <code>model.*</code> directly; the tool allowlist is now top-level <code>tools</code>, and <code>commit_leftovers</code> is <code>worker.commitLeftovers</code>.</li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+  <li><strong>Transcripts:</strong> every flow's transcript path routes through one slugifying helper, so a frontmatter id with path-unsafe characters can't escape the transcripts directory (#94, #100).</li>
+  <li><strong>Daemon &amp; queue:</strong> the scheduler drains in-flight tasks in a <code>finally</code> on a claim error and the third-signal hard-exit is testable (#142); malformed-frontmatter tickets route to <code>failed/</code> instead of looping, with a multi-level requeue collision suffix (#143); claims are guarded against a same-minute overwrite and <code>submit</code> uses a unique temp with an exclusive-create fallback (#144); <code>repoKey</code> is canonicalized so aliased repo paths serialize (#147).</li>
+  <li><strong>Health &amp; CLI:</strong> IPv6 health URLs are bracketed, <code>junco list</code> tolerates a missing queue-box dir (ENOENT), and the health server keeps a persistent error handler (#152).</li>
+  <li><strong>PR flow &amp; GitHub bridge:</strong> an offline soft-abort that made commits now routes to <code>done/</code> like its online twin (#146); the outbox embeds its idempotency marker on live comment posts and author-scopes the dedup scan (#148); the bridge vouches issue-body edits, <code>junco prs</code> includes external repos, ticket ids are unambiguous, plans are CRLF-normalized, and a null author is guarded (#150); managed external clones + syncs are asserted contained within <code>externalReposRoot</code> (#151).</li>
+  <li><strong>Assess &amp; analyze:</strong> a review batch is preserved when every filing fails and an empty <code>--only</code> selection is rejected (#149); assess/analyze issue numbers are bounded and branch/base names pattern-checked, with refreshed docs (#154, #155).</li>
+  <li><strong>Agent runtime:</strong> dropped a phantom nudge on an output-budget kill, gated nudge-ignored on delivery, and injected the transcript sink (#153).</li>
+  <li><strong>Service:</strong> non-blocking systemd restart with the stop timeout sized to the max ticket timeout (#145).</li>
+  <li><strong>TUI:</strong> <code>aliveRef</code> guards extended to the remaining async handlers, plus a non-TTY <code>useTerminalSize</code> fallback (#156).</li>
+  <li><strong>Config hot-reload follow-ups:</strong> <code>github.triggerLabel</code>/<code>askLabel</code> reclassified <code>restart</code> (and frozen so the bridge and reporter can't drift); the watcher single-parses and re-applies <code>logLevel</code> only when it changed; stale JSDoc dropped (#167, closes #162–#164).</li>
+  <li><strong>Migration follow-ups:</strong> analyze threads its client's <code>gh</code>/<code>git</code> deps; the analyze branch uses a no-op reporter so it can never post; the unconsumed <code>issue_title</code> is dropped; read-only assess clones fork-lessly (no stray fork); the review store gains read-time shape validation + ENOENT-safe archiving; a transcript-slugify CI flake is fixed; TUI review-view scroll/badge polish (#168, closes #101–#106, #157).</li>
+</ul>
+<h3>Security</h3>
+<ul>
+  <li><strong>Agent execution sandbox fs-tool path jail hardened against a symlink-swap TOCTOU</strong> (#169, closes #159): bash execution is serialized against the in-process fs tools (only bash can plant a symlink) and bash's process group is reaped, so a compromised agent can't win a check→syscall swap race against the jail. The OS sandbox backend (Seatbelt/bwrap) remains the primary containment; a <code>setsid</code>-escaping background process on macOS is a documented residual.</li>
+</ul>
+<h2 id="v0-5-0">0.5.0 — 2026-07-09</h2>
+<h3>Added</h3>
+<ul>
+  <li><strong><code>junco-dispatch</code> skill now recognizes repo-audit requests.</strong> Phrases like &quot;assess this repo&quot; or &quot;have junco audit this repo&quot; route to a new Assess mode that runs <code>junco assess</code> (a read-only audit that files one GitHub issue per finding) instead of authoring a plan ticket.</li>
+  <li><strong>Guard &amp; requeue observability.</strong> Guard decisions (nudges, escalations, kills) are logged, recorded in the per-ticket transcript, and counted in run metrics; <code>junco status</code> and <code>/health</code> surface the requeue and guard counters.</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+  <li><strong>README restructured GitHub-first.</strong> New tagline (_Issues in. Pull requests out._), a &quot;The loop&quot; walkthrough (label → plan → approve → PR, with the lifecycle labels and a real <code>junco logs -f</code> transcript), an assess section, fork-PR mode in the CLI table, and the dashboard mock up front. <code>package.json#homepage</code> and the README now point at the project's one-page site, <a href="https://junco.ironforgesoftware.com">junco.ironforgesoftware.com</a>.</li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+  <li><strong>Bridge:</strong> the plan is recovered from the whole planning-session text when the junco-ticket fence isn't the last message (#86).</li>
+  <li><strong>PR flow:</strong> fork PRs are recovered via <code>gh pr list --head owner:branch</code> (#75); only network/transient <code>gh pr create</code> failures requeue (#73); a pushed branch with no PR is recovered instead of stranded; an offline amend's push reports as queued, not unqualified success; <code>ls-remote</code> selects the exact ref sha, never a sibling ref (#72); fresh-mode resume is gated on crash-recovery provenance (#70); the fresh-mode fallback branch force-resets to <code>origin/&lt;base&gt;</code>.</li>
+  <li><strong>Locking:</strong> one shared, hardened pidfile-lock helper — atomic stale-steal via rename-aside with post-move verify, ABA-steal and pid-reuse protection, a locale-stable <code>ps</code> start-time discriminator, and a fallback for filesystems without hard-link support.</li>
+  <li><strong>Outbox:</strong> the finalize tail survives when a created-PR op dead-letters, and the flush lock is hardened against ABA steal and pid reuse.</li>
+  <li><strong>Assess:</strong> code findings are fingerprinted by line bucket with a normalized title — dedup survives code drift and retitles — and findings parse from the whole run's text, not just the last message.</li>
+  <li><strong>Agent sessions:</strong> a fallback grace deadline aborts wedged sessions; repetition-guard buffers clear after a nudge; <code>RunResult.finalText</code> is the last assistant message, not the whole run; transcript paths slugify the frontmatter id; subscribe-callback observability is guarded against throws.</li>
+  <li><strong>Queue &amp; dispatch:</strong> ticket placement is atomic (<code>linkSync</code> EEXIST, not check-then-act), and same-named terminal records uniquify instead of overwriting.</li>
+  <li><strong>Service &amp; config:</strong> systemd units escape <code>$</code> and <code>%</code> per field-expansion rules and double-quote <code>ExecStart</code>/<code>Environment</code> values; an empty <code>health_host</code> normalizes to loopback, and non-loopback binds warn at startup and in <code>junco doctor</code>.</li>
+  <li><strong>Logging &amp; verification:</strong> <code>worker.log</code> rotates mid-run as a single-writer, lock-holder concern; verification blocks are capped in count, bounded in aggregate wall clock, and run with a scrubbed child environment.</li>
+  <li><strong>Daemon &amp; schema:</strong> the stop flag is re-checked before claiming in the serial poll loop; the ticket contract bounds <code>timeout_minutes</code> (&gt; 0) and <code>amends_pr</code> (≥ 1).</li>
+</ul>
+<h2 id="v0-4-0">0.4.0 — 2026-07-06</h2>
+<h3>Added</h3>
+<ul>
+  <li><strong>GitHub-integrated inbox mode.</strong> Trigger-labeled GitHub issues are <strong>planned first, then executed</strong>: the daemon sweeps watched repos (<code>[github]</code> config section, default off — zero GitHub calls when disabled), verifies the labeler has write access (fail-closed), and dispatches a daemon-authored planning ticket built from the <code>junco-dispatch</code> skill's template (read-only session at the mapped clone; <code>planner_model_id</code> optionally plans with a different model). The plan is posted back as one editable issue comment for review; a write+ collaborator applies <code>junco:approved</code> to authorize execution (or set <code>require_approval = false</code> to auto-execute — recommended only for trusted private repos), and Junco then reads the (possibly edited) plan back out of the comment to build the execution ticket. Silent lifecycle labels track every step (<code>junco:planning/plan-ready/approved/queued/working/done/failed/denied</code>), and exactly one finalize comment lands per hop (the plan, or the PR link + summary / Q&amp;A answer / failure reason). PR bodies gain a deterministic <code>Closes owner/repo#N</code>; an ask label skips planning entirely and routes straight to the read-only Q&amp;A path; sub-issue parents are attached as background context for the planner. <code>junco doctor</code> validates repo mappings (clone exists, origin matches, reachable via <code>gh</code>) and that the planner template is readable; <code>junco status</code> and <code>/health</code> report bridge sweeps.</li>
+  <li><strong>Ticket schema (additive):</strong> worker-managed <code>github</code> provenance block and <code>workdir</code> (Q&amp;A session cwd, validated against <code>allowed_repo_roots</code>).</li>
+  <li><strong><code>junco dashboard</code></strong> — an interactive terminal UI for GitHub-integrated mode: a repos pane with per-state issue counts, an issues pane with lifecycle glyphs, and a status bar with daemon health, plus in-terminal plan review before dispatch/approve/re-plan. Repos can be added or removed at runtime through a hot-reloaded watchlist file (no daemon restart) that lives alongside, and defers to, <code>config.toml</code>'s repo mappings.</li>
+  <li><strong><code>junco restart</code></strong> — restart the supervised daemon (picks up config + code changes): discovers the launchd/systemd user unit whose invocation references your config path, kicks it with the platform-correct verb (<code>launchctl kickstart -k</code> / <code>systemctl --user restart</code>), validates the config first (never bounces onto an unparseable config), and verifies the pid changed.</li>
+  <li><strong>Dashboard command palette + focus keys</strong> — <code>:</code> opens a palette that runs junco CLI subcommands from inside the dashboard (spawns the real CLI against the same config; output + exit code in a scrollable pane; args field for <code>list</code>/<code>retry</code>/<code>submit</code>/<code>logs</code>/<code>service</code>; <code>logs</code> bounded; <code>init</code>/<code>start</code>/<code>dashboard</code> excluded with reasons). <code>w</code> opens add-repo (the watchlist key); <code>i</code> jumps to the issues pane; a persistent context-aware shortcut bar shows the full key set at all times. Add-repo can auto-clone: leave the path empty and the repo is cloned into a managed directory under the state dir, then validated and watched as usual.</li>
+</ul>
+<h2 id="v0-3-0">0.3.0 — 2026-06-10</h2>
+<h3>Added</h3>
+<ul>
+  <li><strong>Self-healing retries.</strong> Transient failures (endpoint errors, truncated streams) with no commits requeue the ticket with backoff (<code>[worker].max_transient_retries</code>, default 2; worker-managed <code>retry_count</code>/<code>not_before</code> frontmatter). Crashed tickets found in <code>processing/</code> at startup requeue under the same budget instead of failing.</li>
+  <li><strong>Endpoint-aware claiming.</strong> The daemon probes readiness before every claim — an endpoint outage queues work instead of burning the inbox into <code>failed/</code>.</li>
+  <li><strong>Timeout salvage.</strong> Sessions that hit the ticket timeout after committing get their commits pushed and a draft PR opened (new terminal status <code>timeout_partial</code>, routed to <code>done/</code>) with a partial-run banner.</li>
+  <li><strong>Force-stop.</strong> Second SIGTERM/SIGINT aborts the in-flight session and salvages commits; third hard-exits. Rendered service units now set <code>ExitTimeOut</code>/<code>TimeoutStopSec</code> sized to the ticket timeout so supervisors don't SIGKILL a draining worker.</li>
+  <li><strong>Day-2 CLI:</strong> <code>junco status</code>, <code>junco list [box]</code>, <code>junco retry &lt;name…|--all&gt;</code>, <code>junco doctor</code>, <code>junco logs [-f] [-n N] [--json]</code>.</li>
+  <li><strong>Concurrency.</strong> <code>[worker].max_concurrent</code> (default 1) runs tickets in parallel with per-repo serialization and graceful drain; <code>/health</code> reports <code>currentTickets</code>.</li>
+  <li><strong>Observability.</strong> Structured logs tee to <code>&lt;state_dir&gt;/worker.log</code> (10 MB rotation) with a human-readable TTY format; per-ticket transcripts under <code>&lt;state_dir&gt;/transcripts/</code>; live progress (turns, last tool, output tokens) in <code>/health</code> (<code>currentProgress</code>).</li>
+  <li><strong>Per-ticket <code>tools:</code> override</strong> — Q&amp;A tickets stay read-only by default and can opt into more (e.g. <code>tools: [read, grep, bash]</code>).</li>
+  <li><strong><code>[git].allowed_repo_roots</code></strong> confines PR-flow tickets to approved repo roots; the README now documents the inbox trust model.</li>
+  <li><code>not_before</code> frontmatter — schedule a ticket for later (also the worker's retry-backoff mechanism).</li>
+  <li>Plain (non-Obsidian) ticket templates under <code>templates/plain/</code>; CI test workflow on push/PR; prettier + eslint (<code>no-floating-promises</code>).</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+  <li>User-level config discovery: <code>--config</code> → <code>./config.toml</code> → <code>~/.config/junco/config.toml</code> (the wizard writes the user-level path by default, so <code>junco</code> works from any directory).</li>
+  <li>Stack-agnostic naming: daemon logs say &quot;inference endpoint&quot;; bare model ids default to the <code>local</code> provider (previously <code>legacy-local</code>).</li>
+  <li>The diff-vs-spec critic is told when its diff was truncated, preventing false MISSING verdicts on very large diffs.</li>
+  <li>The Pi event stream is typed at the session boundary (<code>AgentEvent</code>).</li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+  <li>README troubleshooting referenced the legacy <code>[legacy-local].url</code> key instead of <code>[model].base_url</code>.</li>
+  <li>Stale-worktree cleanup failures now surface as a clear <code>GitOpError</code> instead of a raw fs error.</li>
+</ul>
+<h2 id="v0-2-2">0.2.2 — 2026-06-01</h2>
+<h3>Added</h3>
+<ul>
+  <li>Colorized <code>junco init</code> wizard (via <code>@clack/prompts</code>): boxed prompts and an arrow-key model picker that <strong>discovers models from your endpoint</strong> (<code>GET /v1/models</code>) or lists the entries in a Pi <code>models.json</code>, with a spinner while it fetches. Falls back to manual entry when the endpoint is unreachable.</li>
+  <li>Graceful cancel: Ctrl-C / Ctrl-D during setup exits cleanly (exit 130, no stack trace).</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+  <li>The wizard now writes <code>junco_subdir = &quot;&quot;</code>, so the queue lives directly under the chosen directory (default <code>~/Junco/{inbox,…}</code>) — no redundant <code>Junco/</code> subfolder. Existing configs are unaffected (the schema default stays <code>Junco</code>).</li>
+  <li>Removed personal-stack strings from the shipped surface — wizard prompts, the legacy <code>[pi].model_id</code> fallback default, and doc-comment examples now use neutral placeholders. The wizard infers the provider label from the endpoint host.</li>
+</ul>
+<h2 id="v0-2-1">0.2.1 — 2026-06-01</h2>
+<h3>Changed</h3>
+<ul>
+  <li>Pinned all dependencies to exact versions (removed <code>^</code> ranges) for fully reproducible installs.</li>
+  <li>CI: bumped <code>actions/checkout</code> → v6 and <code>actions/setup-node</code> → v6, and the publish runner to Node 24 — clears the Node-20 runner deprecation warning.</li>
+</ul>
+<h2 id="v0-2-0">0.2.0 — 2026-06-01</h2>
+<h3>Added</h3>
+<ul>
+  <li><strong>Interactive setup wizard.</strong> <code>junco init</code> now prompts for the vault directory and model (an OpenAI-compatible endpoint, or a Pi <code>models.json</code>), <strong>writes <code>config.toml</code></strong>, and creates the queue directories — no more hand-writing the config. <code>--yes</code> scaffolds defaults non-interactively (for CI/scripts).</li>
+  <li><strong>First-run-aware bare invocation.</strong> <code>junco</code> (or <code>npx @ironforgesoftware/junco</code>) with no config present runs the setup wizard; with a config present it starts the daemon as before. A non-TTY guard prints guidance instead of hanging on a prompt in pipes/CI.</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+  <li><code>junco init</code> no longer requires a pre-existing <code>config.toml</code>; when one already exists it just ensures the queue dirs and never overwrites it.</li>
+</ul>
+<h2 id="v0-1-0">0.1.0 — 2026-05-31</h2>
+<h3>Added</h3>
+<ul>
+  <li>Configurable model + inference provider via a <code>[model]</code> config section — the API style, context window, max tokens, thinking format, and the rest of the model's capabilities are configurable, so junco can drive any model on any Pi-supported provider (OpenAI-compatible or any hosted catalog provider). Two modes: point <code>[model].models_json</code> at a Pi-style <code>models.json</code> to load the provider+model from that file, or describe it inline with <code>[model]</code> fields. The legacy <code>[pi].model_id</code> and <code>[legacy-local]</code> keys still work as fallbacks for <code>id</code> / <code>base_url</code> / <code>api_key</code>.</li>
+  <li>Daemon (<code>junco start</code>) with configurable poll loop, single-instance lock via PID file, orphan recovery on restart, and graceful SIGTERM/SIGINT shutdown.</li>
+  <li>PR flow: per-ticket git worktree isolation, plan-lint gating (validates frontmatter + discipline rules before the agent runs), loop guards via the supervisor (per-kind budgets, escalation-window turn cap, per-turn and post-commit output budgets), <code>## Verification</code> bash-block runner (executed in the worktree after the agent session, results surfaced in the PR body), diff-vs-spec critic pass with one configurable corrective re-dispatch, <code>gh pr create</code> integration, and amend mode (<code>amends_pr</code>) for adding commits to existing PRs.</li>
+  <li>Q&amp;A ticket mode: tickets without a <code>repo:</code> field are answered in-place by the agent with no git operations.</li>
+  <li>Embedded coding agent over any OpenAI-compatible inference endpoint (<code>[legacy-local]</code> config section); agent driven via the <code>pi</code> SDK with a configurable tool allowlist and per-ticket timeout.</li>
+  <li>Observability: <code>/live</code>, <code>/ready</code>, and <code>/health</code> HTTP endpoints; per-run metrics (turn count, output tokens, elapsed time); structured JSON logs; configurable log level (<code>debug</code> | <code>info</code> | <code>warn</code> | <code>error</code>).</li>
+  <li>Dispatch CLI: <code>junco submit &lt;ticket&gt;</code> (enqueue a ticket), <code>junco inbox-path</code> (print the inbox directory), <code>junco schema</code> (print the ticket-frontmatter JSON Schema), <code>junco init</code> (scaffold <code>~/junco/config.toml</code>), <code>junco service</code> (render a launchd plist or systemd unit for the daemon).</li>
+  <li>Typed ticket-frontmatter contract validated with Zod; all fields documented in the schema subcommand output.</li>
+  <li>Harness-agnostic <code>junco-dispatch</code> coding-agent skill for scaffolding plan-lint-clean tickets from natural-language prompts.</li>
+  <li>Service rendering for launchd (macOS) and systemd (Linux) via <code>junco service</code>.</li>
+</ul>
+      </main>
+    </div>
+
+    <footer class="wrap-docs foot">
+      <p>
+        <a href="https://github.com/ironforgesoftware/junco/blob/main/LICENSE">MIT</a> ·
+        <a href="https://github.com/ironforgesoftware/junco">GitHub</a> ·
+        <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a> ·
+        <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a>
+      </p>
+      <p class="stamp">
+        verified against junco 0.9.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">CHANGELOG.md</a> ·
+        <a href="https://github.com/ironforgesoftware/junco-site/edit/main/docs-src/pages/changelog.html">edit this page</a>
+      </p>
+    </footer>
+
+    <script type="module" src="/docs/docs.js"></script>
+  </body>
+</html>

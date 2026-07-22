@@ -1,9 +1,12 @@
 <p>
   The confirmation half of an audit: files reviewed findings from a parked batch as GitHub
-  issues, then archives the batch. There is no bare default — you choose
+  issues. There is no bare default — you choose
   <code>--all</code> or an explicit <code>--only</code> list of fingerprints from
   <code>junco assess review &lt;id&gt;</code>. Filed issues arrive fingerprinted,
-  severity-labeled, and deduped against your recent findings.
+  severity-labeled, and deduped against your recent findings. Filing stamps per-finding
+  accounting (created/queued/deduped, plus a timestamp and URL) but no longer auto-archives the
+  batch — it stays in <code>junco assess review</code>, filed findings and all, until you run
+  <code>junco assess discard</code> on it.
 </p>
 <pre class="cmd">junco assess file 20260718-093042 --all</pre>
 <pre class="cmd">junco assess file 20260718-093042 --only 9f2c01ab54ce77d1,4a11beef00c2d9e3</pre>
@@ -12,4 +15,5 @@ its fingerprint from every future audit, including a genuine regression that has
 To make a finding filable again, delete the issue or edit out its
 <code>&lt;!-- junco:finding --&gt;</code> marker line.</div>
 <p class="see">see also: <a href="#assess">assess</a> · <a href="#assess-review">assess
-review</a> · <a href="/docs/assess/">assess guide</a></p>
+review</a> · <a href="#assess-discard">assess discard</a> · <a href="/docs/assess/">assess
+guide</a></p>

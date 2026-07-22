@@ -592,6 +592,189 @@ const GENERATORS = {
   },
 };
 
+// -------------------------------------------------------------- changelog page
+//
+// junco's CHANGELOG.md predates this repo's stack-agnostic voice rule and its
+// vendor-name/banned-word/emoji content gates. It is otherwise disciplined
+// Keep a Changelog markdown (## [x.y.z] - date, ### Section, - bullets), so a
+// targeted converter (not a general markdown library) can render it — but the
+// handful of historical entries naming a vendor, a banned word, or a glyph
+// outside the emoji gate's allowlist need scrubbing first. Reviewed against
+// the full CHANGELOG.md as of junco 0.9.0; extend this map if a future entry
+// trips a gate (the content-gate check over the rendered page will catch a
+// miss — see checkContentGates / the emoji gate in README.md).
+export const CHANGELOG_SUBSTITUTIONS = {
+  "anthropic/claude-sonnet-4-5": "<provider>/<model-name>",
+  ANTHROPIC_API_KEY: "<PROVIDER>_API_KEY",
+  "OpenAI-compatible, Anthropic, Google, Bedrock, …":
+    "OpenAI-compatible or any hosted catalog provider",
+  "[oMLX]": "[legacy-local]",
+  "`omlx`": "`legacy-local`",
+  "Claude Code skill": "coding-agent skill",
+  "simply move": "move",
+  "⚠": "warn:", // not in the emoji gate's ✓✗ allowlist — see README's emoji gate
+};
+
+// Substitute (vendor/banned-word/glyph scrub) → escape → inline markdown.
+// Order matters: substitution values intentionally contain literal `<`/`>`
+// placeholders (e.g. <provider>/<model-name>) that must run through
+// escapeHtml same as everything else, so they render the same way the
+// existing render-substitutions.json placeholders do on the config/CLI pages.
+function changelogInline(text, subs) {
+  return escapeHtml(applySubstitutions(text, subs))
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+}
+
+function isChangelogTableBlock(blockLines) {
+  return blockLines.every((l) => l.trim().startsWith("|"));
+}
+
+function renderChangelogListItem(blocks, subs) {
+  const parts = blocks.map((blockLines) => {
+    if (isChangelogTableBlock(blockLines)) {
+      // Verbatim, monospace — a committed one-off in the 0.8.0 entry's
+      // default-paths table; escaped + substituted like everything else, but
+      // not run through the bold/code/link inline transforms (redundant
+      // inside a <pre> block).
+      return `<pre>${escapeHtml(applySubstitutions(blockLines.join("\n"), subs))}</pre>`;
+    }
+    const text = changelogInline(blockLines.join(" "), subs);
+    return blocks.length > 1 ? `<p>${text}</p>` : text;
+  });
+  return `  <li>${parts.join("")}</li>`;
+}
+
+// Targeted Keep a Changelog → HTML fragment converter. Handles exactly the
+// shapes junco's CHANGELOG.md uses: `## [ver] - date` / `## [Unreleased]`
+// version headers, `### Section` subheaders, and `- ` bullets (whose
+// continuation lines are 2-space indented, optionally spanning blank-line-
+// separated paragraphs or a raw `|`-piped table). An empty version section
+// (no bullets before the next `## `) is skipped entirely — currently true of
+// `## [Unreleased]` between releases.
+export function convertChangelogMarkdown(markdown, subs = CHANGELOG_SUBSTITUTIONS) {
+  const lines = markdown.split("\n");
+  let i = 0;
+  while (i < lines.length && !lines[i].startsWith("## ")) i++; // skip H1 + intro prose
+
+  const out = [];
+  let listOpen = false;
+  const closeList = () => {
+    if (listOpen) {
+      out.push("</ul>");
+      listOpen = false;
+    }
+  };
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    if (line.startsWith("## ")) {
+      let j = i + 1;
+      while (j < lines.length && !lines[j].startsWith("## ")) j++;
+      const hasContent = lines.slice(i + 1, j).some((l) => l.trim() !== "");
+      if (!hasContent) {
+        i = j;
+        continue;
+      }
+      closeList();
+      const m = line.match(/^## \[([^\]]+)\](?:\s*-\s*(.+))?\s*$/);
+      const bracket = m ? m[1] : line.slice(3).trim();
+      const date = m ? m[2] : null;
+      const verMatch = bracket.match(/^(\d+\.\d+\.\d+)/);
+      // html-validate's valid-id rule rejects dots — dash-join the version.
+      const id = verMatch
+        ? `v${verMatch[1].replace(/\./g, "-")}`
+        : bracket.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      const heading = date ? `${bracket} — ${date}` : bracket;
+      out.push(`<h2 id="${id}">${changelogInline(heading, subs)}</h2>`);
+      i++;
+      continue;
+    }
+
+    if (line.startsWith("### ")) {
+      closeList();
+      out.push(`<h3>${changelogInline(line.slice(4).trim(), subs)}</h3>`);
+      i++;
+      continue;
+    }
+
+    if (line.trim() === "") {
+      i++;
+      continue;
+    }
+
+    if (/^- /.test(line)) {
+      const blocks = [];
+      let cur = [line.slice(2)];
+      i++;
+      let sawBlank = false;
+      while (i < lines.length) {
+        const l = lines[i];
+        if (l.trim() === "") {
+          sawBlank = true;
+          i++;
+          continue;
+        }
+        if (/^- /.test(l) || l.startsWith("## ") || l.startsWith("### ")) break;
+        if (/^ {2}\S/.test(l)) {
+          if (sawBlank) {
+            blocks.push(cur);
+            cur = [];
+            sawBlank = false;
+          }
+          cur.push(l.slice(2));
+          i++;
+          continue;
+        }
+        break; // unindented, non-bullet, non-heading line — defensively end the item
+      }
+      blocks.push(cur);
+      if (!listOpen) {
+        out.push("<ul>");
+        listOpen = true;
+      }
+      out.push(renderChangelogListItem(blocks, subs));
+      continue;
+    }
+
+    i++; // stray top-level line outside any list — not part of this changelog's shape
+  }
+  closeList();
+  return `${out.join("\n")}\n`;
+}
+
+const CHANGELOG_META = {
+  title: "Changelog",
+  description: "Release history for junco — every version's notable changes.",
+  slug: "changelog",
+  navLabel: "Changelog",
+  source: "CHANGELOG.md",
+  keywords: ["changelog", "release notes", "version history"],
+};
+
+const CHANGELOG_INTRO = `<p>
+  Every release's notable changes, generated from junco's canonical
+  <code>CHANGELOG.md</code> and refreshed by <code>node scripts/build-docs.mjs</code> on every
+  build — this page cannot drift from the source of truth.
+</p>
+`;
+
+// Regenerates docs-src/pages/changelog.html from junco's canonical CHANGELOG.md
+// (a file read, same allowed pattern as extract()'s read of configLevers.ts —
+// never runs junco with cwd inside ~/junco). Silently keeps the committed
+// fragment when no sibling ~/junco checkout is present (CI has none).
+export function generateChangelogPage() {
+  const changelogPath = join(homedir(), "junco", "CHANGELOG.md");
+  if (!existsSync(changelogPath)) return false;
+  const raw = readFileSync(changelogPath, "utf8");
+  const body = CHANGELOG_INTRO + convertChangelogMarkdown(raw, CHANGELOG_SUBSTITUTIONS);
+  const fragment = `<!--meta ${JSON.stringify(CHANGELOG_META)} -->\n${body}`;
+  writeFileSync(join(SRC, "pages", "changelog.html"), fragment);
+  return true;
+}
+
 export function loadDocsSource() {
   const nav = JSON.parse(readFileSync(join(SRC, "nav.json"), "utf8"));
   const meta = JSON.parse(readFileSync(join(EXTRACTED, "meta.json"), "utf8"));
@@ -608,6 +791,7 @@ export function loadDocsSource() {
 }
 
 export function buildPages(outRoot) {
+  generateChangelogPage(); // before loadDocsSource() reads docs-src/pages/*.html
   const { nav, meta, subs, pages } = loadDocsSource();
   const navLabels = Object.fromEntries(pages.map((p) => [p.meta.slug, p.meta.navLabel]));
   const written = [];
