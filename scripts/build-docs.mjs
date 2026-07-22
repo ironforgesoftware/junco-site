@@ -325,6 +325,7 @@ export function renderPage({ meta, body, nav, navLabels, juncoVersion }) {
     <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/CommitMono-700.woff2" crossorigin>
     <link rel="stylesheet" href="/styles.css">
     <link rel="stylesheet" href="/docs/docs.css">
+    <script src="/glyphs.js" defer></script>
     <script>
       document.documentElement.classList.add("js");
     </script>

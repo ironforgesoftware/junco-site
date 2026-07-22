@@ -27,7 +27,7 @@
   --accent: #eb6f92;
   --line: #343b48;
   --shadow: #0b0d12;
-  --grid: #191d25;
+  --glyph: #2c3340;
   --lh: 1.5rem;
   --mono:
     "Commit Mono", ui-monospace, "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
@@ -50,11 +50,7 @@ html {
 body {
   font: 400 16px/1.5 var(--mono);
   font-variant-numeric: tabular-nums;
-  /* quad-ruled field-notebook paper: two hairline grids on the 1.5rem rhythm */
-  background:
-    linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 100% 3rem,
-    linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 3rem 100%,
-    var(--bg);
+  background: var(--bg);
   color: var(--ink);
 }
 
@@ -99,6 +95,17 @@ pre {
 
 .scroll {
   overflow-x: auto;
+}
+
+/* ---------- glyph-matrix backdrop ---------- */
+
+#glyphs {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(#000 40%, transparent);
+  mask-image: linear-gradient(#000 40%, transparent);
 }
 
 .visually-hidden {
@@ -454,9 +461,9 @@ h2 .num {
     --accent: #000000;
     --line: #999999;
     --shadow: transparent;
-    --grid: transparent;
   }
-  .copy {
+  .copy,
+  #glyphs {
     display: none;
   }
 }
