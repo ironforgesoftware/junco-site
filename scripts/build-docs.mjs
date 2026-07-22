@@ -335,9 +335,12 @@ export function renderPage({ meta, body, nav, navLabels, juncoVersion }) {
 
     <header class="wrap-docs bar">
       <a class="wordmark" href="/"
-        ><svg class="mark" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true">
-          <circle fill="currentColor" cx="13" cy="16" r="12"></circle>
-          <path fill="var(--accent)" d="M21 10 L32 16 L21 22 Z"></path></svg
+        ><svg class="mark" width="20" height="16" viewBox="0 0 200 160" aria-hidden="true">
+          <path fill="var(--junco-tail)" d="M82 100 L30 142 L40 150 L90 116 Z"></path>
+          <path fill="var(--ink)" d="M160 52 C160 28 138 14 114 14 C82 15 58 34 55 64 C52 94 66 124 102 128 C132 131 154 114 159 86 C161 74 160 62 160 52 Z"></path>
+          <path fill="var(--junco-mantle-2)" d="M104 14.5 C80 16 58 34 55 64 C53.5 79 56 95 64 108 C68 114 73 117 78 118 C84 102 88 80 96 60 C97 44 99 26 104 14.5 Z"></path>
+          <path fill="var(--junco-hood-1)" d="M104 14.5 C108 14 111 14 114 14 C138 13 160 30 160 52 C160 58 158 62 154 65 C148 76 141 87 134 94 C122 88 106 74 96 60 C97 44 99 26 104 14.5 Z"></path>
+          <path fill="var(--accent)" d="M157 46 L178 52 L157 59 C154 55 154 50 157 46 Z"></path></svg
         >junco</a
       >
       <div class="search" role="search">
