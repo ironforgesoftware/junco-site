@@ -1,5 +1,5 @@
 /* junco.ironforgesoftware.com — "Snowbird Spec Sheet"
-   One mono face on a character grid; slate & rose from junco's own TUI theme.
+   One mono face on a character grid; slate & rose from junco's own TUI theme, dark-only.
    All colors live in the token blocks below — nowhere else. */
 
 @font-face {
@@ -20,20 +20,6 @@
 /* ---------- tokens ---------- */
 
 :root {
-  --bg: #f2f4f5;
-  --panel: #e9ecee;
-  --ink: #232833;
-  --ink-muted: #5b6472;
-  --accent: #a84067;
-  --line: #c5ccd2;
-  --shadow: #cdd3d8;
-  --grid: #e7eaec;
-  --lh: 1.5rem;
-  --mono:
-    "Commit Mono", ui-monospace, "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
-  color-scheme: light;
-}
-[data-theme="dark"] {
   --bg: #14171d;
   --panel: #1c2029;
   --ink: #dfe3ea;
@@ -42,20 +28,10 @@
   --line: #343b48;
   --shadow: #0b0d12;
   --grid: #191d25;
+  --lh: 1.5rem;
+  --mono:
+    "Commit Mono", ui-monospace, "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
   color-scheme: dark;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #14171d;
-    --panel: #1c2029;
-    --ink: #dfe3ea;
-    --ink-muted: #9099a7;
-    --accent: #eb6f92;
-    --line: #343b48;
-    --shadow: #0b0d12;
-    --grid: #191d25;
-    color-scheme: dark;
-  }
 }
 
 /* ---------- reset & chassis ---------- */
@@ -148,8 +124,7 @@ pre {
 }
 
 /* buttons only work with JS; keep them out of the no-JS page */
-html:not(.js) .copy,
-html:not(.js) #theme-toggle {
+html:not(.js) .copy {
   display: none;
 }
 
@@ -471,8 +446,7 @@ h2 .num {
 /* ---------- print ---------- */
 
 @media print {
-  :root,
-  [data-theme="dark"] {
+  :root {
     --bg: #ffffff;
     --panel: #ffffff;
     --ink: #000000;
@@ -482,8 +456,7 @@ h2 .num {
     --shadow: transparent;
     --grid: transparent;
   }
-  .copy,
-  #theme-toggle {
+  .copy {
     display: none;
   }
 }

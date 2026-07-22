@@ -296,13 +296,6 @@ function renderNav(nav, navLabels, currentSlug) {
   return groups;
 }
 
-// Same FOUC-free theme init the landing page inlines.
-const THEME_SNIPPET = `      (function () {
-        var t = localStorage.getItem("theme");
-        if (t) document.documentElement.setAttribute("data-theme", t);
-        document.documentElement.classList.add("js");
-      })();`;
-
 export function renderPage({ meta, body, nav, navLabels, juncoVersion }) {
   const url = pageUrl(meta.slug);
   const title = `${meta.title} — junco docs`;
@@ -324,9 +317,8 @@ export function renderPage({ meta, body, nav, navLabels, juncoVersion }) {
     <meta property="og:image" content="https://junco.ironforgesoftware.com/assets/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f4f5">
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#14171d">
-    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#14171d">
+    <meta name="color-scheme" content="dark">
     <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
     <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
     <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/CommitMono-400.woff2" crossorigin>
@@ -334,7 +326,7 @@ export function renderPage({ meta, body, nav, navLabels, juncoVersion }) {
     <link rel="stylesheet" href="/styles.css">
     <link rel="stylesheet" href="/docs/docs.css">
     <script>
-${THEME_SNIPPET}
+      document.documentElement.classList.add("js");
     </script>
   </head>
   <body>
@@ -358,7 +350,6 @@ ${THEME_SNIPPET}
         <a href="/docs/" aria-current="${meta.slug === "index" ? "page" : "true"}">docs</a>
         <a href="https://github.com/ironforgesoftware/junco">GitHub</a>
         <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a>
-        <button id="theme-toggle" type="button" aria-pressed="false">dark</button>
       </nav>
     </header>
 
