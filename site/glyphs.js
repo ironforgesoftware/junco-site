@@ -9,11 +9,12 @@
 
   var canvas = document.createElement("canvas");
   canvas.id = "glyphs";
+  canvas.setAttribute("aria-hidden", "true");
   document.body.prepend(canvas);
   var ctx = canvas.getContext("2d");
 
   var reduced = matchMedia("(prefers-reduced-motion: reduce)");
-  var cols, rows, timer;
+  var cols, rows, timer, resizeTimer;
 
   function cell(i) {
     var x = (i % cols) * CELL;
@@ -54,7 +55,10 @@
   build();
   start();
   if (document.fonts) document.fonts.ready.then(build); // repaint once the woff2 lands
-  addEventListener("resize", build);
+  addEventListener("resize", function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(build, 150);
+  });
   document.addEventListener("visibilitychange", function () {
     if (document.hidden) stop();
     else start();

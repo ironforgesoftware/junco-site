@@ -112,6 +112,8 @@ pre {
 #glyphs {
   position: fixed;
   inset: 0;
+  width: 100%;
+  height: 100%;
   z-index: -1;
   pointer-events: none;
   -webkit-mask-image: linear-gradient(#000 40%, transparent);
@@ -228,7 +230,6 @@ h1 {
   position: absolute;
   right: 3ch;
   bottom: -1px; /* feet touch the rule */
-  color: var(--ink);
 }
 @media (max-width: 480px) {
   .perch {
