@@ -22,9 +22,9 @@ jobs:
         run: npx -y html-validate 'site/**/*.html'
       - name: Banned-word / vendor / openai greps
         run: |
-          ! grep -rniE 'blazing|seamless|revolutionary|supercharge|magical|\beasy\b|\bsimply\b|powerful' site/ og.html
-          ! grep -rniE 'anthropic|claude|gpt|gemini|llama|mistral|deepseek|qwen|ollama|vllm|lm.?studio|mlx' site/ og.html .github/ --exclude=quality-gate.yml
-          ! { grep -rni 'openai' site/ og.html | grep -viE 'openai-(compatible|completions)'; }
+          if grep -rniE 'blazing|seamless|revolutionary|supercharge|magical|\beasy\b|\bsimply\b|powerful' site/ og.html; then echo "banned-words gate failed"; exit 1; fi
+          if grep -rniE 'anthropic|claude|gpt|gemini|llama|mistral|deepseek|qwen|ollama|vllm|lm.?studio|mlx' site/ og.html .github/ --exclude=quality-gate.yml; then echo "vendor gate failed"; exit 1; fi
+          if grep -rni 'openai' site/ og.html | grep -viE 'openai-(compatible|completions)'; then echo "openai gate failed"; exit 1; fi
       - name: Landing word budget (450)
         run: |
           python3 - <<'EOF'
@@ -52,5 +52,5 @@ jobs:
                   bad += [(f,i,c) for c in pat.findall(line) if c not in allowed]
           print(bad if bad else 'emoji gate OK'); assert not bad
           EOF
-          ! { grep -rn '#[0-9a-fA-F]\{3,8\}\b' site/ --include='*.html' | grep -v theme-color; }
-          ! grep -n '#[0-9a-fA-F]\{3,8\}\b' site/docs/docs.css
+          if grep -rn '#[0-9a-fA-F]\{3,8\}\b' site/ --include='*.html' | grep -v theme-color | grep -vE '\(#[0-9]+[,)]'; then echo "html-hex gate failed"; exit 1; fi
+          if grep -n '#[0-9a-fA-F]\{3,8\}\b' site/docs/docs.css; then echo "docs-css-hex gate failed"; exit 1; fi
