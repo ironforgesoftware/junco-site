@@ -690,6 +690,18 @@
       "default": "\"npm\"",
       "description": "Binary for the dependency scan (npm audit --json).",
       "reload": "live"
+    },
+    {
+      "path": "assess.fileAs",
+      "type": "enum",
+      "markers": [],
+      "default": "\"me\"",
+      "description": "Identity `junco assess file` posts under: me (your gh login) or bot (the dedicated bot account; fails loud when its login is missing).",
+      "enumValues": [
+        "me",
+        "bot"
+      ],
+      "reload": "live"
     }
   ]
 }

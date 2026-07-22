@@ -48,6 +48,13 @@
       ]
     },
     {
+      "slug": "assess-discard",
+      "path": "assess discard",
+      "synopsis": "junco assess discard <id>",
+      "summary": "discard a pending batch without filing",
+      "flags": []
+    },
+    {
       "slug": "assess-file",
       "path": "assess file",
       "synopsis": "junco assess file <id> --all | --only <fp,...>",

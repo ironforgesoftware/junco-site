@@ -21,6 +21,8 @@ import {
   checkContentGates,
   renderConfigReference,
   renderSchemaReference,
+  convertChangelogMarkdown,
+  CHANGELOG_SUBSTITUTIONS,
 } from "./build-docs.mjs";
 
 const HELP_FIXTURE = `Usage: junco <subcommand> [options]
@@ -428,4 +430,118 @@ test("renderPage: index canonical is /docs/", () => {
   });
   assert.match(html, /rel="canonical" href="https:\/\/junco\.ironforgesoftware\.com\/docs\/"/);
   assert.match(html, /<a aria-current="page" href="\/docs\/">Start here<\/a>/);
+});
+
+// ---------------------------------------------------- convertChangelogMarkdown
+
+const CHANGELOG_FIXTURE = `# Changelog
+
+All notable changes to this project are documented here.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+
+## [Unreleased]
+
+## [1.2.0] - 2026-01-01
+
+### Added
+
+- **Bold thing:** does \`inline code\` and a [link](https://example.com/x) work → yes.
+- Second bullet, plain text.
+
+### Fixed
+
+- Something fixed.
+
+## [1.1.0] - 2025-12-01
+
+### Changed
+
+- An older release.
+`;
+
+test("convertChangelogMarkdown: skips H1/intro and the empty Unreleased section", () => {
+  const html = convertChangelogMarkdown(CHANGELOG_FIXTURE, {});
+  assert.doesNotMatch(html, /Changelog/); // the H1 + intro prose never renders
+  assert.doesNotMatch(html, /Unreleased/); // empty section, skipped
+  assert.doesNotMatch(html, /Keep a Changelog/);
+});
+
+test("convertChangelogMarkdown: version h2 carries a dash-joined id (no dots — html-validate's valid-id rule rejects them), section h3s render", () => {
+  const html = convertChangelogMarkdown(CHANGELOG_FIXTURE, {});
+  assert.match(html, /<h2 id="v1-2-0">1\.2\.0 — 2026-01-01<\/h2>/);
+  assert.match(html, /<h2 id="v1-1-0">1\.1\.0 — 2025-12-01<\/h2>/);
+  assert.match(html, /<h3>Added<\/h3>/);
+  assert.match(html, /<h3>Fixed<\/h3>/);
+  assert.match(html, /<h3>Changed<\/h3>/);
+  // 1.2.0's h2 precedes its own sections, which precede 1.1.0's h2
+  const v120 = html.indexOf('<h2 id="v1-2-0">');
+  const added = html.indexOf("<h3>Added</h3>");
+  const v110 = html.indexOf('<h2 id="v1-1-0">');
+  assert.ok(v120 < added && added < v110);
+});
+
+test("convertChangelogMarkdown: bullets render as ul/li with bold/code/link inline", () => {
+  const html = convertChangelogMarkdown(CHANGELOG_FIXTURE, {});
+  assert.match(html, /<ul>/);
+  assert.match(
+    html,
+    /<li><strong>Bold thing:<\/strong> does <code>inline code<\/code> and a <a href="https:\/\/example\.com\/x">link<\/a> work → yes\.<\/li>/
+  );
+  assert.match(html, /<li>Second bullet, plain text\.<\/li>/);
+  assert.match(html, /<li>Something fixed\.<\/li>/);
+});
+
+test("convertChangelogMarkdown: multi-paragraph bullet (blank-line continuation) wraps each block in <p>", () => {
+  const src = `## [1.0.0] - 2026-01-01
+
+### Changed
+
+- First paragraph of one bullet
+  still the first paragraph.
+
+  Second paragraph, same bullet.
+- A sibling bullet.
+`;
+  const html = convertChangelogMarkdown(src, {});
+  assert.match(
+    html,
+    /<li><p>First paragraph of one bullet still the first paragraph\.<\/p><p>Second paragraph, same bullet\.<\/p><\/li>/
+  );
+  assert.match(html, /<li>A sibling bullet\.<\/li>/);
+});
+
+test("convertChangelogMarkdown: a table block within a bullet renders as a <pre>", () => {
+  const src = `## [1.0.0] - 2026-01-01
+
+### Changed
+
+- Moved paths around:
+
+  | What | Old | New |
+  | ---- | --- | --- |
+  | Foo  | a   | b   |
+
+  Trailing prose after the table.
+`;
+  const html = convertChangelogMarkdown(src, {});
+  assert.match(html, /<pre>\| What \| Old \| New \|\n\| ---- \| --- \| --- \|\n\| Foo {2}\| a {3}\| b {3}\|<\/pre>/);
+  assert.match(html, /<p>Trailing prose after the table\.<\/p>/);
+});
+
+test("convertChangelogMarkdown: scrubs vendor names, banned words, and the disallowed ⚠ glyph", () => {
+  const src =
+    "## [0.1.0] - 2026-01-01\n\n### Added\n\n" +
+    "- Uses `anthropic/claude-sonnet-4-5` and `ANTHROPIC_API_KEY`; a Claude Code skill helped; " +
+    "config was `[oMLX]`, previously `omlx`; providers: OpenAI-compatible, Anthropic, Google, Bedrock, …; " +
+    "files simply move fast; a `⚠ warn` glyph.\n";
+  const html = convertChangelogMarkdown(src, CHANGELOG_SUBSTITUTIONS);
+  assert.doesNotMatch(html, /anthropic/i);
+  assert.doesNotMatch(html, /claude/i);
+  assert.doesNotMatch(html, /\bmlx\b/i);
+  assert.doesNotMatch(html, /\bsimply\b/i);
+  assert.doesNotMatch(html, /⚠/);
+  // substituted placeholders land, escaped like render-substitutions.json's do elsewhere
+  assert.match(html, /&lt;provider&gt;\/&lt;model-name&gt;/);
+  assert.match(html, /&lt;PROVIDER&gt;_API_KEY/);
+  assert.match(html, /warn:/);
 });

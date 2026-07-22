@@ -85,6 +85,7 @@
         <li><a aria-current="page" href="/docs/cli/">CLI</a></li>
         <li><a href="/docs/config/">Configuration</a></li>
         <li><a href="/docs/ticket-schema/">Ticket schema</a></li>
+        <li><a href="/docs/changelog/">Changelog</a></li>
         </ul>
       </section>
       <section>
@@ -157,16 +158,32 @@
 <pre class="cmd">junco assess acme/reef-api --auto-plan</pre>
 <pre class="cmd">junco assess acme/reef-api#52</pre>
 <div class="note"><b>note —</b> a batch that's never reviewed doesn't expire, and re-running assess on the same ticket id overwrites the batch instead of piling up duplicates.</div>
-<p class="see">see also: <a href="#assess-review">assess review</a> · <a href="#assess-file">assess file</a> · <a href="/docs/assess/">assess guide</a></p>
+<p class="see">see also: <a href="#assess-review">assess review</a> · <a href="#assess-file">assess file</a> · <a href="#assess-discard">assess discard</a> · <a href="/docs/assess/">assess guide</a></p>
+
+<h2 id="assess-discard"><code>junco assess discard</code></h2>
+<pre class="synopsis">junco assess discard &lt;id&gt;</pre>
+<p>
+  Archives a pending review batch without filing any of its findings. Filing
+  (<code>junco assess file</code>) no longer auto-archives the batch it draws from — a batch you
+  reviewed and decided not to act on needs this explicit step, or it keeps showing up in
+  <code>junco assess review</code>. The same action is bound to <code>x</code> in the dashboard's
+  review view.
+</p>
+<pre class="cmd">junco assess discard 20260718-093042</pre>
+<p class="see">see also: <a href="#assess">assess</a> · <a href="#assess-review">assess review</a> ·
+<a href="#assess-file">assess file</a> · <a href="/docs/assess/">assess guide</a></p>
 
 <h2 id="assess-file"><code>junco assess file</code></h2>
 <pre class="synopsis">junco assess file &lt;id&gt; --all | --only &lt;fp,...&gt;</pre>
 <p>
   The confirmation half of an audit: files reviewed findings from a parked batch as GitHub
-  issues, then archives the batch. There is no bare default — you choose
+  issues. There is no bare default — you choose
   <code>--all</code> or an explicit <code>--only</code> list of fingerprints from
   <code>junco assess review &lt;id&gt;</code>. Filed issues arrive fingerprinted,
-  severity-labeled, and deduped against your recent findings.
+  severity-labeled, and deduped against your recent findings. Filing stamps per-finding
+  accounting (created/queued/deduped, plus a timestamp and URL) but no longer auto-archives the
+  batch — it stays in <code>junco assess review</code>, filed findings and all, until you run
+  <code>junco assess discard</code> on it.
 </p>
 <pre class="cmd">junco assess file 20260718-093042 --all</pre>
 <pre class="cmd">junco assess file 20260718-093042 --only 9f2c01ab54ce77d1,4a11beef00c2d9e3</pre>
@@ -175,14 +192,15 @@ its fingerprint from every future audit, including a genuine regression that has
 To make a finding filable again, delete the issue or edit out its
 <code>&lt;!-- junco:finding --&gt;</code> marker line.</div>
 <p class="see">see also: <a href="#assess">assess</a> · <a href="#assess-review">assess
-review</a> · <a href="/docs/assess/">assess guide</a></p>
+review</a> · <a href="#assess-discard">assess discard</a> · <a href="/docs/assess/">assess
+guide</a></p>
 <h2 id="assess-review"><code>junco assess review</code></h2>
 <pre class="synopsis">junco assess review [&lt;id&gt;]</pre>
 <p>Read-only inspection of the parked-findings store. With no id: one line per pending batch — id, <code>owner/repo</code>, <code>(owned)</code>/<code>(external)</code>, finding count, and the audit's timestamp. With an id: the batch's repo and scope, then each finding's fingerprint, severity, and title, closing with two ready-to-run <code>junco assess file</code> hints (<code>--all</code>, and a <code>--only</code> example built from the first two fingerprints). Nothing is written; filing is the separate <code>junco assess file</code> confirm step. The same checklist review is available in the dashboard under <code>v</code>.</p>
 <pre class="cmd">junco assess review</pre>
 <pre class="cmd">junco assess review 20260718-093042</pre>
 <div class="note"><b>note —</b> a finding you don't select isn't suppressed — no issue and no marker exist yet, so the next audit re-parks it. Only a filed issue's marker suppresses a fingerprint.</div>
-<p class="see">see also: <a href="#assess">assess</a> · <a href="#assess-file">assess file</a> · <a href="/docs/assess/">assess guide</a></p>
+<p class="see">see also: <a href="#assess">assess</a> · <a href="#assess-file">assess file</a> · <a href="#assess-discard">assess discard</a> · <a href="/docs/assess/">assess guide</a></p>
 
 <h2 id="auth-grant"><code>junco auth grant</code></h2>
 <pre class="synopsis">junco auth grant &lt;owner/repo&gt;</pre>
@@ -409,7 +427,7 @@ confine targets with <code>git.allowedRepoRoots</code>.</div>
         <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a>
       </p>
       <p class="stamp">
-        verified against junco 0.8.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/operations.md">docs/operations.md</a> ·
+        verified against junco 0.9.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/operations.md">docs/operations.md</a> ·
         <a href="https://github.com/ironforgesoftware/junco-site/edit/main/docs-src/pages/cli.html">edit this page</a>
       </p>
     </footer>
