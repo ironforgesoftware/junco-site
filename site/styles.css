@@ -29,15 +29,8 @@
   --shadow: #0b0d12;
   --glyph: #2c3340;
   --junco-hood-1: #3a4150;
-  --junco-hood-2: #535c6e;
-  --junco-mantle-1: #68738a;
   --junco-mantle-2: #4d5566;
-  --junco-belly-1: #eef1f6;
-  --junco-belly-2: #dfe3ea;
-  --junco-belly-3: #bfc6d3;
-  --junco-wingline: #454d5e;
   --junco-tail: #2f3542;
-  --junco-bill-dk: #c85578;
   --lh: 1.5rem;
   --mono:
     "Commit Mono", ui-monospace, "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
@@ -218,7 +211,7 @@ h1 {
   color: var(--ink-muted);
   font-size: 0.75rem;
   line-height: var(--lh);
-  margin-block: calc(0.5 * var(--lh)) calc(5 * var(--lh));
+  margin-block: calc(0.5 * var(--lh)) calc(8 * var(--lh));
 }
 
 /* spec-sheet key/value table — the junco perches on its top rule */
