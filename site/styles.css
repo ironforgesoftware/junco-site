@@ -211,24 +211,33 @@ h1 {
   color: var(--ink-muted);
   font-size: 0.75rem;
   line-height: var(--lh);
-  margin-block: calc(0.5 * var(--lh)) calc(8 * var(--lh));
+  margin-block: calc(0.5 * var(--lh)) 0;
 }
 
-/* spec-sheet key/value table — the junco perches on its top rule */
-.spec-perch {
-  position: relative;
-  height: 0;
+/* hero — the field-guide plate (mascot) beside the specimen description (copy) */
+.hero-top {
+  display: grid;
+  grid-template-columns: clamp(180px, 25vw, 280px) minmax(0, 1fr);
+  gap: 4ch;
+  align-items: center;
+  margin-block-end: calc(2 * var(--lh));
 }
-.perch {
-  position: absolute;
-  right: 3ch;
-  bottom: -1px; /* feet touch the rule */
+.mascot {
+  width: 100%;
+  height: auto;
 }
-@media (max-width: 480px) {
-  .perch {
-    right: 1ch;
+@media (max-width: 620px) {
+  .hero-top {
+    grid-template-columns: 1fr;
+    justify-items: start;
+    gap: var(--lh);
+  }
+  .mascot {
+    width: clamp(140px, 44vw, 200px);
   }
 }
+
+/* spec-sheet key/value table */
 .spec {
   border-block: 1px solid var(--line);
   padding-block: calc(0.5 * var(--lh));

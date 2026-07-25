@@ -7,6 +7,22 @@
   padding-inline: 2ch;
 }
 
+/* landing mascot — a field-guide plate beside the "Start here" intro */
+.docs-mascot {
+  float: right;
+  width: clamp(110px, 22%, 160px);
+  height: auto;
+  margin: 0 0 var(--lh) 2ch;
+}
+@media (max-width: 720px) {
+  .docs-mascot {
+    float: none;
+    display: block;
+    width: 130px;
+    margin: 0 0 var(--lh);
+  }
+}
+
 /* ---------- docs grid & sidebar ---------- */
 
 .docs-grid {
