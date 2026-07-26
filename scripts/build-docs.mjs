@@ -820,9 +820,9 @@ export function buildPages(outRoot) {
   const lines = [
     "# junco documentation",
     "",
-    "> junco is a harness-agnostic task-queue worker that turns Markdown tickets and",
-    "> labeled GitHub issues into draft pull requests by driving a coding agent on",
-    "> your own machine, against any OpenAI-compatible inference endpoint.",
+    "> junco is a harness-agnostic coding-agent worker that turns Markdown tickets and",
+    "> labeled GitHub issues into draft pull requests on your own machine, against",
+    "> any OpenAI-compatible inference endpoint.",
     "",
   ];
   for (const group of nav.groups) {
