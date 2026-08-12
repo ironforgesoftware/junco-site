@@ -31,6 +31,10 @@ uvx --from "fonttools[woff]" --with brotli pyftsubset CommitMono-400-Regular.otf
 
 Keep `site/assets/fonts/OFL.txt` next to the woff2 files — the license travels with the font.
 
+**Mascot + favicon** — `site/assets/junco.png` is the junco illustration (master art cropped
+to its alpha bounding box and resized to 640px wide, 256-color palette PNG); `favicon-32.png`
+is the same art centered on a square transparent canvas and resized to 32×32.
+
 **og-image** — `og.html` at the repo root is the source. Serve the repo root and screenshot at
 1200×630:
 
