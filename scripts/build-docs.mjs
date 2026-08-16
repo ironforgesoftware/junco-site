@@ -7,17 +7,25 @@
 //   --check     drift + coverage gate                              (Task 4)
 //   --release   per-release delta checklist                        (Task 4)
 //
-// Extraction runs the installed `junco` binary with cwd = this repo. Never run
-// junco with cwd inside ~/junco — that checkout is a live daemon runtime and
-// config resolution prefers ./config.json. `config list` always gets
-// --config docs-src/blank-config.json so the maintainer's real values can
+// Extraction runs the installed `junco` binary with cwd = this repo. junco
+// 0.10+ resolves its config from $HOME only (--config is inert), so
+// `config list` runs in a throwaway HOME seeded with
+// docs-src/blank-config.json — the maintainer's real ~/.junco/config.json can
 // never reach a committed snapshot.
 
 import { spawnSync } from "node:child_process";
-import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
+import {
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+  existsSync,
+  mkdtempSync,
+  copyFileSync,
+  rmSync,
+} from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { homedir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import MiniSearch from "../site/docs/assets/minisearch.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -233,6 +241,22 @@ function runJunco(args, extra = {}) {
   return res.stdout;
 }
 
+// `config list` in a throwaway HOME whose ~/.junco/config.json is
+// blank-config.json (junco 0.10+ ignores --config; config resolves from the
+// environment only, so a sandboxed HOME is the only reliable isolation).
+function runJuncoConfigList() {
+  const sb = mkdtempSync(join(tmpdir(), "junco-site-extract-"));
+  try {
+    mkdirSync(join(sb, ".junco"), { recursive: true });
+    copyFileSync(join(SRC, "blank-config.json"), join(sb, ".junco", "config.json"));
+    return runJunco(["config", "list"], {
+      env: { ...process.env, HOME: sb, XDG_CONFIG_HOME: join(sb, ".config") },
+    });
+  } finally {
+    rmSync(sb, { recursive: true, force: true });
+  }
+}
+
 function writeJson(path, value) {
   writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`);
 }
@@ -245,11 +269,14 @@ export function extract() {
   surface.commands.push(...EXTRA_COMMANDS);
   surface.commands.sort((a, b) => a.slug.localeCompare(b.slug));
 
-  const levers = parseConfigList(
-    runJunco(["--config", join(SRC, "blank-config.json"), "config", "list"])
-  );
-  const reloadsPath = join(homedir(), "junco", "src", "configLevers.ts");
-  if (existsSync(reloadsPath)) {
+  const levers = parseConfigList(runJuncoConfigList());
+  // The junco checkout moved from ~/junco to ~/Development/junco; probe both
+  // so the reload column survives either layout instead of silently dropping.
+  const reloadsPath = [
+    join(homedir(), "Development", "junco", "src", "configLevers.ts"),
+    join(homedir(), "junco", "src", "configLevers.ts"),
+  ].find(existsSync);
+  if (reloadsPath) {
     const reloads = parseLeverReloads(readFileSync(reloadsPath, "utf8"));
     for (const lever of levers.levers) lever.reload = reloads[lever.path] ?? null;
   }
@@ -752,11 +779,14 @@ const CHANGELOG_INTRO = `<p>
 
 // Regenerates docs-src/pages/changelog.html from junco's canonical CHANGELOG.md
 // (a file read, same allowed pattern as extract()'s read of configLevers.ts —
-// never runs junco with cwd inside ~/junco). Silently keeps the committed
-// fragment when no sibling ~/junco checkout is present (CI has none).
+// never runs junco with cwd inside the junco checkout). Silently keeps the
+// committed fragment when no junco checkout is present (CI has none).
 export function generateChangelogPage() {
-  const changelogPath = join(homedir(), "junco", "CHANGELOG.md");
-  if (!existsSync(changelogPath)) return false;
+  const changelogPath = [
+    join(homedir(), "Development", "junco", "CHANGELOG.md"),
+    join(homedir(), "junco", "CHANGELOG.md"),
+  ].find(existsSync);
+  if (!changelogPath) return false;
   const raw = readFileSync(changelogPath, "utf8");
   const body = CHANGELOG_INTRO + convertChangelogMarkdown(raw, CHANGELOG_SUBSTITUTIONS);
   const fragment = `<!--meta ${JSON.stringify(CHANGELOG_META)} -->\n${body}`;
@@ -916,8 +946,7 @@ export function checkNavBijection(navSlugs, pageSlugs) {
 
 // ------------------------------------------------------------ check + release
 
-import { readdirSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readdirSync } from "node:fs";
 
 function listFilesRec(dir) {
   const out = [];
