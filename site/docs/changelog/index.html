@@ -95,6 +95,33 @@
   <code>CHANGELOG.md</code> and refreshed by <code>node scripts/build-docs.mjs</code> on every
   build — this page cannot drift from the source of truth.
 </p>
+<h2 id="v0-10-0">0.10.0 — 2026-08-16</h2>
+<h3>Changed</h3>
+<ul>
+  <li><strong>Breaking:</strong> junco now lives under a single root: <code>~/.junco</code>. The config's canonical location is <code>~/.junco/config.json</code>, and the default data root is <code>~/.junco</code> with a reorganized v2 layout — durable state under <code>data/</code> (outbox, history, assess-history, transcripts, spend.json, metrics.json), regenerable state under <code>cache/</code> (mirror, clones, worktrees, github-cache, update-check.json — <code>rm -rf ~/.junco/cache</code> is always safe), logs under <code>logs/</code>, and <code>queue/</code>, <code>review/</code>, <code>watchlist.json</code> at the root. Existing installs keep working untouched: while <code>~/.junco</code> holds no data tree and the legacy <code>~/.local/state/junco</code> root exists, junco keeps using the legacy root in its flat layout and surfaces a deprecation pointing at <code>junco data migrate</code>. An explicit <code>dataDir</code> is honored verbatim and never triggers the fallback.</li>
+  <li><strong>Breaking:</strong> config resolution is environment-only. The config is found at <code>~/.junco/config.json</code> (the legacy <code>~/.config/junco/config.json</code> is honored until migrated); <code>./config.json</code> in the current working directory is no longer consulted, so the directory a command runs from can never select a different config — the root cause of a split-queue incident where the dashboard and the worker disagreed about the inbox. The <code>--config</code> flag is deprecated and inert: still parsed so installed pre-0.10 service units don't crash, ignored for resolution, with a one-line stderr notice.</li>
+  <li>Service units are rendered flagless — launchd/systemd invocations end at <code>start</code> with no <code>--config</code>; <code>junco restart</code> still discovers pre-0.10 flagged units. <code>worker.lock</code> now sits next to the canonical config at <code>~/.junco/worker.lock</code>.</li>
+  <li>The bot account's gh config home default moves from <code>~/.config/junco/gh</code> to <code>~/.junco/gh</code>. An existing legacy login keeps working until <code>junco data migrate</code> moves it; an explicitly configured <code>botAccount.configDir</code> is honored as-is.</li>
+  <li>The setup wizard follows the single root: the workspace default and placeholder are <code>~/.junco</code>, and when existing legacy data is detected the Workspace chapter says so (&quot;found existing data at … — junco will keep using it&quot;) instead of silently defaulting elsewhere. Saving with defaults still writes no explicit <code>dataDir</code> key.</li>
+  <li>The agent sandbox now denies the config file itself (it can hold <code>model.apiKey</code>) — at the canonical location, and on a not-yet-migrated machine at the legacy location too, since that is the active config there.</li>
+</ul>
+<h3>Added</h3>
+<ul>
+  <li><code>junco data migrate</code> now unifies everything under <code>~/.junco</code>: it moves the data tree (including the flat→v2 restructure), the bot gh credentials, and the config file itself into the single root, journaling every step to <code>migrated.json</code>. It refuses to run while the daemon is up (<code>--force</code> overrides), takes a <code>migrate.lock</code> at every root it may touch, resumes cleanly after an interruption, and never overwrites: conflicts are reported, exit non-zero, and nothing is rolled back. <code>--dry-run</code> prints the full plan without touching anything. The emptied legacy root is removed afterwards.</li>
+  <li>Pending single-root migration is reported everywhere it matters: <code>junco data</code> marks a legacy root with <code>legacy — run 'junco data migrate'</code> (and gains <code>layout</code> + <code>legacy</code> fields in <code>--json</code>), <code>junco doctor</code> folds the pending moves into its <code>unmigrated data dirs</code> warning, and daemon startup prints the config deprecations.</li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+  <li><code>junco data migrate</code> could never actually remove the emptied legacy root: the root's own scaffolded <code>.gitignore</code> made the removal fail every time. It is now removed when its content is exactly the scaffolded <code>*</code> line; a customized one is left in place and reported.</li>
+  <li>On a not-yet-migrated machine the active (legacy-path) config file was readable from inside the agent sandbox; both config locations are now on the deny list.</li>
+  <li>A live config edit while a daemon restart was pending could pair the frozen <code>dataDir</code> with a live <code>dataLayout</code> and split the data tree; <code>dataLayout</code> is now pinned alongside <code>dataDir</code> across restarts.</li>
+</ul>
+<h3>Internal</h3>
+<ul>
+  <li>All data-tree path construction routes through one <code>dataTreePaths(cfg)</code> table (~15 modules previously joined paths ad hoc); the packaged smoke test now asserts containment — a fresh <code>config init</code> writes nothing outside <code>$HOME/.junco</code>.</li>
+  <li>Dependency bumps via dependabot: eslint 9 → 10 (dev), plus brace-expansion and postcss security patches (transitive). Runtime dependencies unchanged.</li>
+  <li>Docs: <code>configuration.md</code> and <code>operations.md</code> rewritten for the single root (v2 tree diagram, migrate walkthrough, flagless service snippets); new watercolor junco mascot artwork.</li>
+</ul>
 <h2 id="v0-9-1">0.9.1 — 2026-07-26</h2>
 <h3>Changed</h3>
 <ul>
@@ -341,7 +368,7 @@
         <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a>
       </p>
       <p class="stamp">
-        verified against junco 0.9.1 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">CHANGELOG.md</a> ·
+        verified against junco 0.10.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">CHANGELOG.md</a> ·
         <a href="https://github.com/ironforgesoftware/junco-site/edit/main/docs-src/pages/changelog.html">edit this page</a>
       </p>
     </footer>

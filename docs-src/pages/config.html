@@ -1,8 +1,10 @@
 <!--meta {"title":"Configuration","description":"Every config lever: type, default, live or restart, straight from junco's own registry.","slug":"config","navLabel":"Configuration","source":"docs/configuration.md","keywords":["config.json","levers","dataDir","model","baseUrl","apiKey","budget","sandbox","hot reload"]} -->
 <p>
-  junco reads one JSON file: <code>./config.json</code> if present, else
-  <code>~/.config/junco/config.json</code> (respects <code>XDG_CONFIG_HOME</code>; any command
-  accepts <code>--config &lt;path&gt;</code>). Every field is optional — omit a key and its
+  junco reads one JSON file: <code>~/.junco/config.json</code>, resolved from the
+  environment only — the working directory never matters, and the deprecated
+  <code>--config</code> flag is ignored. A legacy <code>~/.config/junco/config.json</code>
+  (respects <code>XDG_CONFIG_HOME</code>) keeps working until
+  <code>junco data migrate</code> moves it. Every field is optional — omit a key and its
   default applies. The guided way to produce the file is the setup walkthrough
   (<code>junco dashboard</code> on a first run); the headless way is
   <code>junco config init</code>.

@@ -43,7 +43,7 @@ const EXTRA_COMMANDS = [
     path: "data migrate",
     synopsis: "junco data migrate [--dry-run] [--force]",
     summary:
-      "Unify legacy data roots under dataDir: move the queue, normalize the state tree, rewrite config to drop legacy keys",
+      "Unify everything under the single ~/.junco root: move the data tree, bot gh credentials, and config; journaled and conflict-safe",
     flags: [
       { flag: "--dry-run", placeholder: null, description: "Print every move without touching anything" },
       { flag: "--force", placeholder: null, description: "Skip the daemon-up refusal checks" },
