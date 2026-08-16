@@ -98,7 +98,6 @@
 </p>
 <h2 id="global-flags">global flags</h2>
 <dl class="flags">
-  <div><dt><code>--config</code> <span class="ph">&lt;path&gt;</span></dt><dd>Path to config.json <span class="default">default ./config.json if present, else ~/.config/junco/config.json</span></dd></div>
   <div><dt><code>--once</code></dt><dd>(<code>start</code>) Process one task then exit</dd></div>
   <div><dt><code>--platform</code> <span class="ph">&lt;name&gt;</span></dt><dd>(<code>service</code>) Target platform: launchd | systemd <span class="default">default launchd on macOS, systemd elsewhere</span></dd></div>
   <div><dt><code>--help, -h</code></dt><dd>Show this help message</dd></div>
@@ -204,7 +203,7 @@ guide</a></p>
 
 <h2 id="auth-login"><code>junco auth login</code></h2>
 <pre class="synopsis">junco auth login</pre>
-<p>Logs the daemon's dedicated bot account in: runs <code>gh auth login</code>'s own device-flow into an isolated <code>GH_CONFIG_DIR</code> (default <code>~/.config/junco/gh</code>, fully separate from your personal <code>gh</code> config), verifies the resulting identity, and flips <code>botAccount.enabled</code> to <code>true</code> in <code>config.json</code> on success. It prints who junco now acts as and reminds you to run <code>junco restart</code> to apply it. <code>gh</code> owns token refresh — nothing secret lands in <code>config.json</code> or the daemon's environment; child processes only ever receive the config-dir path.</p>
+<p>Logs the daemon's dedicated bot account in: runs <code>gh auth login</code>'s own device-flow into an isolated <code>GH_CONFIG_DIR</code> (default <code>~/.junco/gh</code>, fully separate from your personal <code>gh</code> config; a legacy login at <code>~/.config/junco/gh</code> keeps working until <code>junco data migrate</code> moves it), verifies the resulting identity, and flips <code>botAccount.enabled</code> to <code>true</code> in <code>config.json</code> on success. It prints who junco now acts as and reminds you to run <code>junco restart</code> to apply it. <code>gh</code> owns token refresh — nothing secret lands in <code>config.json</code> or the daemon's environment; child processes only ever receive the config-dir path.</p>
 <pre class="cmd">junco auth login</pre>
 <div class="warn"><b>warn —</b> fails closed: with <code>botAccount.enabled</code> set but the bot's login missing or expired, <code>junco start</code> and <code>junco run-once</code> refuse to run at all — there is no silent fallback to your personal identity. Re-run <code>junco auth login</code>.</div>
 <p class="see">see also: <a href="#auth-grant">auth grant</a> · <a href="#restart">restart</a> · <a href="/docs/bot-account/">bot account guide</a></p>
@@ -217,9 +216,8 @@ guide</a></p>
 
 <h2 id="config-init"><code>junco config init</code></h2>
 <pre class="synopsis">junco config init</pre>
-<p>Headless default-config scaffold for scripting and CI: writes <code>config.json</code> with safe defaults and creates the queue directories, no prompts. With a config already present it only ensures the directories exist — it never overwrites an existing file. A fresh scaffold writes no legacy path keys, and writes <code>dataDir</code> only when it differs from the default. The interactive equivalent is the setup walkthrough in the dashboard.</p>
+<p>Headless default-config scaffold for scripting and CI: writes <code>~/.junco/config.json</code> with safe defaults and creates the queue directories, no prompts. With a config already present it only ensures the directories exist — it never overwrites an existing file. A fresh scaffold writes no legacy path keys, and writes <code>dataDir</code> only when it differs from the default. The interactive equivalent is the setup walkthrough in the dashboard.</p>
 <pre class="cmd">junco config init</pre>
-<pre class="cmd">junco config init --config ./config.json</pre>
 <p class="see">see also: <a href="#config-path">config path</a> · <a href="#doctor">doctor</a> · <a href="/docs/config/">configuration reference</a></p>
 
 <h2 id="config-list"><code>junco config list</code></h2>
@@ -230,7 +228,7 @@ guide</a></p>
 
 <h2 id="config-path"><code>junco config path</code></h2>
 <pre class="synopsis">junco config path</pre>
-<p>Prints the resolved config file location and exits: <code>./config.json</code> if present, else <code>~/.config/junco/config.json</code> (respects <code>XDG_CONFIG_HOME</code>); <code>--config &lt;path&gt;</code> overrides. Reads nothing else, writes nothing — the target for direct edits of structural fields.</p>
+<p>Prints the resolved config file location and exits: <code>~/.junco/config.json</code>, or the legacy <code>~/.config/junco/config.json</code> (respects <code>XDG_CONFIG_HOME</code>) while it exists and no canonical file does. Resolution is environment-only — the working directory never matters, and the deprecated <code>--config</code> flag is ignored. Reads nothing else, writes nothing — the target for direct edits of structural fields.</p>
 <pre class="cmd">junco config path</pre>
 <p class="see">see also: <a href="#config-list">config list</a> · <a href="#config-init">config init</a> · <a href="/docs/config/">configuration reference</a></p>
 
@@ -251,17 +249,18 @@ guide</a></p>
 
 <h2 id="data"><code>junco data</code></h2>
 <pre class="synopsis">junco data [--json]</pre>
-<p>Prints the resolved data tree under <code>dataDir</code>: every path with live counts, legacy-override provenance, and any pending migration. A pure read-only view — it never creates or moves anything. Absent nodes are still listed (<code>(absent)</code> is normal before the first daemon start); a legacy-overridden root prints its config key with a deprecation tag, and an unmigrated old-name directory prints the pending rename. <code>--json</code> emits the same information as <code>{ root, paths, counts, legacy, pendingMigrations, deprecations }</code> for scripts.</p>
+<p>Prints the resolved data tree under <code>dataDir</code>: every path with live counts, legacy-override provenance, and any pending migration. A pure read-only view — it never creates or moves anything. Absent nodes are still listed (<code>(absent)</code> is normal before the first daemon start); a legacy-overridden root prints its config key with a deprecation tag, and an unmigrated old-name directory prints the pending rename. <code>--json</code> emits the same information as <code>{ root, layout, paths, counts, legacy, pendingMigrations, deprecations }</code> for scripts.</p>
 <pre class="cmd">junco data</pre>
 <pre class="cmd">junco data --json</pre>
-<pre class="out">junco data — root: /Users/you/.local/state/junco
-queue      /Users/you/.local/state/junco/queue
+<pre class="out">junco data — root: /Users/you/.junco
+
+queue      /Users/you/.junco/queue
   inbox 2 · processing 1 · done 148 · failed 9</pre>
 <p class="see">see also: <a href="#data-migrate">data migrate</a> · <a href="#doctor">doctor</a> · <a href="/docs/config/">configuration reference</a></p>
 
 <h2 id="data-migrate"><code>junco data migrate</code></h2>
 <pre class="synopsis">junco data migrate [--dry-run] [--force]</pre>
-<p>The opt-in full unification for a config still carrying legacy path keys — the ticket queue never moves automatically. Moves the queue directories into <code>&lt;dataDir&gt;/queue</code> (rename, falling back to copy+verify+delete across filesystems), runs the same in-place state-tree normalization the daemon performs at startup, then rewrites <code>config.json</code> to drop <code>vaultRoot</code> / <code>juncoSubdir</code> / <code>observability.stateDir</code> and set a non-default <code>dataDir</code>. Holds <code>&lt;dataDir&gt;/migrate.lock</code> so two migrations can't race; nothing already moved is ever rolled back, so fixing a conflict by hand and re-running picks up where it left off. <code>--dry-run</code> prints the full plan and changes nothing.</p>
+<p>The opt-in full unification of everything junco owns under the single <code>~/.junco</code> root — the ticket queue never moves automatically. Moves the queue into <code>&lt;dataDir&gt;/queue</code> (rename, falling back to copy+verify+delete across filesystems), restructures a flat legacy tree into the v2 layout (<code>data/</code>, <code>cache/</code>, <code>logs/</code>), relocates the bot's <code>gh</code> credentials to <code>~/.junco/gh</code> and the config file itself to <code>~/.junco/config.json</code>, rewrites the config to drop <code>vaultRoot</code> / <code>juncoSubdir</code> / <code>observability.stateDir</code>, and removes the emptied legacy root. Every step is journaled to <code>migrated.json</code>. Holds <code>migrate.lock</code> at every root it may touch so two migrations can't race; nothing already moved is ever rolled back, so fixing a conflict by hand and re-running picks up where it left off. <code>--dry-run</code> prints the full plan and changes nothing.</p>
 <pre class="cmd">junco data migrate --dry-run</pre>
 <pre class="cmd">junco data migrate</pre>
 <div class="warn"><b>warn —</b> refuses to run while the daemon appears up: any <code>/health</code> response (even non-200) counts, as does a live-held <code>worker.lock</code> next to <code>config.json</code>. <code>--force</code> skips both checks. A state-tree name collision where the destination holds real files is left untouched and exits non-zero — file-holding data is never deleted.</div>
@@ -302,7 +301,7 @@ queue      /Users/you/.local/state/junco/queue
 
 <h2 id="logs"><code>junco logs</code></h2>
 <pre class="synopsis">junco logs [-f] [-n N] [--json|--human]</pre>
-<p>Tails the worker log at <code>&lt;dataDir&gt;/worker.log</code> (default <code>~/.local/state/junco/worker.log</code>, rotated at 10 MB). <code>-f</code> follows, <code>-n N</code> bounds the tail. Output is human-readable on a TTY and raw JSON when piped or with <code>--json</code>; <code>--human</code> forces the readable format even when piped.</p>
+<p>Tails the worker log at <code>~/.junco/logs/worker.log</code> (<code>&lt;dataDir&gt;/worker.log</code> on a not-yet-migrated flat tree; rotated at 10 MB). <code>-f</code> follows, <code>-n N</code> bounds the tail. Output is human-readable on a TTY and raw JSON when piped or with <code>--json</code>; <code>--human</code> forces the readable format even when piped.</p>
 <pre class="cmd">junco logs -f</pre>
 <pre class="cmd">junco logs -n 200 --json</pre>
 <pre class="out">09:31:05 INFO  claimed {"src":"inbox/gh-acme-reef-api-52.md","dst":"processing/gh-acme-reef-api-52.md"}
@@ -419,7 +418,7 @@ confine targets with <code>git.allowedRepoRoots</code>.</div>
         <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a>
       </p>
       <p class="stamp">
-        verified against junco 0.9.1 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/operations.md">docs/operations.md</a> ·
+        verified against junco 0.10.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/operations.md">docs/operations.md</a> ·
         <a href="https://github.com/ironforgesoftware/junco-site/edit/main/docs-src/pages/cli.html">edit this page</a>
       </p>
     </footer>

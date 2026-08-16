@@ -657,7 +657,7 @@
       "path": "botAccount.configDir",
       "type": "string",
       "markers": [],
-      "default": "\"~/.config/junco/gh\"",
+      "default": "\"~/.junco/gh\"",
       "description": "Isolated gh config dir holding the bot login (GH_CONFIG_DIR for daemon gh/git).",
       "reload": "restart"
     },

@@ -1,4 +1,4 @@
-<p>Tails the worker log at <code>&lt;dataDir&gt;/worker.log</code> (default <code>~/.local/state/junco/worker.log</code>, rotated at 10 MB). <code>-f</code> follows, <code>-n N</code> bounds the tail. Output is human-readable on a TTY and raw JSON when piped or with <code>--json</code>; <code>--human</code> forces the readable format even when piped.</p>
+<p>Tails the worker log at <code>~/.junco/logs/worker.log</code> (<code>&lt;dataDir&gt;/worker.log</code> on a not-yet-migrated flat tree; rotated at 10 MB). <code>-f</code> follows, <code>-n N</code> bounds the tail. Output is human-readable on a TTY and raw JSON when piped or with <code>--json</code>; <code>--human</code> forces the readable format even when piped.</p>
 <pre class="cmd">junco logs -f</pre>
 <pre class="cmd">junco logs -n 200 --json</pre>
 <pre class="out">09:31:05 INFO  claimed {"src":"inbox/gh-acme-reef-api-52.md","dst":"processing/gh-acme-reef-api-52.md"}

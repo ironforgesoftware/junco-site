@@ -137,14 +137,18 @@ a session does not un-spend money.</div>
 
 <h2 id="the-data-root">The data root</h2>
 <p>Everything junco writes resolves under one root,
-<code>dataDir</code> (default <code>~/.local/state/junco</code>):
-the queue, parked review items, the outbox, managed clones,
-PR-flow worktrees, per-run transcripts, and top-level state files
-like <code>spend.json</code>. The tree is created eagerly at
-daemon startup, and the root writes itself a
-<code>.gitignore</code> containing <code>*</code> (when none
-exists) — a data root inside a git checkout never dirties a
-commit.
+<code>dataDir</code> (default <code>~/.junco</code>): the queue and
+parked review items at the top, durable state under
+<code>data/</code> (outbox, histories, transcripts,
+<code>spend.json</code>), regenerable state under
+<code>cache/</code> (managed clones, PR-flow worktrees, mirrors —
+safe to delete wholesale), and logs under <code>logs/</code>. A
+not-yet-migrated legacy root (<code>~/.local/state/junco</code>)
+keeps working until <code>junco data migrate</code> unifies it.
+The tree is created eagerly at daemon startup, and the root
+writes itself a <code>.gitignore</code> containing <code>*</code>
+(when none exists) — a data root inside a git checkout never
+dirties a commit.
 <code>junco data</code> prints the tree, read-only. Layout and
 legacy overrides in <a href="/docs/config/">configuration</a>.</p>
 

@@ -10,17 +10,17 @@ junco run-once</pre>
 
 <h2 id="running-as-a-service">Running as a service</h2>
 <p><code>junco service</code> renders a platform-native service file to stdout — <code>--platform launchd</code> (macOS default) or <code>systemd</code>. Pipe it to the right location and load it (<a href="/docs/cli/#service">flags</a>). Rendered units size their stop timeout to the maximum ticket timeout, so a draining worker is not SIGKILLed mid-ticket.</p>
-<pre class="cmd">junco service --platform launchd --config ~/junco/config.json \
+<pre class="cmd">junco service --platform launchd \
   &gt; ~/Library/LaunchAgents/com.junco.worker.plist
 launchctl load ~/Library/LaunchAgents/com.junco.worker.plist</pre>
-<pre class="cmd">junco service --platform systemd --config ~/junco/config.json \
+<pre class="cmd">junco service --platform systemd \
   &gt; ~/.config/systemd/user/junco.service
 systemctl --user daemon-reload
 systemctl --user enable --now junco</pre>
-<p>The daemon reads config and code once at startup. To pick up changes, use <a href="/docs/cli/#restart"><code>junco restart</code></a> — not SIGTERM: with launchd's <code>SuccessfulExit=false</code> keep-alive, a graceful exit stays down. <code>restart</code> finds the launchd plist or systemd user unit referencing your config, validates the config first (refusing to bounce the daemon onto a config it can't parse), kicks the unit with the platform-correct verb, and confirms the pid changed before reporting success.</p>
+<p>The daemon reads config and code once at startup. To pick up changes, use <a href="/docs/cli/#restart"><code>junco restart</code></a> — not SIGTERM: with launchd's <code>SuccessfulExit=false</code> keep-alive, a graceful exit stays down. <code>restart</code> finds the launchd plist or systemd user unit running junco (units rendered before 0.10 name a <code>--config</code> path; those are still discovered), validates the config first (refusing to bounce the daemon onto a config it can't parse), kicks the unit with the platform-correct verb, and confirms the pid changed before reporting success.</p>
 
 <h2 id="watching-it">Watching it</h2>
-<p><code>junco status</code> is the one-glance view: daemon pid and uptime, endpoint readiness, in-flight tickets, processed counts, queue sizes. <code>junco list [inbox|processing|done|failed]</code> lists tickets newest-first per queue box. <code>junco logs -f</code> follows the worker log (<a href="/docs/cli/#logs">flags</a>) — structured JSON on stdout, human-readable on a TTY, also written to <code>&lt;dataDir&gt;/worker.log</code> and rotated at 10 MB; <code>observability.logLevel: "debug"</code> for verbose output.</p>
+<p><code>junco status</code> is the one-glance view: daemon pid and uptime, endpoint readiness, in-flight tickets, processed counts, queue sizes. <code>junco list [inbox|processing|done|failed]</code> lists tickets newest-first per queue box. <code>junco logs -f</code> follows the worker log (<a href="/docs/cli/#logs">flags</a>) — structured JSON on stdout, human-readable on a TTY, also written to <code>~/.junco/logs/worker.log</code> (<code>&lt;dataDir&gt;/worker.log</code> on a not-yet-migrated flat tree) and rotated at 10 MB; <code>observability.logLevel: "debug"</code> for verbose output.</p>
 <pre class="cmd">junco status
 junco logs -f
 junco list failed</pre>

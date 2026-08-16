@@ -329,14 +329,6 @@
   ],
   "globalFlags": [
     {
-      "flag": "--config",
-      "alias": null,
-      "placeholder": "<path>",
-      "scope": null,
-      "description": "Path to config.json",
-      "default": "./config.json if present, else ~/.config/junco/config.json"
-    },
-    {
       "flag": "--once",
       "alias": null,
       "placeholder": null,
