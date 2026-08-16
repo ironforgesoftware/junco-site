@@ -1055,8 +1055,11 @@ export function runRelease() {
   }).stdout.trim();
   console.log(diff ? `snapshot delta vs HEAD:\n${diff}` : "snapshot delta vs HEAD: none (run --extract first?)");
   console.log("");
-  const changelogPath = join(homedir(), "junco", "CHANGELOG.md");
-  if (existsSync(changelogPath) && installed !== meta.juncoVersion) {
+  const changelogPath = [
+    join(homedir(), "Development", "junco", "CHANGELOG.md"),
+    join(homedir(), "junco", "CHANGELOG.md"),
+  ].find(existsSync);
+  if (changelogPath && installed !== meta.juncoVersion) {
     const changelog = readFileSync(changelogPath, "utf8");
     const sections = changelog.split(/^## /m).slice(1);
     const newer = [];
