@@ -38,7 +38,9 @@
       crossorigin
    >
     <link rel="stylesheet" href="styles.css">
+    <script src="backdrop.js" defer></script>
     <script src="glyphs.js" defer></script>
+    <script src="mascot.js" defer></script>
     <script>
       document.documentElement.classList.add("js");
     </script>
@@ -61,8 +63,8 @@
     <main id="main" class="wrap">
       <!-- S0 · hero -->
       <section class="hero" aria-labelledby="hero-h">
+        <div class="hero-mascot" aria-hidden="true"></div>
         <div class="hero-top">
-          <img class="mascot" src="assets/junco.png" alt="A dark-eyed junco, the junco mascot" width="230" height="151">
           <div class="hero-copy">
             <p class="kicker">junco · coding-agent worker · v0.10.0 · MIT</p>
             <h1 id="hero-h">Issues in.<br>Pull requests out.</h1>

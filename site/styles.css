@@ -58,7 +58,7 @@ body {
 }
 
 .wrap {
-  max-width: 84ch;
+  max-width: 104ch;
   margin-inline: auto;
   padding-inline: 2ch;
 }
@@ -100,17 +100,40 @@ pre {
   overflow-x: auto;
 }
 
-/* ---------- glyph-matrix backdrop ---------- */
+/* ---------- layered backdrop: fluid drift below, glyph matrix above ---------- */
+
+#backdrop {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -3;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(#000 40%, transparent);
+  mask-image: linear-gradient(#000 40%, transparent);
+}
 
 #glyphs {
   position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
-  z-index: -1;
+  z-index: -2;
   pointer-events: none;
   -webkit-mask-image: linear-gradient(#000 40%, transparent);
   mask-image: linear-gradient(#000 40%, transparent);
+}
+
+/* glyph mascot — position and size set by mascot.js; on narrow viewports
+   the script moves it into .hero-mascot, in flow above the copy */
+#mascot {
+  position: fixed;
+  z-index: -1;
+  pointer-events: none;
+}
+.hero-mascot #mascot {
+  position: relative;
+  z-index: 0;
 }
 
 .visually-hidden {
@@ -214,26 +237,20 @@ h1 {
   margin-block: calc(0.5 * var(--lh)) 0;
 }
 
-/* hero — the field-guide plate (mascot) beside the specimen description (copy) */
+/* hero copy sits over the glyph mascot drifting in the background layers;
+   on wide viewports it moves aside so the junco owns the left half */
 .hero-top {
-  display: grid;
-  grid-template-columns: clamp(180px, 25vw, 280px) minmax(0, 1fr);
-  gap: 4ch;
-  align-items: center;
   margin-block-end: calc(2 * var(--lh));
 }
-.mascot {
-  width: 100%;
-  height: auto;
-}
-@media (max-width: 620px) {
-  .hero-top {
-    grid-template-columns: 1fr;
-    justify-items: start;
-    gap: var(--lh);
+@media (min-width: 800px) {
+  .hero-copy {
+    margin-inline-start: 34%;
   }
-  .mascot {
-    width: clamp(140px, 44vw, 200px);
+  /* the install panel goes glassy so the mascot ghosts through the overlap */
+  .hero .panel {
+    background: color-mix(in srgb, var(--panel) 72%, transparent);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
   }
 }
 
@@ -476,7 +493,9 @@ h2 .num {
     --shadow: transparent;
   }
   .copy,
-  #glyphs {
+  #glyphs,
+  #backdrop,
+  #mascot {
     display: none;
   }
 }
