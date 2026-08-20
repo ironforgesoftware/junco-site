@@ -1,0 +1,5 @@
+<p>Stops watching a repository and deletes its junco-owned operational state: queued inbox tickets, the worktree namespace, and outbox, review, history, mirror, and cache traces. <code>--plan</code> prints the itemized deletion as JSON and deletes nothing. Re-running after a partial failure sweeps the leftover residue idempotently. The dashboard's unwatch runs the same core behind an itemized confirmation.</p>
+<pre class="cmd">junco unwatch acme/reef-api --plan</pre>
+<pre class="cmd">junco unwatch acme/reef-api</pre>
+<div class="warn"><b>warn —</b> deletion is permanent — parked review batches, per-repo history, and queued tickets for the repo are gone; run <code>--plan</code> first. A ticket for the repo currently in <code>processing/</code> blocks the run until it finishes.</div>
+<p class="see">see also: <a href="#data">data</a> · <a href="/docs/github-loop/">github loop guide</a></p>

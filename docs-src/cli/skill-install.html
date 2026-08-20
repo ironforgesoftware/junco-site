@@ -1,0 +1,6 @@
+<p>Links the junco-dispatch skill into agent-harness skills directories through the <code>&lt;dataDir&gt;/skills</code> mount. A harness passed by name or by path is written to <code>skills.harnessDirs</code> — standing consent junco honors from then on: the daemon re-creates and repairs the links at every start and after <code>junco update</code>, and junco never writes into a directory not on that list. With no arguments the command re-ensures the configured links and prints what it created, repaired, or skipped.</p>
+<pre class="cmd">junco skill install --harness codex</pre>
+<pre class="cmd">junco skill install --harness ~/.config/opencode/skills</pre>
+<pre class="cmd">junco skill install</pre>
+<div class="note"><b>note —</b> a valid symlink is never repointed and a real file or directory occupying a link's place is never touched — the run warns and moves on; <code>junco doctor</code> names the blocked path.</div>
+<p class="see">see also: <a href="#doctor">doctor</a> · <a href="#update">update</a> · <a href="/docs/tickets/">tickets guide</a></p>

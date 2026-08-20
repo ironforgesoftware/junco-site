@@ -101,6 +101,7 @@
 <dl class="flags">
   <div><dt><code>--once</code></dt><dd>(<code>start</code>) Process one task then exit</dd></div>
   <div><dt><code>--platform</code> <span class="ph">&lt;name&gt;</span></dt><dd>(<code>service</code>) Target platform: launchd | systemd <span class="default">default launchd on macOS, systemd elsewhere</span></dd></div>
+  <div><dt><code>--plan</code></dt><dd>(<code>unwatch</code>) Print what would be deleted as JSON; delete nothing</dd></div>
   <div><dt><code>--help, -h</code></dt><dd>Show this help message</dd></div>
   <div><dt><code>--version</code></dt><dd>Print junco's version and exit</dd></div>
 </dl>
@@ -324,6 +325,14 @@ queue      /Users/you/.junco/queue
 <pre class="cmd">junco prs</pre>
 <p class="see">see also: <a href="#dispatch">dispatch</a> · <a href="#outbox">outbox</a> · <a href="/docs/github-loop/">github loop guide</a></p>
 
+<h2 id="replay"><code>junco replay</code></h2>
+<pre class="synopsis">junco replay &lt;ticket-id|path.jsonl&gt; [--budget-per-kind</pre>
+<p>Re-runs a recorded per-ticket event transcript through a fresh guard manager and reports what the guards would decide under a chosen policy — a what-if report, never a live rerun: no endpoint traffic, no tool execution, no queue changes. Each of the four supervisor knobs resolves independently by precedence: an explicit flag, then the policy recorded in the transcript's run frames, then the loaded config, then the built-in defaults. The report compares recorded decisions against replayed ones per run and ends in a verdict with caveats; <code>--json</code> prints the raw report instead.</p>
+<pre class="cmd">junco replay gh-acme-reef-api-52</pre>
+<pre class="cmd">junco replay ~/.junco/data/transcripts/gh-acme-reef-api-52.jsonl --budget-per-kind 2 --json</pre>
+<div class="note"><b>note —</b> replay reads the v2 run frames (<code>junco_run_start</code> / <code>junco_guard_decision</code>) that transcripts carry from 0.11.0 on; a bare ticket id resolves against <code>&lt;dataDir&gt;/data/transcripts/</code>.</div>
+<p class="see">see also: <a href="#logs">logs</a> · <a href="/docs/operations/">operations guide</a></p>
+
 <h2 id="restart"><code>junco restart</code></h2>
 <pre class="synopsis">junco restart</pre>
 <p>Restarts the supervised daemon so it picks up config and code changes. It validates the config first — refusing to bounce the daemon onto a config it can't parse — then finds the launchd plist / systemd user unit referencing the config path, kicks it with the platform-correct verb (<code>launchctl kickstart -k</code> / <code>systemctl --user restart</code>, the verbs that relaunch unconditionally), and confirms the pid changed before reporting success.</p>
@@ -366,6 +375,15 @@ queue      /Users/you/.junco/queue
 <div class="note"><b>note —</b> after writing the file: <code>launchctl load</code> then <code>launchctl start com.junco.worker</code> on macOS; <code>systemctl --user daemon-reload</code> then <code>systemctl --user enable --now junco</code> on Linux.</div>
 <p class="see">see also: <a href="#start">start</a> · <a href="#restart">restart</a> · <a href="/docs/operations/">operations guide</a></p>
 
+<h2 id="skill-install"><code>junco skill install</code></h2>
+<pre class="synopsis">junco skill install [--harness &lt;name|path&gt;]...</pre>
+<p>Links the junco-dispatch skill into agent-harness skills directories through the <code>&lt;dataDir&gt;/skills</code> mount. A harness passed by name or by path is written to <code>skills.harnessDirs</code> — standing consent junco honors from then on: the daemon re-creates and repairs the links at every start and after <code>junco update</code>, and junco never writes into a directory not on that list. With no arguments the command re-ensures the configured links and prints what it created, repaired, or skipped.</p>
+<pre class="cmd">junco skill install --harness codex</pre>
+<pre class="cmd">junco skill install --harness ~/.config/opencode/skills</pre>
+<pre class="cmd">junco skill install</pre>
+<div class="note"><b>note —</b> a valid symlink is never repointed and a real file or directory occupying a link's place is never touched — the run warns and moves on; <code>junco doctor</code> names the blocked path.</div>
+<p class="see">see also: <a href="#doctor">doctor</a> · <a href="#update">update</a> · <a href="/docs/tickets/">tickets guide</a></p>
+
 <h2 id="start"><code>junco start</code></h2>
 <pre class="synopsis">junco start</pre>
 <p>Runs the daemon in the foreground: it polls the inbox forever, claiming and processing tickets, until Ctrl-C. On startup it acquires a single-instance lock (<code>worker.lock</code>, next to <code>config.json</code>); if another instance already holds the lock it exits 0 instead of erroring, so a supervisor (launchd, systemd) never enters a restart loop after a double start. <code>--once</code> processes one task and exits.</p>
@@ -396,6 +414,14 @@ an agent against the repo it names, as you. Keep the inbox on a disk only you ca
 confine targets with <code>git.allowedRepoRoots</code>.</div>
 <p class="see">see also: <a href="#list">list</a> · <a href="#retry">retry</a> ·
 <a href="#schema">schema</a> · <a href="/docs/tickets/">tickets guide</a></p>
+<h2 id="unwatch"><code>junco unwatch</code></h2>
+<pre class="synopsis">junco unwatch &lt;owner/repo&gt; [--plan]</pre>
+<p>Stops watching a repository and deletes its junco-owned operational state: queued inbox tickets, the worktree namespace, and outbox, review, history, mirror, and cache traces. <code>--plan</code> prints the itemized deletion as JSON and deletes nothing. Re-running after a partial failure sweeps the leftover residue idempotently. The dashboard's unwatch runs the same core behind an itemized confirmation.</p>
+<pre class="cmd">junco unwatch acme/reef-api --plan</pre>
+<pre class="cmd">junco unwatch acme/reef-api</pre>
+<div class="warn"><b>warn —</b> deletion is permanent — parked review batches, per-repo history, and queued tickets for the repo are gone; run <code>--plan</code> first. A ticket for the repo currently in <code>processing/</code> blocks the run until it finishes.</div>
+<p class="see">see also: <a href="#data">data</a> · <a href="/docs/github-loop/">github loop guide</a></p>
+
 <h2 id="update"><code>junco update</code></h2>
 <pre class="synopsis">junco update</pre>
 <p>Installs the latest npm release of junco, then drains and restarts the supervised daemon — a graceful stop drains in-flight work before the new version takes over.</p>
@@ -419,7 +445,7 @@ confine targets with <code>git.allowedRepoRoots</code>.</div>
         <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a>
       </p>
       <p class="stamp">
-        verified against junco 0.10.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/operations.md">docs/operations.md</a> ·
+        verified against junco 0.11.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/operations.md">docs/operations.md</a> ·
         <a href="https://github.com/ironforgesoftware/junco-site/edit/main/docs-src/pages/cli.html">edit this page</a>
       </p>
     </footer>

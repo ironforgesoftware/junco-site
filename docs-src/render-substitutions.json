@@ -1,4 +1,5 @@
 {
   "openai/gpt-4o-mini": "<provider>/<model-name>",
-  "(e.g. ANTHROPIC_API_KEY)": "(e.g. <PROVIDER>_API_KEY)"
+  "(e.g. ANTHROPIC_API_KEY)": "(e.g. <PROVIDER>_API_KEY)",
+  "(names: claude, codex, pi, omp, opencode)": "(a known harness name, or any skills-directory path)"
 }
