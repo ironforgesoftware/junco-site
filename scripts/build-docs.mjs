@@ -628,6 +628,11 @@ export const CHANGELOG_SUBSTITUTIONS = {
   "[oMLX]": "[legacy-local]",
   "`omlx`": "`legacy-local`",
   "Claude Code skill": "coding-agent skill",
+  // 0.11.0 skill-link entry names the supported harness products; the vendor
+  // gate can't tell a harness name from a model vendor, so render the generic
+  // phrasing (the CLI's --help still lists the real names).
+  "(names: `claude`, `codex`, `pi`, `omp`, `opencode`)":
+    "(a known harness name, or any skills-directory path)",
   "simply move": "move",
   "⚠": "warn:", // not in the emoji gate's ✓✗ allowlist — see README's emoji gate
 };

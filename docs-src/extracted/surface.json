@@ -152,7 +152,7 @@
       "slug": "data-migrate",
       "path": "data migrate",
       "synopsis": "junco data migrate [--dry-run] [--force]",
-      "summary": "Unify legacy data roots under dataDir: move the queue, normalize the state tree, rewrite config to drop legacy keys",
+      "summary": "Unify everything under the single ~/.junco root: move the data tree, bot gh credentials, and config; journaled and conflict-safe",
       "flags": [
         {
           "flag": "--dry-run",
@@ -244,6 +244,24 @@
       "flags": []
     },
     {
+      "slug": "replay",
+      "path": "replay",
+      "synopsis": "junco replay <ticket-id|path.jsonl> [--budget-per-kind",
+      "summary": "N] [--escalation-window N] [--output-budget-per-turn N] [--output-budget-post-commit N] [--json] Re-run a recorded event transcript through the guards under a chosen (or default) policy — a what-if report",
+      "flags": [
+        {
+          "flag": "-id",
+          "placeholder": null,
+          "description": null
+        },
+        {
+          "flag": "--budget-per-kind",
+          "placeholder": null,
+          "description": null
+        }
+      ]
+    },
+    {
       "slug": "restart",
       "path": "restart",
       "synopsis": "junco restart",
@@ -292,6 +310,19 @@
       "flags": []
     },
     {
+      "slug": "skill-install",
+      "path": "skill install",
+      "synopsis": "junco skill install [--harness <name|path>]...",
+      "summary": "Link the junco-dispatch skill into harness skills dirs via <dataDir>/skills (names: claude, codex, pi, omp, opencode); no args re-ensures configured links",
+      "flags": [
+        {
+          "flag": "--harness",
+          "placeholder": "<name|path>",
+          "description": null
+        }
+      ]
+    },
+    {
       "slug": "start",
       "path": "start",
       "synopsis": "junco start",
@@ -311,6 +342,19 @@
       "synopsis": "junco submit <file|->",
       "summary": "Submit a ticket to the inbox (use - to read from stdin)",
       "flags": []
+    },
+    {
+      "slug": "unwatch",
+      "path": "unwatch",
+      "synopsis": "junco unwatch <owner/repo> [--plan]",
+      "summary": "Stop watching a repo and delete its junco-owned state (--plan previews as JSON)",
+      "flags": [
+        {
+          "flag": "--plan",
+          "placeholder": null,
+          "description": null
+        }
+      ]
     },
     {
       "slug": "update",
@@ -343,6 +387,14 @@
       "scope": "service",
       "description": "Target platform: launchd | systemd",
       "default": "launchd on macOS, systemd elsewhere"
+    },
+    {
+      "flag": "--plan",
+      "alias": null,
+      "placeholder": null,
+      "scope": "unwatch",
+      "description": "Print what would be deleted as JSON; delete nothing",
+      "default": null
     },
     {
       "flag": "--help",

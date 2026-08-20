@@ -702,6 +702,16 @@
         "bot"
       ],
       "reload": "live"
+    },
+    {
+      "path": "skills.harnessDirs",
+      "type": "structured",
+      "markers": [
+        "read-only"
+      ],
+      "default": "[]",
+      "description": "Harness skills dirs that receive a junco-dispatch symlink (standing consent; managed by 'junco skill install' and the wizard).",
+      "reload": "restart"
     }
   ]
 }
