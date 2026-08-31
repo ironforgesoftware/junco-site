@@ -4,6 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   parseHelp,
+  foldCommandVariants,
   parseConfigList,
   parseLeverReloads,
   applySubstitutions,
@@ -544,4 +545,28 @@ test("convertChangelogMarkdown: scrubs vendor names, banned words, and the disal
   assert.match(html, /&lt;provider&gt;\/&lt;model-name&gt;/);
   assert.match(html, /&lt;PROVIDER&gt;_API_KEY/);
   assert.match(html, /warn:/);
+});
+
+test("foldCommandVariants: same-slug entries fold, flags union, first synopsis wins", () => {
+  const folded = foldCommandVariants([
+    { slug: "submit", path: "submit", synopsis: "junco submit <file|->", summary: "base", flags: [] },
+    { slug: "submit", path: "submit", synopsis: "junco submit --plan <file> --repo <path>", summary: "plan",
+      flags: [{ flag: "--plan", placeholder: null, description: null }, { flag: "--repo", placeholder: "<path>", description: null }] },
+    { slug: "submit", path: "submit", synopsis: "junco submit --dry-run <file>", summary: "dry",
+      flags: [{ flag: "--dry-run", placeholder: null, description: null }] },
+    { slug: "lint", path: "lint", synopsis: "junco lint <file>", summary: "lint", flags: [] },
+  ]);
+  assert.equal(folded.length, 2);
+  const submit = folded.find((c) => c.slug === "submit");
+  assert.equal(submit.synopsis, "junco submit <file|->");
+  assert.equal(submit.summary, "base");
+  assert.deepEqual(submit.flags.map((x) => x.flag), ["--plan", "--repo", "--dry-run"]);
+});
+
+test("convertChangelogMarkdown: word-level _emphasis_ renders as em; in-word underscores survive", () => {
+  const md = "## [9.9.9] - 2026-01-01\n\n### Added\n\n- the fence _producer_ keeps a_b intact (_same_ rule).\n";
+  const html = convertChangelogMarkdown(md, {});
+  assert.ok(html.includes("<em>producer</em>"), html);
+  assert.ok(html.includes("<em>same</em>"), html);
+  assert.ok(html.includes("a_b"), html);
 });

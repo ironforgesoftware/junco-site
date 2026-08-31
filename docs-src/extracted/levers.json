@@ -181,6 +181,16 @@
       "reload": "live"
     },
     {
+      "path": "model.thinkingLevelMap",
+      "type": "structured",
+      "markers": [
+        "read-only"
+      ],
+      "default": "{\"minimal\":\"low\",\"low\":\"low\",\"medium\":\"medium\",\"high\":\"xhigh\",\"xhigh\":\"xhigh\"}",
+      "description": "Thinking-level → chat-template effort-vocabulary translation; an override replaces the default map wholesale.",
+      "reload": "live"
+    },
+    {
       "path": "model.compat",
       "type": "structured",
       "markers": [
@@ -470,6 +480,14 @@
       "reload": "live"
     },
     {
+      "path": "sandbox.bashTimeoutSeconds",
+      "type": "number",
+      "markers": [],
+      "default": "600",
+      "description": "Ceiling (seconds) on one sandboxed bash call when the agent passes no timeout; 0 = none, max 2147483. The agent's explicit timeout wins when positive and finite. Live for sessions spawned after the change.",
+      "reload": "live"
+    },
+    {
       "path": "critic.enabled",
       "type": "boolean",
       "markers": [],
@@ -660,6 +678,30 @@
       "default": "\"~/.junco/gh\"",
       "description": "Isolated gh config dir holding the bot login (GH_CONFIG_DIR for daemon gh/git).",
       "reload": "restart"
+    },
+    {
+      "path": "planSets.enabled",
+      "type": "boolean",
+      "markers": [],
+      "default": "false",
+      "description": "Enable plan-driven ticket compilation (Layer 2; Layer-1 dependency machinery is always on).",
+      "reload": "restart"
+    },
+    {
+      "path": "planSets.mergePollSeconds",
+      "type": "number",
+      "markers": [],
+      "default": "60",
+      "description": "Cadence for the plan-set merge sweep that stamps satisfied dependencies and cascades failed ones.",
+      "reload": "live"
+    },
+    {
+      "path": "planSets.maxTasks",
+      "type": "number",
+      "markers": [],
+      "default": "10",
+      "description": "Layer-2 compiler cap on tasks per plan set (reserved).",
+      "reload": "live"
     },
     {
       "path": "assess.maxIssuesPerRun",

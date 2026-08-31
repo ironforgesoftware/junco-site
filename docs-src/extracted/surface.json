@@ -195,6 +195,13 @@
       "flags": []
     },
     {
+      "slug": "lint",
+      "path": "lint",
+      "synopsis": "junco lint <file>",
+      "summary": "Validate a ticket without submitting — plan-lint plus repo, origin, and branch-collision preflight (exit 1 on errors)",
+      "flags": []
+    },
+    {
       "slug": "list",
       "path": "list",
       "synopsis": "junco list [box]",
@@ -341,7 +348,56 @@
       "path": "submit",
       "synopsis": "junco submit <file|->",
       "summary": "Submit a ticket to the inbox (use - to read from stdin)",
-      "flags": []
+      "flags": [
+        {
+          "flag": "--plan",
+          "placeholder": "<file>",
+          "description": null
+        },
+        {
+          "flag": "--repo",
+          "placeholder": "<path>",
+          "description": null
+        },
+        {
+          "flag": "--as-issue",
+          "placeholder": "<file>",
+          "description": null
+        },
+        {
+          "flag": "--dry-run",
+          "placeholder": "<file>",
+          "description": null
+        }
+      ]
+    },
+    {
+      "slug": "transcript",
+      "path": "transcript",
+      "synopsis": "junco transcript <ticket-id|path.jsonl> [--thinking] [--tools] [--width",
+      "summary": "N] [--json] Print a recorded event transcript — runs, turns, tool calls and results, the agent's answer (the dashboard opens the same view with enter on a queue row)",
+      "flags": [
+        {
+          "flag": "-id",
+          "placeholder": null,
+          "description": null
+        },
+        {
+          "flag": "--thinking",
+          "placeholder": null,
+          "description": null
+        },
+        {
+          "flag": "--tools",
+          "placeholder": null,
+          "description": null
+        },
+        {
+          "flag": "--width",
+          "placeholder": null,
+          "description": null
+        }
+      ]
     },
     {
       "slug": "unwatch",
@@ -393,7 +449,31 @@
       "alias": null,
       "placeholder": null,
       "scope": "unwatch",
-      "description": "Print what would be deleted as JSON; delete nothing",
+      "description": "Print what would be deleted as JSON; delete nothing;",
+      "default": null
+    },
+    {
+      "flag": "--repo",
+      "alias": null,
+      "placeholder": "<path>",
+      "scope": null,
+      "description": "(submit --plan) Repo path stamped into the compiled tickets",
+      "default": null
+    },
+    {
+      "flag": "--as-issue",
+      "alias": null,
+      "placeholder": null,
+      "scope": "submit",
+      "description": "File as a parked, unlabeled GitHub issue via the",
+      "default": null
+    },
+    {
+      "flag": "--dry-run",
+      "alias": null,
+      "placeholder": null,
+      "scope": "submit",
+      "description": "Decide and report, write nothing; (data migrate) preview",
       "default": null
     },
     {

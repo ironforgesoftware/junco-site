@@ -101,7 +101,10 @@
 <dl class="flags">
   <div><dt><code>--once</code></dt><dd>(<code>start</code>) Process one task then exit</dd></div>
   <div><dt><code>--platform</code> <span class="ph">&lt;name&gt;</span></dt><dd>(<code>service</code>) Target platform: launchd | systemd <span class="default">default launchd on macOS, systemd elsewhere</span></dd></div>
-  <div><dt><code>--plan</code></dt><dd>(<code>unwatch</code>) Print what would be deleted as JSON; delete nothing</dd></div>
+  <div><dt><code>--plan</code></dt><dd>(<code>unwatch</code>) Print what would be deleted as JSON; delete nothing;</dd></div>
+  <div><dt><code>--repo</code> <span class="ph">&lt;path&gt;</span></dt><dd>(submit --plan) Repo path stamped into the compiled tickets</dd></div>
+  <div><dt><code>--as-issue</code></dt><dd>(<code>submit</code>) File as a parked, unlabeled GitHub issue via the</dd></div>
+  <div><dt><code>--dry-run</code></dt><dd>(<code>submit</code>) Decide and report, write nothing; (data migrate) preview</dd></div>
   <div><dt><code>--help, -h</code></dt><dd>Show this help message</dd></div>
   <div><dt><code>--version</code></dt><dd>Print junco's version and exit</dd></div>
 </dl>
@@ -294,6 +297,23 @@ queue      /Users/you/.junco/queue
 <div class="warn"><b>warn —</b> the inbox is a code-execution boundary: anyone who can write to it can act as you. Keep it on a local disk you own, never a synced or shared folder.</div>
 <p class="see">see also: <a href="#submit">submit</a> · <a href="#list">list</a> · <a href="/docs/tickets/">tickets guide</a></p>
 
+<h2 id="lint"><code>junco lint</code></h2>
+<pre class="synopsis">junco lint &lt;file&gt;</pre>
+<p>
+  Validates a ticket without submitting it: the worker's own plan-lint rules (step and
+  commit discipline, forbidden phrases, the strict notes block, label existence) plus
+  environment preflight — the <code>repo:</code> path exists and is a git repository, its
+  <code>origin</code> remote is a GitHub remote, and the branch the worker would push
+  (<code>branch_name</code>, or the derived <code>junco/&lt;id&gt;</code>) is not already
+  on origin. Exit 0 when clean (warnings allowed), 1 on any error — fix errors before
+  submitting instead of letting the worker fail the ticket seconds after claim.
+</p>
+<pre class="cmd">junco lint fix-tide-rounding.md</pre>
+<pre class="out">[error] branch_exists: branch junco/fix-tide-rounding already exists on origin — bump the ticket id (or branch_name) so the worker's push does not collide
+lint: 1 error(s)</pre>
+<p class="see">see also: <a href="#submit">submit</a> · <a href="#schema">schema</a> ·
+<a href="/docs/tickets/">tickets guide</a></p>
+
 <h2 id="list"><code>junco list</code></h2>
 <pre class="synopsis">junco list [box]</pre>
 <p>Lists tickets newest-first per queue box — <code>inbox</code> | <code>processing</code> | <code>done</code> | <code>failed</code> — with terminal statuses; pass a box name to show just that one. Read-only: nothing moves on disk.</p>
@@ -409,11 +429,46 @@ queue      /Users/you/.junco/queue
 <pre class="cmd">junco submit fix-tide-rounding.md</pre>
 <pre class="cmd">cat ticket.md | junco submit -</pre>
 <pre class="out">queued inbox/fix-tide-rounding.md</pre>
+<p>
+  Three further forms share the verb. <code>--dry-run &lt;file&gt;</code> reports where the
+  ticket would go (<code>destination: issue|inbox</code>, one <code>reason:</code> per
+  cause), which frontmatter survives the issue route, the effective timeout, and the same
+  results as <code>junco lint</code> — writing nothing. <code>--as-issue &lt;file&gt;</code>
+  files the ticket as a parked, unlabeled GitHub issue that only a human's trigger label
+  launches; a valid <code>timeout_minutes</code> is carried, clamped to 1–480 minutes.
+  <code>--plan &lt;file&gt; --repo &lt;path&gt;</code> compiles an approved
+  <code>junco-plan</code> fence into its dependency-ordered child tickets
+  (<code>--as-issue --plan</code> parks the fence as an issue instead).
+</p>
+<pre class="cmd">junco submit --dry-run fix-tide-rounding.md</pre>
+<pre class="out">destination: issue
+reason: repo acme/api is bridge-watched; github + bot account enabled
+carried: timeout_minutes=60
+dry run — nothing submitted</pre>
 <div class="warn"><b>warn —</b> the inbox is a code-execution boundary: a PR-flow ticket runs
 an agent against the repo it names, as you. Keep the inbox on a disk only you can write, and
 confine targets with <code>git.allowedRepoRoots</code>.</div>
-<p class="see">see also: <a href="#list">list</a> · <a href="#retry">retry</a> ·
-<a href="#schema">schema</a> · <a href="/docs/tickets/">tickets guide</a></p>
+<p class="see">see also: <a href="#lint">lint</a> · <a href="#list">list</a> ·
+<a href="#retry">retry</a> · <a href="#schema">schema</a> ·
+<a href="/docs/tickets/">tickets guide</a></p>
+
+<h2 id="transcript"><code>junco transcript</code></h2>
+<pre class="synopsis">junco transcript &lt;ticket-id|path.jsonl&gt; [--thinking] [--tools] [--width</pre>
+<p>
+  Renders a ticket's recorded event transcript
+  (<code>&lt;dataDir&gt;/data/transcripts/&lt;id&gt;.jsonl</code>): one header per run —
+  flow, model, outcome, duration, tokens, and the error line for a failed attempt — then
+  each turn's text and every tool call with a one-line result summary.
+  <code>--tools</code> prints the full tool results, <code>--thinking</code> the model's
+  reasoning, <code>--width N</code> sets the wrap column, and <code>--json</code> emits the
+  raw frames. The dashboard opens the same view with enter on any running or recent queue
+  row, following a running ticket live until the run ends.
+</p>
+<pre class="cmd">junco transcript add-tide-rounding-2026-08-30</pre>
+<pre class="cmd">junco transcript fix-tide-rounding.jsonl --tools --width 100</pre>
+<p class="see">see also: <a href="#replay">replay</a> · <a href="#logs">logs</a> ·
+<a href="/docs/operations/">operations guide</a></p>
+
 <h2 id="unwatch"><code>junco unwatch</code></h2>
 <pre class="synopsis">junco unwatch &lt;owner/repo&gt; [--plan]</pre>
 <p>Stops watching a repository and deletes its junco-owned operational state: queued inbox tickets, the worktree namespace, and outbox, review, history, mirror, and cache traces. <code>--plan</code> prints the itemized deletion as JSON and deletes nothing. Re-running after a partial failure sweeps the leftover residue idempotently. The dashboard's unwatch runs the same core behind an itemized confirmation.</p>
@@ -445,7 +500,7 @@ confine targets with <code>git.allowedRepoRoots</code>.</div>
         <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a>
       </p>
       <p class="stamp">
-        verified against junco 0.11.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/operations.md">docs/operations.md</a> ·
+        verified against junco 0.12.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/operations.md">docs/operations.md</a> ·
         <a href="https://github.com/ironforgesoftware/junco-site/edit/main/docs-src/pages/cli.html">edit this page</a>
       </p>
     </footer>
