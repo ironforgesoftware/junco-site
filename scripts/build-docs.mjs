@@ -127,6 +127,24 @@ function expandCompound(tokenString, summary) {
   return [makeCommand(tokenString, summary)];
 }
 
+// junco 0.12.0 lists one help line per submit form (--plan, --as-issue,
+// --dry-run). Each parses to its own command with the same path, which would
+// collide on slug (search ids, fragment files). Fold same-path entries into
+// one command: the first line keeps the base synopsis and summary, later
+// variants contribute any flags not already present — variant synopses are
+// documented in the fragment prose (docs-src/cli/<slug>.html).
+export function foldCommandVariants(commands) {
+  const bySlug = new Map();
+  for (const c of commands) {
+    const prev = bySlug.get(c.slug);
+    if (!prev) { bySlug.set(c.slug, c); continue; }
+    for (const flag of c.flags) {
+      if (!prev.flags.some((p) => p.flag === flag.flag)) prev.flags.push(flag);
+    }
+  }
+  return [...bySlug.values()];
+}
+
 export function parseHelp(text) {
   const lines = text.split("\n");
   const commands = [];
@@ -267,6 +285,7 @@ export function extract() {
   const version = runJunco(["--version"]).trim();
   const surface = parseHelp(runJunco(["--help"]));
   surface.commands.push(...EXTRA_COMMANDS);
+  surface.commands = foldCommandVariants(surface.commands);
   surface.commands.sort((a, b) => a.slug.localeCompare(b.slug));
 
   const levers = parseConfigList(runJuncoConfigList());
@@ -635,6 +654,9 @@ export const CHANGELOG_SUBSTITUTIONS = {
     "(a known harness name, or any skills-directory path)",
   "simply move": "move",
   "⚠": "warn:", // not in the emoji gate's ✓✗ allowlist — see README's emoji gate
+  // 0.12.0: bare issue ref trips the html-hex gate (only the parenthesized
+  // form is excluded); rephrase to the gate-safe shape.
+  "Found while diagnosing #320, where": "Found while diagnosing the sandbox commit denial (#320), where",
 };
 
 // Substitute (vendor/banned-word/glyph scrub) → escape → inline markdown.
@@ -646,7 +668,12 @@ function changelogInline(text, subs) {
   return escapeHtml(applySubstitutions(text, subs))
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/`([^`]+)`/g, "<code>$1</code>")
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+    // Word-level _emphasis_ (junco 0.12.0 entries use it). Deliberately narrow:
+    // the opener must follow start/space/paren and the closer must precede
+    // space/punctuation, so in-word underscores (timeout_minutes outside a
+    // code span) never match.
+    .replace(/(^|[\s(])_([^_\s][^_]*?)_(?=$|[\s.,;:)])/g, "$1<em>$2</em>");
 }
 
 function isChangelogTableBlock(blockLines) {

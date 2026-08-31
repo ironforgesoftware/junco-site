@@ -1,0 +1,14 @@
+<p>
+  Renders a ticket's recorded event transcript
+  (<code>&lt;dataDir&gt;/data/transcripts/&lt;id&gt;.jsonl</code>): one header per run —
+  flow, model, outcome, duration, tokens, and the error line for a failed attempt — then
+  each turn's text and every tool call with a one-line result summary.
+  <code>--tools</code> prints the full tool results, <code>--thinking</code> the model's
+  reasoning, <code>--width N</code> sets the wrap column, and <code>--json</code> emits the
+  raw frames. The dashboard opens the same view with enter on any running or recent queue
+  row, following a running ticket live until the run ends.
+</p>
+<pre class="cmd">junco transcript add-tide-rounding-2026-08-30</pre>
+<pre class="cmd">junco transcript fix-tide-rounding.jsonl --tools --width 100</pre>
+<p class="see">see also: <a href="#replay">replay</a> · <a href="#logs">logs</a> ·
+<a href="/docs/operations/">operations guide</a></p>

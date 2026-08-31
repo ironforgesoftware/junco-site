@@ -190,6 +190,20 @@ them alone; junco writes them.</div>
   <div><dt><code>analyze.issue</code> <span class="ph">integer</span></dt><dd>Issue number to investigate.</dd></div>
   <div><dt><code>analyze.title</code> <span class="ph">string</span></dt><dd>Issue title, for display/logging.</dd></div>
 </dl>
+<h3 id="f-depends_on"><code>depends_on</code></h3>
+<p class="see">array</p>
+<p>Ticket ids that must be satisfied before this ticket is claimed: each referenced ticket finished successfully AND (when it opened a pull request) that PR was merged. Unsatisfied edges leave the ticket queued; a terminally failed dependency parks this ticket in failed/ (dependency cascade).</p>
+<h3 id="f-deps_satisfied"><code>deps_satisfied</code></h3>
+<p class="see">array</p>
+<p>Worker-managed: depends_on entries the dependency sweep has confirmed satisfied. Do not set by hand.</p>
+<h3 id="f-plan"><code>plan</code></h3>
+<p class="see">object</p>
+<p>Optional plan-set membership/provenance: ties this ticket to an approved plan. `hash` is worker-managed (content hash of the approved plan).</p>
+<dl class="flags">
+  <div><dt><code>plan.id</code> <span class="ph">string</span></dt><dd>Plan-set identifier.</dd></div>
+  <div><dt><code>plan.task</code> <span class="ph">string</span></dt><dd>Task id within the plan that produced this ticket.</dd></div>
+  <div><dt><code>plan.hash</code> <span class="ph">string</span></dt><dd>Worker-managed: approved-plan content hash.</dd></div>
+</dl>
       </main>
     </div>
 
@@ -201,7 +215,7 @@ them alone; junco writes them.</div>
         <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a>
       </p>
       <p class="stamp">
-        verified against junco 0.11.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/tickets.md">docs/tickets.md</a> ·
+        verified against junco 0.12.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/tickets.md">docs/tickets.md</a> ·
         <a href="https://github.com/ironforgesoftware/junco-site/edit/main/docs-src/pages/ticket-schema.html">edit this page</a>
       </p>
     </footer>

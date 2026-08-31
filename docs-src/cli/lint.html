@@ -1,0 +1,14 @@
+<p>
+  Validates a ticket without submitting it: the worker's own plan-lint rules (step and
+  commit discipline, forbidden phrases, the strict notes block, label existence) plus
+  environment preflight — the <code>repo:</code> path exists and is a git repository, its
+  <code>origin</code> remote is a GitHub remote, and the branch the worker would push
+  (<code>branch_name</code>, or the derived <code>junco/&lt;id&gt;</code>) is not already
+  on origin. Exit 0 when clean (warnings allowed), 1 on any error — fix errors before
+  submitting instead of letting the worker fail the ticket seconds after claim.
+</p>
+<pre class="cmd">junco lint fix-tide-rounding.md</pre>
+<pre class="out">[error] branch_exists: branch junco/fix-tide-rounding already exists on origin — bump the ticket id (or branch_name) so the worker's push does not collide
+lint: 1 error(s)</pre>
+<p class="see">see also: <a href="#submit">submit</a> · <a href="#schema">schema</a> ·
+<a href="/docs/tickets/">tickets guide</a></p>

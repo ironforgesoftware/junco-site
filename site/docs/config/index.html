@@ -191,6 +191,7 @@ legacy-key layout into it.</p>
   <div><dt><code>model.cost.cacheRead</code> <span class="ph">number</span></dt><dd>Cost per cache-read token, for cost tracking/reporting. <span class="default">default 0 · live</span></dd></div>
   <div><dt><code>model.cost.cacheWrite</code> <span class="ph">number</span></dt><dd>Cost per cache-write token, for cost tracking/reporting. <span class="default">default 0 · live</span></dd></div>
   <div><dt><code>model.thinkingLevel</code> <span class="ph">string</span></dt><dd>Worker default reasoning/thinking level. <span class="default">default &quot;medium&quot; · live</span></dd></div>
+  <div><dt><code>model.thinkingLevelMap</code> <span class="ph">structured, read-only</span></dt><dd>Thinking-level → chat-template effort-vocabulary translation; an override replaces the default map wholesale. <span class="default">default {&quot;minimal&quot;:&quot;low&quot;,&quot;low&quot;:&quot;low&quot;,&quot;medium&quot;:&quot;medium&quot;,&quot;high&quot;:&quot;xhigh&quot;,&quot;xhigh&quot;:&quot;xhigh&quot;} · live</span></dd></div>
   <div><dt><code>model.compat</code> <span class="ph">structured, read-only</span></dt><dd>Provider compatibility overrides (developer role, reasoning effort, thinking format, etc.), merged over junco's defaults. <span class="default">default {} · live</span></dd></div>
 </dl>
 <h2 id="g-worker"><code>worker.*</code></h2>
@@ -257,6 +258,7 @@ bubblewrap or set <code>sandbox.backend: "none"</code> deliberately.</div>
   <div><dt><code>sandbox.network</code> <span class="ph">deny | allow</span></dt><dd>Default network egress for agent tool subprocesses (per-ticket network:true widens it). <span class="default">default &quot;deny&quot; · live</span></dd></div>
   <div><dt><code>sandbox.extraDenyRead</code> <span class="ph">structured, read-only</span></dt><dd>Extra absolute paths whose reads are denied (added to the built-in secret deny-list). <span class="default">default [] · live</span></dd></div>
   <div><dt><code>sandbox.extraAllowWrite</code> <span class="ph">structured, read-only</span></dt><dd>Extra absolute paths where writes are permitted (added to worktree + scratch). <span class="default">default [] · live</span></dd></div>
+  <div><dt><code>sandbox.bashTimeoutSeconds</code> <span class="ph">number</span></dt><dd>Ceiling (seconds) on one sandboxed bash call when the agent passes no timeout; 0 = none, max 2147483. The agent's explicit timeout wins when positive and finite. Live for sessions spawned after the change. <span class="default">default 600 · live</span></dd></div>
 </dl>
 <h2 id="g-critic"><code>critic.*</code></h2>
 <dl class="flags">
@@ -302,6 +304,12 @@ anywhere that isn't a private personal repo.</div>
   <div><dt><code>botAccount.enabled</code> <span class="ph">boolean</span></dt><dd>Act as a dedicated bot account for all daemon GitHub traffic (log it in with: junco auth login). <span class="default">default false · restart</span></dd></div>
   <div><dt><code>botAccount.configDir</code> <span class="ph">string</span></dt><dd>Isolated gh config dir holding the bot login (GH_CONFIG_DIR for daemon gh/git). <span class="default">default &quot;~/.junco/gh&quot; · restart</span></dd></div>
 </dl>
+<h2 id="g-planSets"><code>planSets.*</code></h2>
+<dl class="flags">
+  <div><dt><code>planSets.enabled</code> <span class="ph">boolean</span></dt><dd>Enable plan-driven ticket compilation (Layer 2; Layer-1 dependency machinery is always on). <span class="default">default false · restart</span></dd></div>
+  <div><dt><code>planSets.mergePollSeconds</code> <span class="ph">number</span></dt><dd>Cadence for the plan-set merge sweep that stamps satisfied dependencies and cascades failed ones. <span class="default">default 60 · live</span></dd></div>
+  <div><dt><code>planSets.maxTasks</code> <span class="ph">number</span></dt><dd>Layer-2 compiler cap on tasks per plan set (reserved). <span class="default">default 10 · live</span></dd></div>
+</dl>
 <h2 id="g-assess"><code>assess.*</code></h2>
 <dl class="flags">
   <div><dt><code>assess.maxIssuesPerRun</code> <span class="ph">number</span></dt><dd>Cap on issues filed per `junco assess` run. <span class="default">default 20 · live</span></dd></div>
@@ -324,7 +332,7 @@ anywhere that isn't a private personal repo.</div>
         <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a>
       </p>
       <p class="stamp">
-        verified against junco 0.11.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/configuration.md">docs/configuration.md</a> ·
+        verified against junco 0.12.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/configuration.md">docs/configuration.md</a> ·
         <a href="https://github.com/ironforgesoftware/junco-site/edit/main/docs-src/pages/config.html">edit this page</a>
       </p>
     </footer>

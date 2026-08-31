@@ -7,8 +7,25 @@
 <pre class="cmd">junco submit fix-tide-rounding.md</pre>
 <pre class="cmd">cat ticket.md | junco submit -</pre>
 <pre class="out">queued inbox/fix-tide-rounding.md</pre>
+<p>
+  Three further forms share the verb. <code>--dry-run &lt;file&gt;</code> reports where the
+  ticket would go (<code>destination: issue|inbox</code>, one <code>reason:</code> per
+  cause), which frontmatter survives the issue route, the effective timeout, and the same
+  results as <code>junco lint</code> — writing nothing. <code>--as-issue &lt;file&gt;</code>
+  files the ticket as a parked, unlabeled GitHub issue that only a human's trigger label
+  launches; a valid <code>timeout_minutes</code> is carried, clamped to 1–480 minutes.
+  <code>--plan &lt;file&gt; --repo &lt;path&gt;</code> compiles an approved
+  <code>junco-plan</code> fence into its dependency-ordered child tickets
+  (<code>--as-issue --plan</code> parks the fence as an issue instead).
+</p>
+<pre class="cmd">junco submit --dry-run fix-tide-rounding.md</pre>
+<pre class="out">destination: issue
+reason: repo acme/api is bridge-watched; github + bot account enabled
+carried: timeout_minutes=60
+dry run — nothing submitted</pre>
 <div class="warn"><b>warn —</b> the inbox is a code-execution boundary: a PR-flow ticket runs
 an agent against the repo it names, as you. Keep the inbox on a disk only you can write, and
 confine targets with <code>git.allowedRepoRoots</code>.</div>
-<p class="see">see also: <a href="#list">list</a> · <a href="#retry">retry</a> ·
-<a href="#schema">schema</a> · <a href="/docs/tickets/">tickets guide</a></p>
+<p class="see">see also: <a href="#lint">lint</a> · <a href="#list">list</a> ·
+<a href="#retry">retry</a> · <a href="#schema">schema</a> ·
+<a href="/docs/tickets/">tickets guide</a></p>
