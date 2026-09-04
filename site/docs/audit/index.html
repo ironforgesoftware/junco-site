@@ -3,12 +3,12 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Assess — junco docs</title>
-    <meta name="description" content="junco assess audits a repo, parks findings for review, and files only what a human confirms as GitHub issues.">
-    <link rel="canonical" href="https://junco.ironforgesoftware.com/docs/assess/">
-    <meta property="og:title" content="Assess — junco docs">
-    <meta property="og:description" content="junco assess audits a repo, parks findings for review, and files only what a human confirms as GitHub issues.">
-    <meta property="og:url" content="https://junco.ironforgesoftware.com/docs/assess/">
+    <title>Audit — junco docs</title>
+    <meta name="description" content="junco audit audits a repo, parks findings for review, and files only what a human confirms as GitHub issues.">
+    <link rel="canonical" href="https://junco.ironforgesoftware.com/docs/audit/">
+    <meta property="og:title" content="Audit — junco docs">
+    <meta property="og:description" content="junco audit audits a repo, parks findings for review, and files only what a human confirms as GitHub issues.">
+    <meta property="og:url" content="https://junco.ironforgesoftware.com/docs/audit/">
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://junco.ironforgesoftware.com/assets/og-image.png">
     <meta property="og:image:width" content="1200">
@@ -65,8 +65,8 @@
         <ul>
         <li><a href="/docs/github-loop/">The GitHub loop</a></li>
         <li><a href="/docs/tickets/">Tickets &amp; the inbox</a></li>
-        <li><a aria-current="page" href="/docs/assess/">Assess</a></li>
-        <li><a href="/docs/analyze/">Analyze</a></li>
+        <li><a aria-current="page" href="/docs/audit/">Audit</a></li>
+        <li><a href="/docs/investigate/">Investigate</a></li>
         <li><a href="/docs/dashboard/">The dashboard</a></li>
         <li><a href="/docs/operations/">Operations</a></li>
         <li><a href="/docs/bot-account/">Bot account</a></li>
@@ -90,16 +90,16 @@
         </nav>
       </details>
       <main id="main">
-        <h1>Assess</h1>
+        <h1>Audit</h1>
 <p>
-  <a href="/docs/cli/#assess"><code>junco assess</code></a> audits a repository and parks what it
+  <a href="/docs/cli/#audit"><code>junco audit</code></a> audits a repository and parks what it
   finds; filing findings as GitHub issues is a separate, human-confirmed step. Junco authors
   issues — it never merges anything on its own.
 </p>
 
 <h2 id="what-a-run-does">What a run does</h2>
-<pre class="cmd">junco assess acme/reef-api
-junco assess acme/reef-api#52 --auto-plan</pre>
+<pre class="cmd">junco audit acme/reef-api
+junco audit acme/reef-api#52 --auto-plan</pre>
 <p>
   The command composes and queues a machine-owned ticket; the audit itself runs when the daemon
   claims it — the daemon must be running. The run is read-only: <code>npm audit --json</code> for
@@ -115,10 +115,10 @@ junco assess acme/reef-api#52 --auto-plan</pre>
 </p>
 
 <h2 id="review-and-file">Review and file</h2>
-<pre class="cmd">junco assess review
-junco assess review &lt;id&gt;
-junco assess file &lt;id&gt; --all
-junco assess file &lt;id&gt; --only &lt;fingerprint&gt;,&lt;fingerprint&gt;</pre>
+<pre class="cmd">junco audit review
+junco audit review &lt;id&gt;
+junco audit file &lt;id&gt; --all
+junco audit file &lt;id&gt; --only &lt;fingerprint&gt;,&lt;fingerprint&gt;</pre>
 <p>
   <code>review</code> lists pending batches; with an id it shows each finding's fingerprint,
   severity, and title. <code>file</code> is the confirm step — no bare default, since these are
@@ -165,8 +165,8 @@ regression that hashes the same. To let junco re-file it, delete the issue or ed
         <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a>
       </p>
       <p class="stamp">
-        verified against junco 0.12.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/assess.md">docs/assess.md</a> ·
-        <a href="https://github.com/ironforgesoftware/junco-site/edit/main/docs-src/pages/assess.html">edit this page</a>
+        verified against junco 0.13.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/audit.md">docs/audit.md</a> ·
+        <a href="https://github.com/ironforgesoftware/junco-site/edit/main/docs-src/pages/audit.html">edit this page</a>
       </p>
     </footer>
 

@@ -65,8 +65,8 @@
         <ul>
         <li><a href="/docs/github-loop/">The GitHub loop</a></li>
         <li><a href="/docs/tickets/">Tickets &amp; the inbox</a></li>
-        <li><a href="/docs/assess/">Assess</a></li>
-        <li><a href="/docs/analyze/">Analyze</a></li>
+        <li><a href="/docs/audit/">Audit</a></li>
+        <li><a href="/docs/investigate/">Investigate</a></li>
         <li><a href="/docs/dashboard/">The dashboard</a></li>
         <li><a href="/docs/operations/">Operations</a></li>
         <li><a href="/docs/bot-account/">Bot account</a></li>
@@ -102,8 +102,12 @@
   <div><dt><code>--once</code></dt><dd>(<code>start</code>) Process one task then exit</dd></div>
   <div><dt><code>--platform</code> <span class="ph">&lt;name&gt;</span></dt><dd>(<code>service</code>) Target platform: launchd | systemd <span class="default">default launchd on macOS, systemd elsewhere</span></dd></div>
   <div><dt><code>--plan</code></dt><dd>(<code>unwatch</code>) Print what would be deleted as JSON; delete nothing;</dd></div>
-  <div><dt><code>--repo</code> <span class="ph">&lt;path&gt;</span></dt><dd>(submit --plan) Repo path stamped into the compiled tickets</dd></div>
+  <div><dt><code>--repo</code> <span class="ph">&lt;path&gt;</span></dt><dd>(submit --plan, submit --patch) Repo path stamped into the</dd></div>
   <div><dt><code>--as-issue</code></dt><dd>(<code>submit</code>) File as a parked, unlabeled GitHub issue via the</dd></div>
+  <div><dt><code>--patch</code> <span class="ph">&lt;file&gt;</span></dt><dd>(<code>submit</code>) Compose an apply ticket from a git format-patch file</dd></div>
+  <div><dt><code>--title</code> <span class="ph">&lt;text&gt;</span></dt><dd>(submit --patch) Ticket pr_title; also seeds the id slug</dd></div>
+  <div><dt><code>--why</code> <span class="ph">&lt;text&gt;</span></dt><dd>(submit --patch) ## Why text; defaults to a line naming the patch file</dd></div>
+  <div><dt><code>--verify</code> <span class="ph">&lt;cmd&gt;</span></dt><dd>(submit --patch) Shell command for a ## Verification block</dd></div>
   <div><dt><code>--dry-run</code></dt><dd>(<code>submit</code>) Decide and report, write nothing; (data migrate) preview</dd></div>
   <div><dt><code>--help, -h</code></dt><dd>Show this help message</dd></div>
   <div><dt><code>--version</code></dt><dd>Print junco's version and exit</dd></div>
@@ -119,84 +123,55 @@
 <pre class="cmd">junco</pre>
 <p class="see">see also: <a href="#start">start</a> · <a href="#dashboard">dashboard</a> ·
 <a href="#config-init">config init</a></p>
-<h2 id="analyze"><code>junco analyze</code></h2>
-<pre class="synopsis">junco analyze &lt;owner/repo#N|url&gt;</pre>
-<p>Resolves one GitHub issue — <code>owner/repo#N</code> or a full issue URL; there is no local-path form — and queues a read-only investigation ticket: root cause, <code>file:line</code> evidence, reproduction steps, a suggested fix direction. The daemon <b>parks</b> the result as a comment draft, sanitized before it lands (HTML comments and control characters stripped, capped at 60,000 characters); nothing posts until the separate <code>junco analyze post</code> confirm. Works on owned and unowned repos alike — an unwatched repo is auto-forked, cloned into a managed directory, and added to the watchlist. One pending draft per issue: re-analyzing overwrites the old draft, and queuing while the same issue's ticket still waits in the inbox fails loud.</p>
-<pre class="cmd">junco analyze acme/reef-api#52</pre>
-<pre class="cmd">junco analyze https://github.com/upstream/reef-api/issues/52</pre>
-<p class="see">see also: <a href="#analyze-review">analyze review</a> · <a href="#analyze-post">analyze post</a> · <a href="/docs/analyze/">analyze guide</a></p>
+<h2 id="audit"><code>junco audit</code></h2>
+<pre class="synopsis">junco audit &lt;path|owner/repo|owner/repo#N&gt; [--auto-plan]</pre>
+<p>Queues a read-only audit ticket: <code>npm audit</code> over the dependency tree plus a read-only agent pass over the code, with findings validated, severity-filtered, deduped against your own most recent 500 issues on the repo, and <b>parked</b> for review — nothing is filed until you confirm with <code>junco audit file</code>. The target is a local path, an already-watched <code>owner/repo</code> (an unwatched one errors out rather than guessing a clone path), or <code>owner/repo#N</code> / an issue URL, which scopes the audit to the code that issue implicates and auto-provisions an unwatched repo. <code>--auto-plan</code> stamps the configured trigger label on every issue the batch later files — effective only on owned, bridge-watched repos; an external batch forces it off.</p>
+<pre class="cmd">junco audit acme/reef-api --auto-plan</pre>
+<pre class="cmd">junco audit acme/reef-api#52</pre>
+<div class="note"><b>note —</b> a batch that's never reviewed doesn't expire, and re-running audit on the same ticket id overwrites the batch instead of piling up duplicates.</div>
+<p class="see">see also: <a href="#audit-review">audit review</a> · <a href="#audit-file">audit file</a> · <a href="#audit-discard">audit discard</a> · <a href="/docs/audit/">audit guide</a></p>
 
-<h2 id="analyze-edit"><code>junco analyze edit</code></h2>
-<pre class="synopsis">junco analyze edit &lt;id&gt;</pre>
-<p>Opens the pending draft in <code>$VISUAL</code> (falling back to <code>$EDITOR</code>) as a temporary Markdown file, git-commit-message style. On save the text is re-sanitized — the same HTML-comment and control-character stripping and length cap the original draft got — and written back to the store. The disclosure footer is never part of the file; it's composed at post/preview time, not stored in the draft text. An editor that exits nonzero, or a draft that's empty after sanitizing, leaves the draft unchanged. With no editor configured, the command prints the draft's JSON file path instead of guessing.</p>
-<pre class="cmd">junco analyze edit analyze-acme-reef-api-52</pre>
-<pre class="out">draft updated — junco analyze review analyze-acme-reef-api-52 to preview</pre>
-<p class="see">see also: <a href="#analyze-review">analyze review</a> · <a href="#analyze-post">analyze post</a> · <a href="/docs/analyze/">analyze guide</a></p>
-
-<h2 id="analyze-post"><code>junco analyze post</code></h2>
-<pre class="synopsis">junco analyze post &lt;id&gt; [--no-footer]</pre>
-<p>The human confirm gate, and the only outward write in the analyze flow: composes the final comment — draft text plus the disclosure footer unless the draft has it off or <code>--no-footer</code> is passed — posts it under your own <code>gh</code> auth via <code>gh issue comment</code> (or queues it to the durable outbox when GitHub is unreachable), and archives the draft to <code>posted/</code> on either outcome. One draft, one deliberate action — there is no separate <code>--yes</code> flag. A non-network failure (locked issue, permission error) leaves the draft pending, so the same id can be retried after the fix.</p>
-<pre class="cmd">junco analyze post analyze-acme-reef-api-52</pre>
-<pre class="cmd">junco analyze post analyze-acme-reef-api-52 --no-footer</pre>
-<div class="note"><b>note —</b> the default footer reads <i>Analysis drafted with junco and human-reviewed before posting.</i> It's a flag on the parked draft, not baked-in text — the preview shows it exactly as it would post, and editing never has to string-match it out.</div>
-<p class="see">see also: <a href="#analyze-review">analyze review</a> · <a href="#outbox">outbox</a> · <a href="/docs/analyze/">analyze guide</a></p>
-
-<h2 id="analyze-review"><code>junco analyze review</code></h2>
-<pre class="synopsis">junco analyze review [&lt;id&gt;]</pre>
-<p>With no id: one line per pending draft — id, <code>nwo#issue</code>, <code>(owned)</code>/<code>(external)</code>, the parked timestamp, and the draft's first non-empty line truncated at 60 characters. With an id: the draft's <code>nwo#issue</code>, scope, and issue title, then <b>exactly what <code>junco analyze post</code> would post</b> — draft text plus the disclosure footer when the draft carries one — followed by a <code>post:</code> hint. Read-only; nothing posts from here. The same review is available in the dashboard under <code>v</code>: <code>enter</code> previews, <code>f</code>/<code>enter</code> posts, <code>x</code> discards.</p>
-<pre class="cmd">junco analyze review</pre>
-<pre class="cmd">junco analyze review analyze-acme-reef-api-52</pre>
-<p class="see">see also: <a href="#analyze-edit">analyze edit</a> · <a href="#analyze-post">analyze post</a> · <a href="/docs/analyze/">analyze guide</a></p>
-
-<h2 id="assess"><code>junco assess</code></h2>
-<pre class="synopsis">junco assess &lt;path|owner/repo|owner/repo#N&gt; [--auto-plan]</pre>
-<p>Queues a read-only audit ticket: <code>npm audit</code> over the dependency tree plus a read-only agent pass over the code, with findings validated, severity-filtered, deduped against your own most recent 500 issues on the repo, and <b>parked</b> for review — nothing is filed until you confirm with <code>junco assess file</code>. The target is a local path, an already-watched <code>owner/repo</code> (an unwatched one errors out rather than guessing a clone path), or <code>owner/repo#N</code> / an issue URL, which scopes the audit to the code that issue implicates and auto-provisions an unwatched repo. <code>--auto-plan</code> stamps the configured trigger label on every issue the batch later files — effective only on owned, bridge-watched repos; an external batch forces it off.</p>
-<pre class="cmd">junco assess acme/reef-api --auto-plan</pre>
-<pre class="cmd">junco assess acme/reef-api#52</pre>
-<div class="note"><b>note —</b> a batch that's never reviewed doesn't expire, and re-running assess on the same ticket id overwrites the batch instead of piling up duplicates.</div>
-<p class="see">see also: <a href="#assess-review">assess review</a> · <a href="#assess-file">assess file</a> · <a href="#assess-discard">assess discard</a> · <a href="/docs/assess/">assess guide</a></p>
-
-<h2 id="assess-discard"><code>junco assess discard</code></h2>
-<pre class="synopsis">junco assess discard &lt;id&gt;</pre>
+<h2 id="audit-discard"><code>junco audit discard</code></h2>
+<pre class="synopsis">junco audit discard &lt;id&gt;</pre>
 <p>
   Archives a pending review batch without filing any of its findings. Filing
-  (<code>junco assess file</code>) no longer auto-archives the batch it draws from — a batch you
+  (<code>junco audit file</code>) no longer auto-archives the batch it draws from — a batch you
   reviewed and decided not to act on needs this explicit step, or it keeps showing up in
-  <code>junco assess review</code>. The same action is bound to <code>x</code> in the dashboard's
+  <code>junco audit review</code>. The same action is bound to <code>x</code> in the dashboard's
   review view.
 </p>
-<pre class="cmd">junco assess discard 20260718-093042</pre>
-<p class="see">see also: <a href="#assess">assess</a> · <a href="#assess-review">assess review</a> ·
-<a href="#assess-file">assess file</a> · <a href="/docs/assess/">assess guide</a></p>
+<pre class="cmd">junco audit discard 20260718-093042</pre>
+<p class="see">see also: <a href="#audit">audit</a> · <a href="#audit-review">audit review</a> ·
+<a href="#audit-file">audit file</a> · <a href="/docs/audit/">audit guide</a></p>
 
-<h2 id="assess-file"><code>junco assess file</code></h2>
-<pre class="synopsis">junco assess file &lt;id&gt; --all | --only &lt;fp,...&gt;</pre>
+<h2 id="audit-file"><code>junco audit file</code></h2>
+<pre class="synopsis">junco audit file &lt;id&gt; --all | --only &lt;fp,...&gt;</pre>
 <p>
   The confirmation half of an audit: files reviewed findings from a parked batch as GitHub
   issues. There is no bare default — you choose
   <code>--all</code> or an explicit <code>--only</code> list of fingerprints from
-  <code>junco assess review &lt;id&gt;</code>. Filed issues arrive fingerprinted,
+  <code>junco audit review &lt;id&gt;</code>. Filed issues arrive fingerprinted,
   severity-labeled, and deduped against your recent findings. Filing stamps per-finding
   accounting (created/queued/deduped, plus a timestamp and URL) but no longer auto-archives the
-  batch — it stays in <code>junco assess review</code>, filed findings and all, until you run
-  <code>junco assess discard</code> on it.
+  batch — it stays in <code>junco audit review</code>, filed findings and all, until you run
+  <code>junco audit discard</code> on it.
 </p>
-<pre class="cmd">junco assess file 20260718-093042 --all</pre>
-<pre class="cmd">junco assess file 20260718-093042 --only 9f2c01ab54ce77d1,4a11beef00c2d9e3</pre>
+<pre class="cmd">junco audit file 20260718-093042 --all</pre>
+<pre class="cmd">junco audit file 20260718-093042 --only 9f2c01ab54ce77d1,4a11beef00c2d9e3</pre>
 <div class="warn"><b>warn —</b> closing a filed finding issue — even as wontfix — suppresses
 its fingerprint from every future audit, including a genuine regression that hashes the same.
 To make a finding filable again, delete the issue or edit out its
 <code>&lt;!-- junco:finding --&gt;</code> marker line.</div>
-<p class="see">see also: <a href="#assess">assess</a> · <a href="#assess-review">assess
-review</a> · <a href="#assess-discard">assess discard</a> · <a href="/docs/assess/">assess
+<p class="see">see also: <a href="#audit">audit</a> · <a href="#audit-review">audit
+review</a> · <a href="#audit-discard">audit discard</a> · <a href="/docs/audit/">audit
 guide</a></p>
-<h2 id="assess-review"><code>junco assess review</code></h2>
-<pre class="synopsis">junco assess review [&lt;id&gt;]</pre>
-<p>Read-only inspection of the parked-findings store. With no id: one line per pending batch — id, <code>owner/repo</code>, <code>(owned)</code>/<code>(external)</code>, finding count, and the audit's timestamp. With an id: the batch's repo and scope, then each finding's fingerprint, severity, and title, closing with two ready-to-run <code>junco assess file</code> hints (<code>--all</code>, and a <code>--only</code> example built from the first two fingerprints). Nothing is written; filing is the separate <code>junco assess file</code> confirm step. The same checklist review is available in the dashboard under <code>v</code>.</p>
-<pre class="cmd">junco assess review</pre>
-<pre class="cmd">junco assess review 20260718-093042</pre>
+<h2 id="audit-review"><code>junco audit review</code></h2>
+<pre class="synopsis">junco audit review [&lt;id&gt;]</pre>
+<p>Read-only inspection of the parked-findings store. With no id: one line per pending batch — id, <code>owner/repo</code>, <code>(owned)</code>/<code>(external)</code>, finding count, and the audit's timestamp. With an id: the batch's repo and scope, then each finding's fingerprint, severity, and title, closing with two ready-to-run <code>junco audit file</code> hints (<code>--all</code>, and a <code>--only</code> example built from the first two fingerprints). Nothing is written; filing is the separate <code>junco audit file</code> confirm step. The same checklist review is available in the dashboard under <code>v</code>.</p>
+<pre class="cmd">junco audit review</pre>
+<pre class="cmd">junco audit review 20260718-093042</pre>
 <div class="note"><b>note —</b> a finding you don't select isn't suppressed — no issue and no marker exist yet, so the next audit re-parks it. Only a filed issue's marker suppresses a fingerprint.</div>
-<p class="see">see also: <a href="#assess">assess</a> · <a href="#assess-file">assess file</a> · <a href="#assess-discard">assess discard</a> · <a href="/docs/assess/">assess guide</a></p>
+<p class="see">see also: <a href="#audit">audit</a> · <a href="#audit-file">audit file</a> · <a href="#audit-discard">audit discard</a> · <a href="/docs/audit/">audit guide</a></p>
 
 <h2 id="auth-grant"><code>junco auth grant</code></h2>
 <pre class="synopsis">junco auth grant &lt;owner/repo&gt;</pre>
@@ -275,14 +250,6 @@ queue      /Users/you/.junco/queue
   <div><dt><code>--dry-run</code></dt><dd>Print every move without touching anything</dd></div>
   <div><dt><code>--force</code></dt><dd>Skip the daemon-up refusal checks</dd></div>
 </dl>
-<h2 id="dispatch"><code>junco dispatch</code></h2>
-<pre class="synopsis">junco dispatch &lt;ref&gt;</pre>
-<p>Fetches a GitHub issue — <code>owner/repo#N</code> or a full issue URL — and queues a ticket for it; the daemon works the issue in an isolated worktree and opens a draft PR. Access decides the mode: with push access the clone is fork-less, branches land on the repo itself, and the repo is auto-onboarded to the watchlist as a first-class entry with no confirmation step; a public repo without push access is auto-forked, cloned into a managed directory, and watched as an external entry, with the draft PR opened against upstream — no labels or comments ever touch the upstream issue. A private repo without push access fails loud before anything is cloned. Ticket frontmatter is machine-built, never model output; the issue text rides in the ticket body as untrusted data, not instructions.</p>
-<pre class="cmd">junco dispatch acme/reef-api#52</pre>
-<pre class="cmd">junco dispatch https://github.com/upstream/reef-api/issues/52</pre>
-<div class="note"><b>note —</b> in fork-PR mode the draft PR is the single artifact that reaches upstream. Review its diff before marking it ready — that gate replaces the plan-review hop an owned repo gets. Re-dispatching the same issue collides on the existing branch by design; push follow-up commits with an <code>amends_pr</code> ticket instead.</div>
-<p class="see">see also: <a href="#prs">prs</a> · <a href="#submit">submit</a> · <a href="/docs/github-loop/">github loop guide</a></p>
-
 <h2 id="doctor"><code>junco doctor</code></h2>
 <pre class="synopsis">junco doctor</pre>
 <p>Preflight for the whole install: config parses, node/git/gh are present, <code>gh</code> is authenticated, the inference endpoint is reachable, the configured model is advertised, and the queue/worktree/data directories are writable. Also preflights the execution sandbox's backend binary.</p>
@@ -290,12 +257,49 @@ queue      /Users/you/.junco/queue
 <div class="warn"><b>warn —</b> the sandbox fails closed when its backend binary is missing (bubblewrap on Linux): install <code>bwrap</code>, or set <code>sandbox.backend: "none"</code> / <code>sandbox.enabled: false</code>.</div>
 <p class="see">see also: <a href="#status">status</a> · <a href="#config-list">config list</a> · <a href="/docs/operations/">operations guide</a></p>
 
+<h2 id="import"><code>junco import</code></h2>
+<pre class="synopsis">junco import &lt;ref&gt;</pre>
+<p>Fetches a GitHub issue — <code>owner/repo#N</code> or a full issue URL — and queues a ticket for it; the daemon works the issue in an isolated worktree and opens a draft PR. Access decides the mode: with push access the clone is fork-less, branches land on the repo itself, and the repo is auto-onboarded to the watchlist as a first-class entry with no confirmation step; a public repo without push access is auto-forked, cloned into a managed directory, and watched as an external entry, with the draft PR opened against upstream — no labels or comments ever touch the upstream issue. A private repo without push access fails loud before anything is cloned. Ticket frontmatter is machine-built, never model output; the issue text rides in the ticket body as untrusted data, not instructions.</p>
+<pre class="cmd">junco import acme/reef-api#52</pre>
+<pre class="cmd">junco import https://github.com/upstream/reef-api/issues/52</pre>
+<div class="note"><b>note —</b> in fork-PR mode the draft PR is the single artifact that reaches upstream. Review its diff before marking it ready — that gate replaces the plan-review hop an owned repo gets. Re-importing the same issue collides on the existing branch by design; push follow-up commits with an <code>amends_pr</code> ticket instead.</div>
+<p class="see">see also: <a href="#prs">prs</a> · <a href="#submit">submit</a> · <a href="/docs/github-loop/">github loop guide</a></p>
+
 <h2 id="inbox-path"><code>junco inbox-path</code></h2>
 <pre class="synopsis">junco inbox-path</pre>
 <p>Prints the resolved inbox directory path and exits — the directory the daemon watches, resolved from the active <code>config.json</code>. Useful for tools that write ticket files directly instead of going through <code>submit</code>.</p>
 <pre class="cmd">junco inbox-path</pre>
 <div class="warn"><b>warn —</b> the inbox is a code-execution boundary: anyone who can write to it can act as you. Keep it on a local disk you own, never a synced or shared folder.</div>
 <p class="see">see also: <a href="#submit">submit</a> · <a href="#list">list</a> · <a href="/docs/tickets/">tickets guide</a></p>
+
+<h2 id="investigate"><code>junco investigate</code></h2>
+<pre class="synopsis">junco investigate &lt;owner/repo#N|url&gt;</pre>
+<p>Resolves one GitHub issue — <code>owner/repo#N</code> or a full issue URL; there is no local-path form — and queues a read-only investigation ticket: root cause, <code>file:line</code> evidence, reproduction steps, a suggested fix direction. The daemon <b>parks</b> the result as a comment draft, sanitized before it lands (HTML comments and control characters stripped, capped at 60,000 characters); nothing posts until the separate <code>junco investigate post</code> confirm. Works on owned and unowned repos alike — an unwatched repo is auto-forked, cloned into a managed directory, and added to the watchlist. One pending draft per issue: re-investigating overwrites the old draft, and queuing while the same issue's ticket still waits in the inbox fails loud.</p>
+<pre class="cmd">junco investigate acme/reef-api#52</pre>
+<pre class="cmd">junco investigate https://github.com/upstream/reef-api/issues/52</pre>
+<p class="see">see also: <a href="#investigate-review">investigate review</a> · <a href="#investigate-post">investigate post</a> · <a href="/docs/investigate/">investigate guide</a></p>
+
+<h2 id="investigate-edit"><code>junco investigate edit</code></h2>
+<pre class="synopsis">junco investigate edit &lt;id&gt;</pre>
+<p>Opens the pending draft in <code>$VISUAL</code> (falling back to <code>$EDITOR</code>) as a temporary Markdown file, git-commit-message style. On save the text is re-sanitized — the same HTML-comment and control-character stripping and length cap the original draft got — and written back to the store. The disclosure footer is never part of the file; it's composed at post/preview time, not stored in the draft text. An editor that exits nonzero, or a draft that's empty after sanitizing, leaves the draft unchanged. With no editor configured, the command prints the draft's JSON file path instead of guessing.</p>
+<pre class="cmd">junco investigate edit analyze-acme-reef-api-52</pre>
+<pre class="out">draft updated — junco investigate review analyze-acme-reef-api-52 to preview</pre>
+<p class="see">see also: <a href="#investigate-review">investigate review</a> · <a href="#investigate-post">investigate post</a> · <a href="/docs/investigate/">investigate guide</a></p>
+
+<h2 id="investigate-post"><code>junco investigate post</code></h2>
+<pre class="synopsis">junco investigate post &lt;id&gt; [--no-footer]</pre>
+<p>The human confirm gate, and the only outward write in the investigate flow: composes the final comment — draft text plus the disclosure footer unless the draft has it off or <code>--no-footer</code> is passed — posts it under your own <code>gh</code> auth via <code>gh issue comment</code> (or queues it to the durable outbox when GitHub is unreachable), and archives the draft to <code>posted/</code> on either outcome. One draft, one deliberate action — there is no separate <code>--yes</code> flag. A non-network failure (locked issue, permission error) leaves the draft pending, so the same id can be retried after the fix.</p>
+<pre class="cmd">junco investigate post analyze-acme-reef-api-52</pre>
+<pre class="cmd">junco investigate post analyze-acme-reef-api-52 --no-footer</pre>
+<div class="note"><b>note —</b> the default footer reads <i>Analysis drafted with junco and human-reviewed before posting.</i> It's a flag on the parked draft, not baked-in text — the preview shows it exactly as it would post, and editing never has to string-match it out.</div>
+<p class="see">see also: <a href="#investigate-review">investigate review</a> · <a href="#outbox">outbox</a> · <a href="/docs/investigate/">investigate guide</a></p>
+
+<h2 id="investigate-review"><code>junco investigate review</code></h2>
+<pre class="synopsis">junco investigate review [&lt;id&gt;]</pre>
+<p>With no id: one line per pending draft — id, <code>nwo#issue</code>, <code>(owned)</code>/<code>(external)</code>, the parked timestamp, and the draft's first non-empty line truncated at 60 characters. With an id: the draft's <code>nwo#issue</code>, scope, and issue title, then <b>exactly what <code>junco investigate post</code> would post</b> — draft text plus the disclosure footer when the draft carries one — followed by a <code>post:</code> hint. Read-only; nothing posts from here. The same review is available in the dashboard under <code>v</code>: <code>enter</code> previews, <code>f</code>/<code>enter</code> posts, <code>x</code> discards.</p>
+<pre class="cmd">junco investigate review</pre>
+<pre class="cmd">junco investigate review analyze-acme-reef-api-52</pre>
+<p class="see">see also: <a href="#investigate-edit">investigate edit</a> · <a href="#investigate-post">investigate post</a> · <a href="/docs/investigate/">investigate guide</a></p>
 
 <h2 id="lint"><code>junco lint</code></h2>
 <pre class="synopsis">junco lint &lt;file&gt;</pre>
@@ -343,20 +347,28 @@ lint: 1 error(s)</pre>
 <pre class="synopsis">junco prs</pre>
 <p>Lists junco-authored pull requests across watched repos, sorted attention-first — checks-failing and changes-requested surface at the top, the same order as the dashboard's PRs view. External fork-PR entries count: a repo watched as <code>external: true</code> is excluded from the bridge's label sweep but stays watched for PR listing, so upstream draft PRs opened in fork-PR mode appear alongside PRs on repos you own. Read-only — it lists, nothing is posted or flipped.</p>
 <pre class="cmd">junco prs</pre>
-<p class="see">see also: <a href="#dispatch">dispatch</a> · <a href="#outbox">outbox</a> · <a href="/docs/github-loop/">github loop guide</a></p>
+<p class="see">see also: <a href="#import">import</a> · <a href="#outbox">outbox</a> · <a href="/docs/github-loop/">github loop guide</a></p>
 
 <h2 id="replay"><code>junco replay</code></h2>
-<pre class="synopsis">junco replay &lt;ticket-id|path.jsonl&gt; [--budget-per-kind</pre>
-<p>Re-runs a recorded per-ticket event transcript through a fresh guard manager and reports what the guards would decide under a chosen policy — a what-if report, never a live rerun: no endpoint traffic, no tool execution, no queue changes. Each of the four supervisor knobs resolves independently by precedence: an explicit flag, then the policy recorded in the transcript's run frames, then the loaded config, then the built-in defaults. The report compares recorded decisions against replayed ones per run and ends in a verdict with caveats; <code>--json</code> prints the raw report instead.</p>
+<pre class="synopsis">junco replay &lt;ticket-id|path.jsonl&gt; [--budget-per-kind N] [--escalation-window N] [--output-budget-per-turn N] [--output-budget-post-commit N] [--json]</pre>
+<p>Re-runs a recorded per-ticket event transcript through a fresh guard manager and reports what the guards would decide under a chosen policy — a what-if report, never a live rerun: no endpoint traffic, no tool execution, no queue changes. Each of the four supervisor knobs — <code>--budget-per-kind N</code>, <code>--escalation-window N</code>, <code>--output-budget-per-turn N</code>, <code>--output-budget-post-commit N</code> — resolves independently by precedence: an explicit flag, then the policy recorded in the transcript's run frames, then the loaded config, then the built-in defaults. The report compares recorded decisions against replayed ones per run and ends in a verdict with caveats; <code>--json</code> prints the raw report instead.</p>
 <pre class="cmd">junco replay gh-acme-reef-api-52</pre>
 <pre class="cmd">junco replay ~/.junco/data/transcripts/gh-acme-reef-api-52.jsonl --budget-per-kind 2 --json</pre>
 <div class="note"><b>note —</b> replay reads the v2 run frames (<code>junco_run_start</code> / <code>junco_guard_decision</code>) that transcripts carry from 0.11.0 on; a bare ticket id resolves against <code>&lt;dataDir&gt;/data/transcripts/</code>.</div>
 <p class="see">see also: <a href="#logs">logs</a> · <a href="/docs/operations/">operations guide</a></p>
 
 <h2 id="restart"><code>junco restart</code></h2>
-<pre class="synopsis">junco restart</pre>
+<pre class="synopsis">junco restart [--force]</pre>
 <p>Restarts the supervised daemon so it picks up config and code changes. It validates the config first — refusing to bounce the daemon onto a config it can't parse — then finds the launchd plist / systemd user unit referencing the config path, kicks it with the platform-correct verb (<code>launchctl kickstart -k</code> / <code>systemctl --user restart</code>, the verbs that relaunch unconditionally), and confirms the pid changed before reporting success.</p>
 <pre class="cmd">junco restart</pre>
+<p>
+  When the running <code>dist/</code> resolves inside a git checkout rather than an npm install,
+  the restart first checks that checkout: a dirty working tree, or a <code>HEAD</code> that is not
+  <code>origin/main</code>, refuses with exit 1 before any unit is touched, listing the dirty paths
+  and both commits. <code>--force</code> restarts anyway, with a warning. An npm install has no
+  <code>.git</code> beside <code>dist/</code> and skips the check.
+</p>
+<pre class="cmd">junco restart --force</pre>
 <div class="note"><b>note —</b> a plain SIGTERM is not a restart: with launchd's <code>SuccessfulExit=false</code> keep-alive, a graceful exit stays down.</div>
 <p class="see">see also: <a href="#service">service</a> · <a href="#update">update</a> · <a href="/docs/operations/">operations guide</a></p>
 
@@ -439,7 +451,13 @@ lint: 1 error(s)</pre>
   <code>--plan &lt;file&gt; --repo &lt;path&gt;</code> compiles an approved
   <code>junco-plan</code> fence into its dependency-ordered child tickets
   (<code>--as-issue --plan</code> parks the fence as an issue instead).
+  <code>--patch &lt;file&gt; --repo &lt;path&gt;</code> composes an apply ticket from an existing
+  <code>git format-patch</code> file — no hand-authored <code>junco-patch</code> fence — with
+  <code>--title</code>, <code>--why</code> and <code>--verify &lt;cmd&gt;</code> filling in the
+  ticket's title, rationale and <code>## Verification</code> block; it routes through the same
+  <code>--as-issue</code> / <code>--dry-run</code> doors as a file-sourced ticket.
 </p>
+<pre class="cmd">junco submit --patch 0001-fix-tide-rounding.patch --repo ~/src/api --verify "npm test"</pre>
 <pre class="cmd">junco submit --dry-run fix-tide-rounding.md</pre>
 <pre class="out">destination: issue
 reason: repo acme/api is bridge-watched; github + bot account enabled
@@ -453,7 +471,7 @@ confine targets with <code>git.allowedRepoRoots</code>.</div>
 <a href="/docs/tickets/">tickets guide</a></p>
 
 <h2 id="transcript"><code>junco transcript</code></h2>
-<pre class="synopsis">junco transcript &lt;ticket-id|path.jsonl&gt; [--thinking] [--tools] [--width</pre>
+<pre class="synopsis">junco transcript &lt;ticket-id|path.jsonl&gt; | --chat &lt;owner/repo|path&gt; [--thinking] [--tools] [--width N] [--json]</pre>
 <p>
   Renders a ticket's recorded event transcript
   (<code>&lt;dataDir&gt;/data/transcripts/&lt;id&gt;.jsonl</code>): one header per run —
@@ -461,11 +479,14 @@ confine targets with <code>git.allowedRepoRoots</code>.</div>
   each turn's text and every tool call with a one-line result summary.
   <code>--tools</code> prints the full tool results, <code>--thinking</code> the model's
   reasoning, <code>--width N</code> sets the wrap column, and <code>--json</code> emits the
-  raw frames. The dashboard opens the same view with enter on any running or recent queue
-  row, following a running ticket live until the run ends.
+  raw frames. <code>--chat &lt;owner/repo|path&gt;</code> prints a repo's dashboard chat
+  transcript instead of a ticket's — your messages, the agent's answers, its tool calls, and
+  every parked draft — in the same layout. The dashboard opens the ticket view with enter on
+  any running or recent queue row, following a running ticket live until the run ends.
 </p>
 <pre class="cmd">junco transcript add-tide-rounding-2026-08-30</pre>
 <pre class="cmd">junco transcript fix-tide-rounding.jsonl --tools --width 100</pre>
+<pre class="cmd">junco transcript --chat acme/reef-api</pre>
 <p class="see">see also: <a href="#replay">replay</a> · <a href="#logs">logs</a> ·
 <a href="/docs/operations/">operations guide</a></p>
 
@@ -500,7 +521,7 @@ confine targets with <code>git.allowedRepoRoots</code>.</div>
         <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a>
       </p>
       <p class="stamp">
-        verified against junco 0.12.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/operations.md">docs/operations.md</a> ·
+        verified against junco 0.13.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/operations.md">docs/operations.md</a> ·
         <a href="https://github.com/ironforgesoftware/junco-site/edit/main/docs-src/pages/cli.html">edit this page</a>
       </p>
     </footer>

@@ -278,6 +278,14 @@
       "reload": "live"
     },
     {
+      "path": "worker.applyFallbackToAgent",
+      "type": "boolean",
+      "markers": [],
+      "default": "true",
+      "description": "When a patch ticket's junco-patch series fails to apply, or applies cleanly but its own Verification block then fails, fall back to the agent (patch as spec) instead of failing the ticket terminally.",
+      "reload": "live"
+    },
+    {
       "path": "worker.dailyBudgetUsd",
       "type": "number",
       "markers": [],
@@ -402,6 +410,14 @@
       "reload": "live"
     },
     {
+      "path": "pr.secretScan",
+      "type": "boolean",
+      "markers": [],
+      "default": "true",
+      "description": "Scan the diff about to be pushed for secret shapes; fail the ticket on a hit.",
+      "reload": "live"
+    },
+    {
       "path": "verify.enabled",
       "type": "boolean",
       "markers": [],
@@ -426,6 +442,14 @@
       "reload": "live"
     },
     {
+      "path": "verify.sandboxed",
+      "type": "boolean",
+      "markers": [],
+      "default": "true",
+      "description": "Run ## Verification blocks under the ticket's sandbox (false = your repo's code runs unconfined).",
+      "reload": "live"
+    },
+    {
       "path": "sandbox.enabled",
       "type": "boolean",
       "markers": [],
@@ -445,6 +469,14 @@
         "bwrap",
         "none"
       ],
+      "reload": "live"
+    },
+    {
+      "path": "sandbox.requireBackend",
+      "type": "boolean",
+      "markers": [],
+      "default": "false",
+      "description": "With backend=auto, fail closed when the OS backend probe fails (tickets refuse, doctor ✗) instead of degrading to none.",
       "reload": "live"
     },
     {
@@ -704,11 +736,59 @@
       "reload": "live"
     },
     {
+      "path": "chat.enabled",
+      "type": "boolean",
+      "markers": [],
+      "default": "true",
+      "description": "Enable the dashboard chat (/chat/* routes on the health server).",
+      "reload": "live"
+    },
+    {
+      "path": "chat.modelId",
+      "type": "string",
+      "markers": [],
+      "default": "undefined",
+      "description": "Chat model id override (same endpoint); unset → github.plannerModelId, then model.id.",
+      "reload": "restart"
+    },
+    {
+      "path": "chat.thinkingLevel",
+      "type": "string",
+      "markers": [],
+      "default": "undefined",
+      "description": "Chat thinking level; unset → model.thinkingLevel.",
+      "reload": "restart"
+    },
+    {
+      "path": "chat.turnTimeoutMinutes",
+      "type": "number",
+      "markers": [],
+      "default": "undefined",
+      "description": "Per-turn chat timeout; unset → worker.defaultTimeoutMinutes.",
+      "reload": "restart"
+    },
+    {
+      "path": "chat.submitTool",
+      "type": "boolean",
+      "markers": [],
+      "default": "true",
+      "description": "Register the junco_submit tool on new chat sessions (the model can submit a parked draft after you confirm).",
+      "reload": "restart"
+    },
+    {
+      "path": "chat.confirmTimeoutMinutes",
+      "type": "number",
+      "markers": [],
+      "default": "10",
+      "description": "How long a proposed chat submit waits for y/n in the dashboard before expiring.",
+      "reload": "restart"
+    },
+    {
       "path": "assess.maxIssuesPerRun",
       "type": "number",
       "markers": [],
       "default": "20",
-      "description": "Cap on issues filed per `junco assess` run.",
+      "description": "Cap on issues filed per `junco audit` run.",
       "reload": "live"
     },
     {
@@ -738,7 +818,7 @@
       "type": "enum",
       "markers": [],
       "default": "\"me\"",
-      "description": "Identity `junco assess file` posts under: me (your gh login) or bot (the dedicated bot account; fails loud when its login is missing).",
+      "description": "Identity `junco audit file` posts under: me (your gh login) or bot (the dedicated bot account; fails loud when its login is missing).",
       "enumValues": [
         "me",
         "bot"

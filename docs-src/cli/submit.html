@@ -17,7 +17,13 @@
   <code>--plan &lt;file&gt; --repo &lt;path&gt;</code> compiles an approved
   <code>junco-plan</code> fence into its dependency-ordered child tickets
   (<code>--as-issue --plan</code> parks the fence as an issue instead).
+  <code>--patch &lt;file&gt; --repo &lt;path&gt;</code> composes an apply ticket from an existing
+  <code>git format-patch</code> file — no hand-authored <code>junco-patch</code> fence — with
+  <code>--title</code>, <code>--why</code> and <code>--verify &lt;cmd&gt;</code> filling in the
+  ticket's title, rationale and <code>## Verification</code> block; it routes through the same
+  <code>--as-issue</code> / <code>--dry-run</code> doors as a file-sourced ticket.
 </p>
+<pre class="cmd">junco submit --patch 0001-fix-tide-rounding.patch --repo ~/src/api --verify "npm test"</pre>
 <pre class="cmd">junco submit --dry-run fix-tide-rounding.md</pre>
 <pre class="out">destination: issue
 reason: repo acme/api is bridge-watched; github + bot account enabled

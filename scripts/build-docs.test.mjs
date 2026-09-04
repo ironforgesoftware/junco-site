@@ -142,6 +142,52 @@ test("parseHelp: continuation line joins into dispatch description", () => {
   );
 });
 
+// junco 0.13.0 wraps long synopses: the flags continue on a shallow-indented
+// line and the description starts on its own deeper line. Placeholders are
+// lone capitals (N, T, CMD), so a first-capital split cut the synopsis short,
+// and a synopsis-only line used to be glued onto the previous command.
+const WRAPPED_FIXTURE = `Usage: junco <command>
+
+Subcommands:
+  rm <name>            Delete a queued ticket from the inbox (best-effort)
+  replay <ticket-id|path.jsonl> [--budget-per-kind N] [--escalation-window N]
+         [--output-budget-per-turn N] [--output-budget-post-commit N] [--json]
+                        Re-run a recorded event transcript through the guards
+                        under a chosen (or default) policy — a what-if report
+  transcript <ticket-id|path.jsonl> | --chat <owner/repo|path>
+             [--thinking] [--tools] [--width N] [--json]
+                        Print a recorded event transcript — runs, turns, tool
+                        --chat prints a repo's dashboard chat transcript
+  submit <file|-> Submit a ticket to the inbox (use - to read from stdin)
+  submit --patch <file> --repo <path> [--title T] [--why W] [--verify CMD]
+                  Compose an apply ticket from a git format-patch file and
+                  submit it
+
+Options:
+  --help                Show this help
+`;
+
+test("parseHelp: wrapped synopses keep their flags and their own summary", () => {
+  const { commands } = parseHelp(WRAPPED_FIXTURE);
+  const byPath = Object.fromEntries(commands.map((c) => [c.path, c]));
+  assert.deepEqual(Object.keys(byPath).sort(), ["", "replay", "rm", "submit", "transcript"]);
+  assert.equal(byPath.rm.summary, "Delete a queued ticket from the inbox (best-effort)");
+  assert.deepEqual(
+    byPath.replay.flags.map((f) => f.flag),
+    ["--budget-per-kind", "--escalation-window", "--output-budget-per-turn", "--output-budget-post-commit", "--json"],
+  );
+  assert.equal(
+    byPath.replay.summary,
+    "Re-run a recorded event transcript through the guards under a chosen (or default) policy — a what-if report",
+  );
+  assert.deepEqual(byPath.transcript.flags.map((f) => f.flag), ["--chat", "--thinking", "--tools", "--width", "--json"]);
+  assert.match(byPath.transcript.summary, /^Print a recorded event transcript/);
+  assert.match(byPath.transcript.summary, /--chat prints a repo's dashboard chat transcript$/);
+  const submit = foldCommandVariants(commands).find((c) => c.path === "submit");
+  assert.equal(submit.summary, "Submit a ticket to the inbox (use - to read from stdin)");
+  assert.deepEqual(submit.flags.map((f) => f.flag), ["--patch", "--repo", "--title", "--why", "--verify"]);
+});
+
 test("parseHelp: bare launcher from the (no subcommand) paragraph", () => {
   const { commands } = parseHelp(HELP_FIXTURE);
   const launcher = commands.find((c) => c.path === "");

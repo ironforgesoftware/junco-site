@@ -3,12 +3,12 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Analyze — junco docs</title>
-    <meta name="description" content="junco analyze investigates one issue read-only and parks a comment draft; only the confirmed post writes outward.">
-    <link rel="canonical" href="https://junco.ironforgesoftware.com/docs/analyze/">
-    <meta property="og:title" content="Analyze — junco docs">
-    <meta property="og:description" content="junco analyze investigates one issue read-only and parks a comment draft; only the confirmed post writes outward.">
-    <meta property="og:url" content="https://junco.ironforgesoftware.com/docs/analyze/">
+    <title>Investigate — junco docs</title>
+    <meta name="description" content="junco investigate investigates one issue read-only and parks a comment draft; only the confirmed post writes outward.">
+    <link rel="canonical" href="https://junco.ironforgesoftware.com/docs/investigate/">
+    <meta property="og:title" content="Investigate — junco docs">
+    <meta property="og:description" content="junco investigate investigates one issue read-only and parks a comment draft; only the confirmed post writes outward.">
+    <meta property="og:url" content="https://junco.ironforgesoftware.com/docs/investigate/">
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://junco.ironforgesoftware.com/assets/og-image.png">
     <meta property="og:image:width" content="1200">
@@ -65,8 +65,8 @@
         <ul>
         <li><a href="/docs/github-loop/">The GitHub loop</a></li>
         <li><a href="/docs/tickets/">Tickets &amp; the inbox</a></li>
-        <li><a href="/docs/assess/">Assess</a></li>
-        <li><a aria-current="page" href="/docs/analyze/">Analyze</a></li>
+        <li><a href="/docs/audit/">Audit</a></li>
+        <li><a aria-current="page" href="/docs/investigate/">Investigate</a></li>
         <li><a href="/docs/dashboard/">The dashboard</a></li>
         <li><a href="/docs/operations/">Operations</a></li>
         <li><a href="/docs/bot-account/">Bot account</a></li>
@@ -90,28 +90,28 @@
         </nav>
       </details>
       <main id="main">
-        <h1>Analyze</h1>
+        <h1>Investigate</h1>
 <p>
-  <code>junco analyze</code> points at a single existing issue — owned repo or not — and
+  <code>junco investigate</code> points at a single existing issue — owned repo or not — and
   investigates the codebase against it: root cause, <code>file:line</code> evidence, reproduction
   steps, a suggested fix direction. Nothing posts; the result parks as a draft.
 </p>
 
 <h2 id="the-flow">The flow</h2>
-<pre class="cmd">junco analyze acme/reef-api#52
-junco analyze review analyze-acme-reef-api-52
-junco analyze edit analyze-acme-reef-api-52
-junco analyze post analyze-acme-reef-api-52</pre>
+<pre class="cmd">junco investigate acme/reef-api#52
+junco investigate review analyze-acme-reef-api-52
+junco investigate edit analyze-acme-reef-api-52
+junco investigate post analyze-acme-reef-api-52</pre>
 <p>
   The command resolves the reference (a watched repo maps to its clone; an unwatched one is
   auto-forked into a managed clone and watch-listed) and queues a machine-owned
   <a href="/docs/tickets/">ticket</a>; the daemon investigates read-only, extracts the drafted
   comment, sanitizes it, and parks it. Draft ids carry no timestamp
   (<code>analyze-&lt;owner&gt;-&lt;repo&gt;-&lt;n&gt;</code>), so there is exactly one pending
-  draft per issue — re-analysis overwrites it, and re-queuing while the same issue's ticket still
+  draft per issue — re-investigation overwrites it, and re-queuing while the same issue's ticket still
   waits in the inbox fails loud rather than clobbering. <code>review</code> previews exactly what
   would post, footer included; <code>edit</code> opens the draft in <code>$VISUAL</code>/<code>$EDITOR</code>;
-  <a href="/docs/cli/#analyze-post"><code>post</code></a> is the confirm gate — the only outward
+  <a href="/docs/cli/#investigate-post"><code>post</code></a> is the confirm gate — the only outward
   write in the whole flow (the ticket carries no <code>github:</code> provenance block, so
   lifecycle labels and finalize comments never touch the issue). The disclosure footer is a flag
   composed at post time, not text in the draft; <code>--no-footer</code> drops it.
@@ -122,7 +122,7 @@ junco analyze post analyze-acme-reef-api-52</pre>
   The issue text is untrusted input, and the draft becomes a public comment under your account — so
   it is sanitized before parking: HTML comments stripped (closing off marker spoofing, where a
   hostile issue steers the agent into emitting a fake <code>junco:finding</code>-shaped marker that
-  could poison the assess dedup scan), control characters stripped, length capped at 60,000
+  could poison the audit dedup scan), control characters stripped, length capped at 60,000
   characters. An edited draft is re-sanitized on save; a run producing no fenced draft, or an empty
   one after sanitizing, finalizes to <code>failed/</code> — nothing parks.
 </p>
@@ -149,8 +149,8 @@ no unreviewed prose calling out someone's issue.</div>
         <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a>
       </p>
       <p class="stamp">
-        verified against junco 0.12.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/analyze.md">docs/analyze.md</a> ·
-        <a href="https://github.com/ironforgesoftware/junco-site/edit/main/docs-src/pages/analyze.html">edit this page</a>
+        verified against junco 0.13.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/investigate.md">docs/investigate.md</a> ·
+        <a href="https://github.com/ironforgesoftware/junco-site/edit/main/docs-src/pages/investigate.html">edit this page</a>
       </p>
     </footer>
 
