@@ -65,8 +65,8 @@
         <ul>
         <li><a href="/docs/github-loop/">The GitHub loop</a></li>
         <li><a href="/docs/tickets/">Tickets &amp; the inbox</a></li>
-        <li><a href="/docs/assess/">Assess</a></li>
-        <li><a href="/docs/analyze/">Analyze</a></li>
+        <li><a href="/docs/audit/">Audit</a></li>
+        <li><a href="/docs/investigate/">Investigate</a></li>
         <li><a href="/docs/dashboard/">The dashboard</a></li>
         <li><a aria-current="page" href="/docs/operations/">Operations</a></li>
         <li><a href="/docs/bot-account/">Bot account</a></li>
@@ -140,7 +140,7 @@ junco list failed</pre>
 <p>A latch is never downgraded by a later rate-limit or outage report. Tickets that trip the gate return to the inbox with a fresh <code>not_before</code> and their retry budget untouched — provider faults never burn a ticket's retries. The dashboard's daemon panel shows the gate as a colored dot (red for a latch, yellow for a backoff) with a reason line.</p>
 
 <h2 id="spend">Spend</h2>
-<p><code>worker.dailyBudgetUsd</code> (default 0, disabled) caps USD spend per local calendar day; at the cap the gate enters <code>budget_exhausted</code>. Every completed session's actual resolved cost — Q&amp;A, assess, analyze, and PR-flow's main run, critic pass, and corrective re-dispatch — is recorded in the per-day ledger (<code>&lt;dataDir&gt;/spend.json</code>) whether or not a cap is set. <code>/health</code> carries <code>spend</code> as <code>{todayUsd, dailyBudgetUsd}</code>, and the dashboard's daemon panel prints a matching line. Cap details: <a href="/docs/config/">Configuration</a>.</p>
+<p><code>worker.dailyBudgetUsd</code> (default 0, disabled) caps USD spend per local calendar day; at the cap the gate enters <code>budget_exhausted</code>. Every completed session's actual resolved cost — Q&amp;A, audit, investigate, and PR-flow's main run, critic pass, and corrective re-dispatch — is recorded in the per-day ledger (<code>&lt;dataDir&gt;/spend.json</code>) whether or not a cap is set. <code>/health</code> carries <code>spend</code> as <code>{todayUsd, dailyBudgetUsd}</code>, and the dashboard's daemon panel prints a matching line. Cap details: <a href="/docs/config/">Configuration</a>.</p>
 <div class="note"><b>note —</b> <code>metrics.totalCostUsd</code> and <code>spend.todayUsd</code> legitimately diverge: <code>totalCostUsd</code> accumulates only when a ticket reaches a terminal state and resets on daemon restart; the ledger records every session's cost immediately — once per attempt for a requeuing ticket — persists across restarts, and resets only at local midnight.</div>
 
 <h2 id="updates">Updates</h2>
@@ -164,7 +164,7 @@ junco outbox flush</pre>
         <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a>
       </p>
       <p class="stamp">
-        verified against junco 0.12.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/operations.md">docs/operations.md</a> ·
+        verified against junco 0.13.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/operations.md">docs/operations.md</a> ·
         <a href="https://github.com/ironforgesoftware/junco-site/edit/main/docs-src/pages/operations.html">edit this page</a>
       </p>
     </footer>

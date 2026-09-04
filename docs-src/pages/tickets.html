@@ -13,8 +13,8 @@
   body sent to the agent as the prompt. Four flavors, selected in this order:
 </p>
 <ol>
-  <li><code>assess:</code> present — audit ticket: parked findings, never a PR. Machine-composed by <code>junco assess</code>.</li>
-  <li><code>analyze:</code> present — investigation ticket: parked comment draft, never a PR. Machine-composed by <code>junco analyze</code>.</li>
+  <li><code>audit:</code> present — audit ticket: parked findings, never a PR. Machine-composed by <code>junco audit</code> (<code>assess:</code> is a permanent alias).</li>
+  <li><code>investigate:</code> present — investigation ticket: parked comment draft, never a PR. Machine-composed by <code>junco investigate</code> (<code>analyze:</code> is a permanent alias).</li>
   <li><code>repo:</code> present — PR-flow ticket: worktree, agent, verification, critic, draft PR.</li>
   <li>none of the three — Q&amp;A ticket: answered in place, no git, tools defaulting to a read-only subset (<code>read, grep, find, ls</code>).</li>
 </ol>

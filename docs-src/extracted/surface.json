@@ -1,44 +1,10 @@
 {
   "commands": [
     {
-      "slug": "analyze",
-      "path": "analyze",
-      "synopsis": "junco analyze <owner/repo#N|url>",
-      "summary": "investigate an issue and park a comment draft for review",
-      "flags": []
-    },
-    {
-      "slug": "analyze-edit",
-      "path": "analyze edit",
-      "synopsis": "junco analyze edit <id>",
-      "summary": "edit a pending draft in $EDITOR",
-      "flags": []
-    },
-    {
-      "slug": "analyze-post",
-      "path": "analyze post",
-      "synopsis": "junco analyze post <id> [--no-footer]",
-      "summary": "post an approved draft as a comment on its issue",
-      "flags": [
-        {
-          "flag": "--no-footer",
-          "placeholder": null,
-          "description": null
-        }
-      ]
-    },
-    {
-      "slug": "analyze-review",
-      "path": "analyze review",
-      "synopsis": "junco analyze review [<id>]",
-      "summary": "list pending comment drafts, or preview one",
-      "flags": []
-    },
-    {
-      "slug": "assess",
-      "path": "assess",
-      "synopsis": "junco assess <path|owner/repo|owner/repo#N> [--auto-plan]",
-      "summary": "audit a repo — or scoped to one issue; findings await review",
+      "slug": "audit",
+      "path": "audit",
+      "synopsis": "junco audit <path|owner/repo|owner/repo#N> [--auto-plan]",
+      "summary": "sweep a repo — or scoped to one issue; findings await review",
       "flags": [
         {
           "flag": "--auto-plan",
@@ -48,16 +14,16 @@
       ]
     },
     {
-      "slug": "assess-discard",
-      "path": "assess discard",
-      "synopsis": "junco assess discard <id>",
+      "slug": "audit-discard",
+      "path": "audit discard",
+      "synopsis": "junco audit discard <id>",
       "summary": "discard a pending batch without filing",
       "flags": []
     },
     {
-      "slug": "assess-file",
-      "path": "assess file",
-      "synopsis": "junco assess file <id> --all | --only <fp,...>",
+      "slug": "audit-file",
+      "path": "audit file",
+      "synopsis": "junco audit file <id> --all | --only <fp,...>",
       "summary": "file reviewed findings as issues",
       "flags": [
         {
@@ -73,10 +39,10 @@
       ]
     },
     {
-      "slug": "assess-review",
-      "path": "assess review",
-      "synopsis": "junco assess review [<id>]",
-      "summary": "list pending assess reviews, or show one",
+      "slug": "audit-review",
+      "path": "audit review",
+      "synopsis": "junco audit review [<id>]",
+      "summary": "list pending audit reviews, or show one",
       "flags": []
     },
     {
@@ -167,13 +133,6 @@
       ]
     },
     {
-      "slug": "dispatch",
-      "path": "dispatch",
-      "synopsis": "junco dispatch <ref>",
-      "summary": "Fetch a GitHub issue (owner/repo#N or URL) and queue a ticket for it — forks & clones unowned repos automatically",
-      "flags": []
-    },
-    {
       "slug": "doctor",
       "path": "doctor",
       "synopsis": "junco doctor",
@@ -181,10 +140,51 @@
       "flags": []
     },
     {
+      "slug": "import",
+      "path": "import",
+      "synopsis": "junco import <ref>",
+      "summary": "Fetch a GitHub issue (owner/repo#N or URL) and queue a ticket for it — forks & clones unowned repos automatically",
+      "flags": []
+    },
+    {
       "slug": "inbox-path",
       "path": "inbox-path",
       "synopsis": "junco inbox-path",
       "summary": "Print the inbox directory path and exit",
+      "flags": []
+    },
+    {
+      "slug": "investigate",
+      "path": "investigate",
+      "synopsis": "junco investigate <owner/repo#N|url>",
+      "summary": "deep-read one issue and park a comment draft for review",
+      "flags": []
+    },
+    {
+      "slug": "investigate-edit",
+      "path": "investigate edit",
+      "synopsis": "junco investigate edit <id>",
+      "summary": "edit a pending draft in $EDITOR",
+      "flags": []
+    },
+    {
+      "slug": "investigate-post",
+      "path": "investigate post",
+      "synopsis": "junco investigate post <id> [--no-footer]",
+      "summary": "post an approved draft as a comment on its issue",
+      "flags": [
+        {
+          "flag": "--no-footer",
+          "placeholder": null,
+          "description": null
+        }
+      ]
+    },
+    {
+      "slug": "investigate-review",
+      "path": "investigate review",
+      "synopsis": "junco investigate review [<id>]",
+      "summary": "list pending comment drafts, or preview one",
       "flags": []
     },
     {
@@ -253,16 +253,31 @@
     {
       "slug": "replay",
       "path": "replay",
-      "synopsis": "junco replay <ticket-id|path.jsonl> [--budget-per-kind",
-      "summary": "N] [--escalation-window N] [--output-budget-per-turn N] [--output-budget-post-commit N] [--json] Re-run a recorded event transcript through the guards under a chosen (or default) policy — a what-if report",
+      "synopsis": "junco replay <ticket-id|path.jsonl> [--budget-per-kind N] [--escalation-window N] [--output-budget-per-turn N] [--output-budget-post-commit N] [--json]",
+      "summary": "Re-run a recorded event transcript through the guards under a chosen (or default) policy — a what-if report",
       "flags": [
         {
-          "flag": "-id",
-          "placeholder": null,
+          "flag": "--budget-per-kind",
+          "placeholder": "N",
           "description": null
         },
         {
-          "flag": "--budget-per-kind",
+          "flag": "--escalation-window",
+          "placeholder": "N",
+          "description": null
+        },
+        {
+          "flag": "--output-budget-per-turn",
+          "placeholder": "N",
+          "description": null
+        },
+        {
+          "flag": "--output-budget-post-commit",
+          "placeholder": "N",
+          "description": null
+        },
+        {
+          "flag": "--json",
           "placeholder": null,
           "description": null
         }
@@ -271,9 +286,15 @@
     {
       "slug": "restart",
       "path": "restart",
-      "synopsis": "junco restart",
-      "summary": "Restart the supervised daemon (picks up config + code changes)",
-      "flags": []
+      "synopsis": "junco restart [--force]",
+      "summary": "Restart the supervised daemon (picks up config + code changes); a checkout-backed install must be clean origin/main unless --force",
+      "flags": [
+        {
+          "flag": "--force",
+          "placeholder": null,
+          "description": null
+        }
+      ]
     },
     {
       "slug": "retry",
@@ -365,6 +386,26 @@
           "description": null
         },
         {
+          "flag": "--patch",
+          "placeholder": "<file>",
+          "description": null
+        },
+        {
+          "flag": "--title",
+          "placeholder": "T",
+          "description": null
+        },
+        {
+          "flag": "--why",
+          "placeholder": "W",
+          "description": null
+        },
+        {
+          "flag": "--verify",
+          "placeholder": "CMD",
+          "description": null
+        },
+        {
           "flag": "--dry-run",
           "placeholder": "<file>",
           "description": null
@@ -374,12 +415,12 @@
     {
       "slug": "transcript",
       "path": "transcript",
-      "synopsis": "junco transcript <ticket-id|path.jsonl> [--thinking] [--tools] [--width",
-      "summary": "N] [--json] Print a recorded event transcript — runs, turns, tool calls and results, the agent's answer (the dashboard opens the same view with enter on a queue row)",
+      "synopsis": "junco transcript <ticket-id|path.jsonl> | --chat <owner/repo|path> [--thinking] [--tools] [--width N] [--json]",
+      "summary": "Print a recorded event transcript — runs, turns, tool calls and results, the agent's answer (the dashboard opens the same view with enter on a queue row); --chat prints a repo's dashboard chat transcript instead of a ticket's",
       "flags": [
         {
-          "flag": "-id",
-          "placeholder": null,
+          "flag": "--chat",
+          "placeholder": "<owner/repo|path>",
           "description": null
         },
         {
@@ -394,6 +435,11 @@
         },
         {
           "flag": "--width",
+          "placeholder": "N",
+          "description": null
+        },
+        {
+          "flag": "--json",
           "placeholder": null,
           "description": null
         }
@@ -457,7 +503,7 @@
       "alias": null,
       "placeholder": "<path>",
       "scope": null,
-      "description": "(submit --plan) Repo path stamped into the compiled tickets",
+      "description": "(submit --plan, submit --patch) Repo path stamped into the",
       "default": null
     },
     {
@@ -466,6 +512,38 @@
       "placeholder": null,
       "scope": "submit",
       "description": "File as a parked, unlabeled GitHub issue via the",
+      "default": null
+    },
+    {
+      "flag": "--patch",
+      "alias": null,
+      "placeholder": "<file>",
+      "scope": "submit",
+      "description": "Compose an apply ticket from a git format-patch file",
+      "default": null
+    },
+    {
+      "flag": "--title",
+      "alias": null,
+      "placeholder": "<text>",
+      "scope": null,
+      "description": "(submit --patch) Ticket pr_title; also seeds the id slug",
+      "default": null
+    },
+    {
+      "flag": "--why",
+      "alias": null,
+      "placeholder": "<text>",
+      "scope": null,
+      "description": "(submit --patch) ## Why text; defaults to a line naming the patch file",
+      "default": null
+    },
+    {
+      "flag": "--verify",
+      "alias": null,
+      "placeholder": "<cmd>",
+      "scope": null,
+      "description": "(submit --patch) Shell command for a ## Verification block",
       "default": null
     },
     {

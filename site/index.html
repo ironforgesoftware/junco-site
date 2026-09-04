@@ -66,7 +66,7 @@
         <div class="hero-mascot" aria-hidden="true"></div>
         <div class="hero-top">
           <div class="hero-copy">
-            <p class="kicker">junco · coding-agent worker · v0.12.0 · MIT</p>
+            <p class="kicker">junco · coding-agent worker · v0.13.0 · MIT</p>
             <h1 id="hero-h">Issues in.<br>Pull requests out.</h1>
             <p class="sub">
               Label a GitHub issue <code>junco</code> and a plan appears as a comment. Approve it, and
@@ -116,14 +116,15 @@
 │ ◐ #46 · turn 14  ││                                    ││                        │
 │ 2 waiting        ││                             2/14   ││                        │
 ╰──────────────────╯╰────────────────────────────────────╯╰────────────────────────╯
- ↑/↓ move · ←/→ panes · enter preview · d dispatch · a approve · / filter · ? help</pre>
+ <span class="hot">issue #52</span>   <b>c</b>hat  i<b>m</b>port  appr<b>o</b>ve  i<b>n</b>vestigate  <b>t</b>ranscript  a<b>u</b>dit  <b>b</b>rowser  │  <b>P</b>Rs
+ <b>↑↓</b> move  <b>←→</b> panes  <b>⏎</b> preview  <b>/</b> filter  <b>g G</b> first/last              <b>?</b> help  <b>q</b> quit</pre>
           </div>
           <figcaption class="visually-hidden">
             The junco dashboard: three panes side by side. Pane one lists watched repositories with
             a queue card showing the running ticket and waiting count. Pane two lists the selected
             repository's junco-labeled issues with lifecycle glyphs and state badges. Pane three
             lists junco-authored pull requests with check counts. A header line shows review count,
-            PRs needing attention, daemon uptime, and queue depth; a footer line shows key bindings.
+            PRs needing attention, daemon uptime, and queue depth; two footer rows show the selected issue's verbs and the structural keys.
           </figcaption>
         </figure>
         <ol class="notes">
@@ -203,18 +204,18 @@
         </ol>
       </section>
 
-      <!-- 03 · assess -->
-      <section class="sec" aria-labelledby="assess-h">
-        <h2 id="assess-h"><span class="num" aria-hidden="true">03 · </span>It files its own issues</h2>
+      <!-- 03 · audit -->
+      <section class="sec" aria-labelledby="audit-h">
+        <h2 id="audit-h"><span class="num" aria-hidden="true">03 · </span>It files its own issues</h2>
         <p>
-          <code>junco assess</code> audits a repo — <code>npm audit</code> plus a read-only agent
+          <code>junco audit</code> audits a repo — <code>npm audit</code> plus a read-only agent
           pass — and parks every finding for review. Nothing reaches a tracker until you confirm;
           filed issues arrive fingerprinted, severity-labeled, deduped.
-          <code>junco analyze</code> drafts one issue's investigation as a comment, posted only
+          <code>junco investigate</code> drafts one issue's investigation as a comment, posted only
           on your say-so.
         </p>
         <div class="panel">
-          <p class="panel-cap" aria-hidden="true">── junco assess · filed ──</p>
+          <p class="panel-cap" aria-hidden="true">── junco audit · filed ──</p>
           <div class="scroll">
             <pre class="diagram">● <b>[high] Unsanitized template in exportCsv (sql-injection)</b>
   <span class="hot">junco:finding</span> · <span class="hot">severity/high</span> · <span class="hot">junco</span></pre>
@@ -454,7 +455,7 @@ npm install &amp;&amp; npm test       # vitest, ~3,200 tests, under a minute</co
         <a href="https://github.com/ironforgesoftware/junco">GitHub</a> ·
         <a href="https://www.npmjs.com/package/@ironforgesoftware/junco">npm</a> ·
         <a href="/docs/changelog/">changelog</a> ·
-        v0.12.0
+        v0.13.0
       </p>
       <p class="bird">
         Named after the dark-eyed junco — a small, unassuming snowbird that works through winter.

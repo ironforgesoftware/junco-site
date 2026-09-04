@@ -65,8 +65,8 @@
         <ul>
         <li><a href="/docs/github-loop/">The GitHub loop</a></li>
         <li><a href="/docs/tickets/">Tickets &amp; the inbox</a></li>
-        <li><a href="/docs/assess/">Assess</a></li>
-        <li><a href="/docs/analyze/">Analyze</a></li>
+        <li><a href="/docs/audit/">Audit</a></li>
+        <li><a href="/docs/investigate/">Investigate</a></li>
         <li><a href="/docs/dashboard/">The dashboard</a></li>
         <li><a href="/docs/operations/">Operations</a></li>
         <li><a href="/docs/bot-account/">Bot account</a></li>
@@ -205,6 +205,7 @@ legacy-key layout into it.</p>
   <div><dt><code>worker.retryBackoffSeconds</code> <span class="ph">number</span></dt><dd>Backoff seconds before a requeued ticket becomes eligible again. <span class="default">default 60 · live</span></dd></div>
   <div><dt><code>worker.maxConcurrent</code> <span class="ph">number</span></dt><dd>Parallel ticket slots; same-repo tickets always serialize (restart to apply — the serial-vs-scheduler mode fork is chosen once at startup). <span class="default">default 1 · restart</span></dd></div>
   <div><dt><code>worker.commitLeftovers</code> <span class="ph">boolean</span></dt><dd>Sweep uncommitted leftovers into a final commit at run end. <span class="default">default false · live</span></dd></div>
+  <div><dt><code>worker.applyFallbackToAgent</code> <span class="ph">boolean</span></dt><dd>When a patch ticket's junco-patch series fails to apply, or applies cleanly but its own Verification block then fails, fall back to the agent (patch as spec) instead of failing the ticket terminally. <span class="default">default true · live</span></dd></div>
   <div><dt><code>worker.dailyBudgetUsd</code> <span class="ph">number</span></dt><dd>Daily USD spend cap; claiming pauses once reached until local midnight (0 disables). <span class="default">default 0 · live</span></dd></div>
 </dl>
 <div class="note"><b>note —</b> every agent session's cost lands in a per-day ledger
@@ -237,12 +238,14 @@ anything else can write tickets.</div>
 <dl class="flags">
   <div><dt><code>pr.draftByDefault</code> <span class="ph">boolean</span></dt><dd>Open PRs as drafts by default. <span class="default">default true · live</span></dd></div>
   <div><dt><code>pr.defaultLabels</code> <span class="ph">structured, read-only</span></dt><dd>Labels applied to every PR Junco opens. <span class="default">default [] · live</span></dd></div>
+  <div><dt><code>pr.secretScan</code> <span class="ph">boolean</span></dt><dd>Scan the diff about to be pushed for secret shapes; fail the ticket on a hit. <span class="default">default true · live</span></dd></div>
 </dl>
 <h2 id="g-verify"><code>verify.*</code></h2>
 <dl class="flags">
   <div><dt><code>verify.enabled</code> <span class="ph">boolean</span></dt><dd>Run the verify (build/test) phase before opening a PR. <span class="default">default true · live</span></dd></div>
   <div><dt><code>verify.commandTimeout</code> <span class="ph">number</span></dt><dd>Timeout in seconds for the verify command. <span class="default">default 60 · live</span></dd></div>
   <div><dt><code>verify.blockOnFail</code> <span class="ph">boolean</span></dt><dd>Block PR creation when verify fails (vs. warn and continue). <span class="default">default false · live</span></dd></div>
+  <div><dt><code>verify.sandboxed</code> <span class="ph">boolean</span></dt><dd>Run ## Verification blocks under the ticket's sandbox (false = your repo's code runs unconfined). <span class="default">default true · live</span></dd></div>
 </dl>
 <h2 id="g-sandbox"><code>sandbox.*</code></h2>
 <p>Agent tool subprocesses run OS-confined: writes jailed to the worktree plus scratch,
@@ -255,6 +258,7 @@ bubblewrap or set <code>sandbox.backend: "none"</code> deliberately.</div>
 <dl class="flags">
   <div><dt><code>sandbox.enabled</code> <span class="ph">boolean</span></dt><dd>Wrap agent tool subprocesses in an OS sandbox (env scrub + path jail). <span class="default">default true · live</span></dd></div>
   <div><dt><code>sandbox.backend</code> <span class="ph">auto | seatbelt | bwrap | none</span></dt><dd>Sandbox backend: auto (seatbelt on macOS, bwrap on Linux), a forced one, or none. <span class="default">default &quot;auto&quot; · live</span></dd></div>
+  <div><dt><code>sandbox.requireBackend</code> <span class="ph">boolean</span></dt><dd>With backend=auto, fail closed when the OS backend probe fails (tickets refuse, doctor ✗) instead of degrading to none. <span class="default">default false · live</span></dd></div>
   <div><dt><code>sandbox.network</code> <span class="ph">deny | allow</span></dt><dd>Default network egress for agent tool subprocesses (per-ticket network:true widens it). <span class="default">default &quot;deny&quot; · live</span></dd></div>
   <div><dt><code>sandbox.extraDenyRead</code> <span class="ph">structured, read-only</span></dt><dd>Extra absolute paths whose reads are denied (added to the built-in secret deny-list). <span class="default">default [] · live</span></dd></div>
   <div><dt><code>sandbox.extraAllowWrite</code> <span class="ph">structured, read-only</span></dt><dd>Extra absolute paths where writes are permitted (added to worktree + scratch). <span class="default">default [] · live</span></dd></div>
@@ -310,12 +314,21 @@ anywhere that isn't a private personal repo.</div>
   <div><dt><code>planSets.mergePollSeconds</code> <span class="ph">number</span></dt><dd>Cadence for the plan-set merge sweep that stamps satisfied dependencies and cascades failed ones. <span class="default">default 60 · live</span></dd></div>
   <div><dt><code>planSets.maxTasks</code> <span class="ph">number</span></dt><dd>Layer-2 compiler cap on tasks per plan set (reserved). <span class="default">default 10 · live</span></dd></div>
 </dl>
+<h2 id="g-chat"><code>chat.*</code></h2>
+<dl class="flags">
+  <div><dt><code>chat.enabled</code> <span class="ph">boolean</span></dt><dd>Enable the dashboard chat (/chat/* routes on the health server). <span class="default">default true · live</span></dd></div>
+  <div><dt><code>chat.modelId</code> <span class="ph">string</span></dt><dd>Chat model id override (same endpoint); unset → github.plannerModelId, then model.id. <span class="default">default undefined · restart</span></dd></div>
+  <div><dt><code>chat.thinkingLevel</code> <span class="ph">string</span></dt><dd>Chat thinking level; unset → model.thinkingLevel. <span class="default">default undefined · restart</span></dd></div>
+  <div><dt><code>chat.turnTimeoutMinutes</code> <span class="ph">number</span></dt><dd>Per-turn chat timeout; unset → worker.defaultTimeoutMinutes. <span class="default">default undefined · restart</span></dd></div>
+  <div><dt><code>chat.submitTool</code> <span class="ph">boolean</span></dt><dd>Register the junco_submit tool on new chat sessions (the model can submit a parked draft after you confirm). <span class="default">default true · restart</span></dd></div>
+  <div><dt><code>chat.confirmTimeoutMinutes</code> <span class="ph">number</span></dt><dd>How long a proposed chat submit waits for y/n in the dashboard before expiring. <span class="default">default 10 · restart</span></dd></div>
+</dl>
 <h2 id="g-assess"><code>assess.*</code></h2>
 <dl class="flags">
-  <div><dt><code>assess.maxIssuesPerRun</code> <span class="ph">number</span></dt><dd>Cap on issues filed per `junco assess` run. <span class="default">default 20 · live</span></dd></div>
+  <div><dt><code>assess.maxIssuesPerRun</code> <span class="ph">number</span></dt><dd>Cap on issues filed per `junco audit` run. <span class="default">default 20 · live</span></dd></div>
   <div><dt><code>assess.minSeverity</code> <span class="ph">critical | high | medium | low</span></dt><dd>Drop assessment findings below this severity. <span class="default">default &quot;low&quot; · live</span></dd></div>
   <div><dt><code>assess.npmBin</code> <span class="ph">string</span></dt><dd>Binary for the dependency scan (npm audit --json). <span class="default">default &quot;npm&quot; · live</span></dd></div>
-  <div><dt><code>assess.fileAs</code> <span class="ph">me | bot</span></dt><dd>Identity `junco assess file` posts under: me (your gh login) or bot (the dedicated bot account; fails loud when its login is missing). <span class="default">default &quot;me&quot; · live</span></dd></div>
+  <div><dt><code>assess.fileAs</code> <span class="ph">me | bot</span></dt><dd>Identity `junco audit file` posts under: me (your gh login) or bot (the dedicated bot account; fails loud when its login is missing). <span class="default">default &quot;me&quot; · live</span></dd></div>
 </dl>
 <h2 id="g-skills"><code>skills.*</code></h2>
 <dl class="flags">
@@ -332,7 +345,7 @@ anywhere that isn't a private personal repo.</div>
         <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a>
       </p>
       <p class="stamp">
-        verified against junco 0.12.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/configuration.md">docs/configuration.md</a> ·
+        verified against junco 0.13.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/configuration.md">docs/configuration.md</a> ·
         <a href="https://github.com/ironforgesoftware/junco-site/edit/main/docs-src/pages/config.html">edit this page</a>
       </p>
     </footer>

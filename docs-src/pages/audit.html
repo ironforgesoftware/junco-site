@@ -1,13 +1,13 @@
-<!--meta {"title": "Assess", "description": "junco assess audits a repo, parks findings for review, and files only what a human confirms as GitHub issues.", "slug": "assess", "navLabel": "Assess", "source": "docs/assess.md", "keywords": ["assess", "audit", "npm audit", "findings", "fingerprint", "dedup", "severity", "junco:finding", "auto-plan"]} -->
+<!--meta {"title": "Audit", "description": "junco audit audits a repo, parks findings for review, and files only what a human confirms as GitHub issues.", "slug": "audit", "navLabel": "Audit", "source": "docs/audit.md", "keywords": ["audit", "assess", "npm audit", "findings", "fingerprint", "dedup", "severity", "junco:finding", "auto-plan"]} -->
 <p>
-  <a href="/docs/cli/#assess"><code>junco assess</code></a> audits a repository and parks what it
+  <a href="/docs/cli/#audit"><code>junco audit</code></a> audits a repository and parks what it
   finds; filing findings as GitHub issues is a separate, human-confirmed step. Junco authors
   issues — it never merges anything on its own.
 </p>
 
 <h2 id="what-a-run-does">What a run does</h2>
-<pre class="cmd">junco assess acme/reef-api
-junco assess acme/reef-api#52 --auto-plan</pre>
+<pre class="cmd">junco audit acme/reef-api
+junco audit acme/reef-api#52 --auto-plan</pre>
 <p>
   The command composes and queues a machine-owned ticket; the audit itself runs when the daemon
   claims it — the daemon must be running. The run is read-only: <code>npm audit --json</code> for
@@ -23,10 +23,10 @@ junco assess acme/reef-api#52 --auto-plan</pre>
 </p>
 
 <h2 id="review-and-file">Review and file</h2>
-<pre class="cmd">junco assess review
-junco assess review &lt;id&gt;
-junco assess file &lt;id&gt; --all
-junco assess file &lt;id&gt; --only &lt;fingerprint&gt;,&lt;fingerprint&gt;</pre>
+<pre class="cmd">junco audit review
+junco audit review &lt;id&gt;
+junco audit file &lt;id&gt; --all
+junco audit file &lt;id&gt; --only &lt;fingerprint&gt;,&lt;fingerprint&gt;</pre>
 <p>
   <code>review</code> lists pending batches; with an id it shows each finding's fingerprint,
   severity, and title. <code>file</code> is the confirm step — no bare default, since these are

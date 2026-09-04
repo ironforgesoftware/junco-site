@@ -65,8 +65,8 @@
         <ul>
         <li><a href="/docs/github-loop/">The GitHub loop</a></li>
         <li><a href="/docs/tickets/">Tickets &amp; the inbox</a></li>
-        <li><a href="/docs/assess/">Assess</a></li>
-        <li><a href="/docs/analyze/">Analyze</a></li>
+        <li><a href="/docs/audit/">Audit</a></li>
+        <li><a href="/docs/investigate/">Investigate</a></li>
         <li><a href="/docs/dashboard/">The dashboard</a></li>
         <li><a href="/docs/operations/">Operations</a></li>
         <li><a href="/docs/bot-account/">Bot account</a></li>
@@ -99,8 +99,8 @@
 </p>
 <p>Flavor selection reads frontmatter in this order:</p>
 <ol>
-  <li><code>assess:</code> present — audit ticket (parked findings, never a PR)</li>
-  <li><code>analyze:</code> present — investigation ticket (parked comment draft)</li>
+  <li><code>audit:</code> present — audit ticket (parked findings, never a PR); <code>assess:</code> is accepted as a permanent alias</li>
+  <li><code>investigate:</code> present — investigation ticket (parked comment draft); <code>analyze:</code> is accepted as a permanent alias</li>
   <li><code>repo:</code> present — PR-flow ticket (worktree, agent, draft PR)</li>
   <li>none of the three — Q&amp;A ticket (read-only, answered in place)</li>
 </ol>
@@ -171,21 +171,36 @@ them alone; junco writes them.</div>
 </dl>
 <h3 id="f-github_request"><code>github_request</code></h3>
 <p class="see">object</p>
-<p>Dispatcher-settable request: ask the worker to create a GitHub tracking issue for this ticket at claim time and link the resulting pull request to it (the PR body gains `Closes owner/repo#N`, so merging closes the issue). The worker creates the issue on the clone's origin repo under its own gh identity (the bot account when configured) and then stamps the worker-managed `github:` provenance block itself — dispatchers never write `github:` by hand. Best-effort: if the issue cannot be created (offline, no permission, non-GitHub origin) the ticket still runs, unlinked. Ignored on fork-push tickets (`push_remote: fork`), on amend tickets (`amends_pr` — the existing PR body is never edited, so the issue could never auto-close), and on Q&amp;A/assess/analyze tickets.</p>
+<p>Dispatcher-settable request: ask the worker to create a GitHub tracking issue for this ticket at claim time and link the resulting pull request to it (the PR body gains `Closes owner/repo#N`, so merging closes the issue). The worker creates the issue on the clone's origin repo under its own gh identity (the bot account when configured) and then stamps the worker-managed `github:` provenance block itself — dispatchers never write `github:` by hand. Best-effort: if the issue cannot be created (offline, no permission, non-GitHub origin) the ticket still runs, unlinked. Ignored on fork-push tickets (`push_remote: fork`), on amend tickets (`amends_pr` — the existing PR body is never edited, so the issue could never auto-close), and on Q&amp;A/audit/investigate tickets.</p>
 <dl class="flags">
   <div><dt><code>github_request.create_issue</code> <span class="ph">boolean</span></dt><dd>Set true to request tracking-issue creation.</dd></div>
 </dl>
+<h3 id="f-audit"><code>audit</code></h3>
+<p class="see">object</p>
+<p>Presence of this mapping selects the assessment flavor: junco audits the repository named in `repo:` (read-only agent session plus a dependency scan) and parks the findings for review instead of opening a pull request — nothing is filed until a human confirms the batch (`junco audit review` then `junco audit file`). Authored by `junco audit`. `assess:` is a permanently accepted legacy alias for this same mapping; when a ticket carries both, `audit:` wins.</p>
+<dl class="flags">
+  <div><dt><code>audit.auto_plan</code> <span class="ph">boolean</span></dt><dd>Also apply the configured GitHub trigger label to each created issue, so the bridge plans it on its next sweep.</dd></div>
+  <div><dt><code>audit.issue</code> <span class="ph">integer</span></dt><dd>Issue-scoped audit: the audit is steered to the code this issue implicates, and filed findings carry a Context reference to it. Set by `junco audit owner/repo#N`.</dd></div>
+  <div><dt><code>audit.issue_title</code> <span class="ph">string</span></dt><dd>The scoping issue's title (machine-built, display-only).</dd></div>
+</dl>
 <h3 id="f-assess"><code>assess</code></h3>
 <p class="see">object</p>
-<p>Presence of this mapping selects the assessment flavor: junco audits the repository named in `repo:` (read-only agent session plus a dependency scan) and parks the findings for review instead of opening a pull request — nothing is filed until a human confirms the batch (`junco assess review` then `junco assess file`). Authored by `junco assess`.</p>
+<p>Legacy alias for `audit:` — permanently accepted, never removed. Same shape and behavior as `audit:` (see above); when a ticket carries both `assess:` and `audit:`, `audit:` wins.</p>
 <dl class="flags">
   <div><dt><code>assess.auto_plan</code> <span class="ph">boolean</span></dt><dd>Also apply the configured GitHub trigger label to each created issue, so the bridge plans it on its next sweep.</dd></div>
-  <div><dt><code>assess.issue</code> <span class="ph">integer</span></dt><dd>Issue-scoped audit: the audit is steered to the code this issue implicates, and filed findings carry a Context reference to it. Set by `junco assess owner/repo#N`.</dd></div>
+  <div><dt><code>assess.issue</code> <span class="ph">integer</span></dt><dd>Issue-scoped audit: the audit is steered to the code this issue implicates, and filed findings carry a Context reference to it. Set by `junco audit owner/repo#N` (or the legacy `junco assess owner/repo#N`).</dd></div>
   <div><dt><code>assess.issue_title</code> <span class="ph">string</span></dt><dd>The scoping issue's title (machine-built, display-only).</dd></div>
+</dl>
+<h3 id="f-investigate"><code>investigate</code></h3>
+<p class="see">object</p>
+<p>Presence of this mapping selects the analysis flavor: junco investigates the issue named here against the repository in `repo:` and parks a comment draft for review — it never posts without operator confirmation. Authored by `junco investigate`. `analyze:` is a permanently accepted legacy alias for this same mapping; when a ticket carries both, `investigate:` wins.</p>
+<dl class="flags">
+  <div><dt><code>investigate.issue</code> <span class="ph">integer</span></dt><dd>Issue number to investigate.</dd></div>
+  <div><dt><code>investigate.title</code> <span class="ph">string</span></dt><dd>Issue title, for display/logging.</dd></div>
 </dl>
 <h3 id="f-analyze"><code>analyze</code></h3>
 <p class="see">object</p>
-<p>Presence of this mapping selects the analysis flavor: junco investigates the issue named here against the repository in `repo:` and parks a comment draft for review — it never posts without operator confirmation. Authored by `junco analyze`.</p>
+<p>Legacy alias for `investigate:` — permanently accepted, never removed. Same shape and behavior as `investigate:` (see above); when a ticket carries both `analyze:` and `investigate:`, `investigate:` wins.</p>
 <dl class="flags">
   <div><dt><code>analyze.issue</code> <span class="ph">integer</span></dt><dd>Issue number to investigate.</dd></div>
   <div><dt><code>analyze.title</code> <span class="ph">string</span></dt><dd>Issue title, for display/logging.</dd></div>
@@ -215,7 +230,7 @@ them alone; junco writes them.</div>
         <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a>
       </p>
       <p class="stamp">
-        verified against junco 0.12.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/tickets.md">docs/tickets.md</a> ·
+        verified against junco 0.13.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/tickets.md">docs/tickets.md</a> ·
         <a href="https://github.com/ironforgesoftware/junco-site/edit/main/docs-src/pages/ticket-schema.html">edit this page</a>
       </p>
     </footer>

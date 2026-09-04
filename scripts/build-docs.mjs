@@ -76,7 +76,9 @@ function flagsFromSynopsisTokens(tokenString) {
   // Pull -f / --flag occurrences plus an attached placeholder (<...> or a bare
   // uppercase token like N). Brackets/pipes around them are usage sugar.
   const flags = [];
-  const re = /(--?[a-z][a-z-]*)(?:[ =](<[^>\]]+>|[A-Z]+\b))?/g;
+  // A flag starts a token: after start, whitespace, or usage sugar ('[', '|',
+  // '('). Without the boundary, '<ticket-id|path.jsonl>' yielded a bogus '-id'.
+  const re = /(?:^|[\s[|(])(--?[a-z][a-z-]*)(?:[ =](<[^>\]]+>|[A-Z]+\b))?/g;
   for (const m of tokenString.matchAll(re)) {
     flags.push({ flag: m[1], placeholder: m[2] ?? null, description: null });
   }
@@ -151,6 +153,7 @@ export function parseHelp(text) {
   const globalFlags = [];
   let section = null; // 'subcommands' | 'launcher' | 'options'
   let launcherLines = [];
+  let lastTokens = null; // synopsis tokens of the last command, for wrapped synopses
 
   for (const line of lines) {
     if (/^Subcommands:/.test(line)) { section = "subcommands"; continue; }
@@ -158,18 +161,43 @@ export function parseHelp(text) {
     if (/^Options:/.test(line)) { section = "options"; continue; }
 
     if (section === "subcommands" && /^\s{2}\S/.test(line)) {
+      const t = line.trim();
       const m =
-        line.trim().match(/^(\S.*?)\s{2,}(.*)$/) ??
+        t.match(/^(\S.*?)\s{2,}(.*)$/) ??
         // fallback for single-space separators ('submit <file|-> Submit a…'):
-        // the description is taken to start at the first capitalized word
-        line.trim().match(/^([a-z][^A-Z]*?) ([A-Z].*)$/);
-      if (m) commands.push(...expandCompound(m[1].trim(), m[2]));
-      else if (commands.length) {
+        // the description starts at the first capitalized WORD. A lone
+        // capital is a placeholder, not prose — junco 0.13.0 writes
+        // '[--title T] [--why W] [--verify CMD]' and '[--width N]', and the
+        // old first-capital rule cut those synopses off at the placeholder.
+        t.match(/^([a-z].*?) ([A-Z][a-z].*)$/);
+      if (m) {
+        commands.push(...expandCompound(m[1].trim(), m[2]));
+        lastTokens = m[1].trim();
+      } else if (/^[a-z][a-z-]*(\s|$)/.test(t) && /[<[]|--|\|/.test(t)) {
+        // synopsis-only line: the description wraps to the next line(s), as
+        // junco 0.13.0's 'replay …' and 'transcript … | --chat …' do. It is a
+        // command in its own right (an empty summary the continuation lines
+        // fill), never a continuation of the previous one.
+        commands.push(...expandCompound(t, ""));
+        lastTokens = t;
+      } else if (commands.length) {
         // continuation line indented like a name but with no 2-space split
-        commands[commands.length - 1].summary += ` ${line.trim()}`;
+        commands[commands.length - 1].summary += ` ${t}`;
       }
     } else if (section === "subcommands" && /^\s{4,}\S/.test(line) && commands.length) {
-      commands[commands.length - 1].summary += ` ${line.trim()}`;
+      const indent = line.length - line.trimStart().length;
+      const t = line.trim();
+      if (indent <= 16 && /^[<[\-|]/.test(t) && lastTokens !== null) {
+        // a wrapped synopsis: flags continued on a shallow-indented line
+        // ('         [--output-budget-per-turn N] …'). Re-parse the whole
+        // synopsis so the flags land on the command, not in its prose; the
+        // description column (24) is deeper, so real prose never lands here.
+        const summary = commands[commands.length - 1].summary;
+        lastTokens = `${lastTokens} ${t}`;
+        commands.splice(-1, 1, ...expandCompound(lastTokens, summary));
+      } else {
+        commands[commands.length - 1].summary = `${commands[commands.length - 1].summary} ${t}`.trim();
+      }
     } else if (section === "launcher" && /^\s+\S/.test(line)) {
       launcherLines.push(line);
     } else if (section === "options" && /^\s{2}-/.test(line)) {
@@ -657,6 +685,11 @@ export const CHANGELOG_SUBSTITUTIONS = {
   // 0.12.0: bare issue ref trips the html-hex gate (only the parenthesized
   // form is excluded); rephrase to the gate-safe shape.
   "Found while diagnosing #320, where": "Found while diagnosing the sandbox commit denial (#320), where",
+  // 0.13.0: two "simply" (banned-word gate) and the credential deny-list
+  // entry naming a harness's home dir (vendor gate) — rephrased, not dropped.
+  "it's simply wasted tokens now": "it's only wasted tokens now",
+  "Two statements in it were simply wrong": "Two statements in it were plainly wrong",
+  "`~/.gem/credentials` and `~/.claude`": "`~/.gem/credentials` and the coding-agent harness's own home directory",
 };
 
 // Substitute (vendor/banned-word/glyph scrub) → escape → inline markdown.
