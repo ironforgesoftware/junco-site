@@ -39,10 +39,18 @@ is the same art centered on a square transparent canvas and resized to 32×32.
 1200×630:
 
 ```bash
+npx -y playwright install chromium-headless-shell   # see the trap below
 python3 -m http.server 8000
 npx -y playwright screenshot --viewport-size=1200,630 \
   http://localhost:8000/og.html site/assets/og-image.png
 ```
+
+`screenshot` **exits 0 even when it wrote nothing**: `npx -y playwright` resolves the
+latest CLI, and when its browser build is newer than the one in the local cache it prints
+`Executable doesn't exist at …/chromium_headless_shell-<n>` and returns success, leaving
+the previous PNG in place. The install line above pins the pair. Verify the file actually
+moved — `ls -l site/assets/og-image.png`, or `git status` — rather than trusting the exit
+code.
 
 ## Content gates
 
