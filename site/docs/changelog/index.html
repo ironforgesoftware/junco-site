@@ -96,6 +96,40 @@
   <code>CHANGELOG.md</code> and refreshed by <code>node scripts/build-docs.mjs</code> on every
   build — this page cannot drift from the source of truth.
 </p>
+<h2 id="v0-14-0">0.14.0 — 2026-09-06</h2>
+<h3>Added</h3>
+<ul>
+  <li>The dashboard chat streams the model's reasoning as a live <strong>thinking block</strong> (spec <code>docs/superpowers/specs/2026-09-06-chat-streaming-design.md</code>): a <code>· thinking · 3s</code> header ticking while it streams, the reasoning dim beneath, folding to a single <code>▸ thinking · 3s</code> row when the answer starts. <code>t</code> pins thinking open — the live block and every finished turn's <code>▸ thinking</code> header — and folds it back; the header is the same string live and finished, so the row never changes shape at turn end.</li>
+  <li>Live <strong>tool cards</strong> in the chat: <code>▸ bash npm test  ⠋</code> with a spinner and the last 6 lines of streamed output while a call runs, <code>▸ bash npm test  ✓</code> over a <code>→ N lines</code> summary once it finishes, <code>✗</code> with the body open by default on an error. <code>x</code> (also <code>⏎</code>/space) toggles the card under the cursor, and <code>tab</code> walks running cards too — a card keeps one cursor index across the turn end. The same <code>renderToolCard</code> draws the ticket transcript and <code>junco transcript</code>, so the three surfaces cannot drift.</li>
+  <li>Chat answers are typeset as <strong>markdown</strong> — headings, lists, quotes, rules, tables, and code fences highlighted by the agent's own highlighter (raw fences when it cannot be loaded) — while they stream: a junco-owned block parser with a prefix-stable open tail, so a frame re-renders only the block still growing and the finished turns above never re-run.</li>
+  <li><code>chat.thinkTags</code> (<code>auto</code> | <code>on</code> | <code>off</code>, default <code>auto</code>, live): literal <code>&lt;think&gt;…&lt;/think&gt;</code> spans an OpenAI-compatible endpoint streams inside the answer are split into the thinking block on the fly by a total, never-dropping splitter; <code>auto</code> steps aside for a turn that already streams native reasoning.</li>
+  <li><code>chat.maxFps</code> (10–120, default 60): the dashboard's paint-rate ceiling while a chat turn streams — lower it on a slow terminal, a small board, or over SSH.</li>
+  <li><code>junco doctor</code> gains an advisory <code>ℹ</code> verdict (exit code unaffected) and its first use, <code>chat thinking</code>: when the chat's model resolves inline to an OpenAI-compatible endpoint, the hint names the server-side flag that moves reasoning out of the text — the server's own reasoning-format or separate-reasoning-field option — recognized from the endpoint's port, with no extra network probe.</li>
+  <li><code>chat.theme</code> (<code>auto</code> | <code>dark</code> | <code>light</code>, default <code>auto</code>): the palette for the chat's highlighted code fences — pin <code>light</code> on a light terminal that does not export <code>COLORFGBG</code>, where the highlighter's guess lands on the dark palette (#512).</li>
+  <li>A dashboard that opens or reconnects mid-turn gets the turn so far: <code>GET /chat/events</code> sends one <code>junco_chat_partial</code> snapshot (thinking, tool cards, text) after the transcript replay and before any live frame, so a reconnect never shows a half-turn missing its beginning.</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+  <li><strong>Chat wire format:</strong> the <code>/chat/events</code> stream no longer carries the SDK's raw <code>message_update</code> events. Each turn is accumulated in the daemon and put on the bus as three slim, bus-only records — <code>junco_chat_delta</code> (one text/thinking chunk, tagged with the content index and a per-turn <code>seq</code>), <code>junco_chat_tool</code> (<code>start</code>/<code>output</code>/<code>end</code>, output delta-only, the final result capped at 8 KiB), and <code>junco_chat_partial</code> — none of which is written to the transcript or carries an SSE <code>id</code>, so <code>Last-Event-ID</code> always names a persisted line. The record bus stops re-serializing the whole assistant message per chunk. A pre-upgrade dashboard against an upgraded daemon degrades to the answer appearing at turn end; upgrade both together for streaming. <code>junco_chat_turn_start</code> gains a <code>turn</code> id (additive) the live records reference.</li>
+  <li>The <code>/chat/events</code> response socket is <code>setNoDelay</code>, so a delta reaches the dashboard the moment it is written instead of waiting on the previous frame's ACK.</li>
+  <li>The dashboard renders at up to 60 fps (Ink <code>maxFps</code>, was Ink's default 30): the chat's per-frame flush leans on Ink's own throttle instead of a trailing 50 ms timer, so a delta is on screen within one frame; <code>chat.maxFps</code> drops it back where needed.</li>
+  <li>The dashboard chat view keeps the finished turns and the streaming turn in two memoized halves: a streaming flush costs O(the live turn) and never re-renders the history, however long the conversation (<code>tests/tuiChatPerf.test.tsx</code> pins it — 200 turns, 300 deltas/s).</li>
+  <li><code>junco transcript</code> and the dashboard's ticket transcript print each tool call as a header row (<code>▸ read game.js  ✓</code>, <code>✗</code> on an error, <code>…</code> while it has no result) over a <code>→ 214 lines</code> summary row instead of one combined line; an errored call's body is open by default.</li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+  <li>The dashboard's repo-detail overlay no longer answers a raw <code>o</code> with the browser: the derived keymap's <code>b</code> already ran ahead of it, so <code>o</code> was an undocumented alias that contradicted the key table; <code>docs/dashboard.md</code>'s three remaining <code>o</code>-opens-the-browser paragraphs now say <code>b</code> (#492, #501).</li>
+  <li>The newline a model writes right after <code>&lt;/think&gt;</code> no longer reaches the wire: the think-tag splitter swallows exactly one <code>\n</code> (or <code>\r\n</code>) following a close tag, held across chunk boundaries like a tag prefix, so a <code>junco_chat_delta</code> of just <code>&quot;\n&quot;</code> — invisible in the dashboard, visible to every other <code>/chat/events</code> consumer — is gone and <code>splitThinkingText</code> agrees (#509).</li>
+  <li>A tool output snapshot that does not extend the previous one (the tool's own truncation kicked in) is now put on the wire with <code>replace: true</code>, and the dashboard's reducer overwrites the card's output instead of appending it, so the card no longer shows the prefix twice; a thinking block carries <code>doneAt</code> from the daemon, so the folded header's duration is the daemon's, not the client's guess (#507).</li>
+  <li>Chat markdown follow-ups (#512): a code fence still streaming is highlighted line by line through a per-line cache, so a frame re-highlights only the line being typed instead of the whole block (the closing fence re-highlights it whole, once); a markdown link renders as <code>text (url)</code> with the text an OSC 8 hyperlink (cmd/ctrl+click in terminals that support it) and the <code>(url)</code> dimmed; the finished turns' markdown caches are dropped when the dashboard switches chats instead of outliving them.</li>
+  <li><code>chat.thinkTags</code> is classified <code>restart</code>, not <code>live</code>: a chat session snapshots its config when it is built, so a hot-reloaded value only ever reached sessions opened afterwards — the lever, <code>junco config</code> and <code>docs/configuration.md</code> now say so (#515).</li>
+  <li>Documentation accuracy sweep against 0.13.0's code: README's dashboard key legend and CLI table (eight subcommands were missing), the sandbox's <code>auto</code> backend degrading rather than failing closed, the per-repo worktree path, the <code>/health</code> body, the <code>/chat/*</code> Host check, the audit fingerprint's 20-line bucket, dashboard keys in the audit/investigate/github-mode/bot-account guides (<code>a</code> add repo, <code>U</code> unwatch, <code>D</code> discard), the apply-ticket <code>patch_no_amend</code> rule, and the ARCHITECTURE prose that still described the module shapes the shared-module consolidation (#500) replaced.</li>
+</ul>
+<h3>Internal</h3>
+<ul>
+  <li>Behaviour-preserving consolidation: dead exports and stale re-exports removed (#497); the fenced-block parsers share one <code>fences.ts</code> (#498); the assess/analyze repo-target preamble lives in <code>repoTarget.ts</code> and the read-only tool set in <code>readOnlyTools.ts</code>, which also removes the <code>runOnce</code> ↔ flow import cycle (#499); the GitHub issue-comment and transcript-target helpers share <code>githubComment.ts</code>/<code>transcriptTarget.ts</code>, with six smaller two-copy helpers folded likewise (#500). A project-level harness setting now disables agent commit and PR attribution.</li>
+  <li>The <code>node_modules</code> symlink the dead-export sweep (#497) committed by accident is untracked again and <code>.gitignore</code> ignores a symlink at that path too (#502).</li>
+</ul>
 <h2 id="v0-13-0">0.13.0 — 2026-09-04</h2>
 <h3>Added</h3>
 <ul>
@@ -504,7 +538,7 @@
         <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a>
       </p>
       <p class="stamp">
-        verified against junco 0.13.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">CHANGELOG.md</a> ·
+        verified against junco 0.14.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">CHANGELOG.md</a> ·
         <a href="https://github.com/ironforgesoftware/junco-site/edit/main/docs-src/pages/changelog.html">edit this page</a>
       </p>
     </footer>

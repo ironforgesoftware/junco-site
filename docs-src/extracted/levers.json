@@ -784,6 +784,40 @@
       "reload": "restart"
     },
     {
+      "path": "chat.thinkTags",
+      "type": "enum",
+      "markers": [],
+      "default": "\"auto\"",
+      "description": "Split inline <think>…</think> spans from the answer into the thinking block; auto skips a turn that already streams native thinking. A running chat session keeps the value it started with (restart, or /new in the chat, to apply).",
+      "enumValues": [
+        "auto",
+        "on",
+        "off"
+      ],
+      "reload": "restart"
+    },
+    {
+      "path": "chat.maxFps",
+      "type": "number",
+      "markers": [],
+      "default": "60",
+      "description": "Dashboard frame cap while the chat streams (lower on a slow terminal or machine).",
+      "reload": "restart"
+    },
+    {
+      "path": "chat.theme",
+      "type": "enum",
+      "markers": [],
+      "default": "\"auto\"",
+      "description": "Palette for the chat's highlighted code fences: auto guesses from the terminal background (COLORFGBG), dark/light pin it.",
+      "enumValues": [
+        "auto",
+        "dark",
+        "light"
+      ],
+      "reload": "restart"
+    },
+    {
       "path": "assess.maxIssuesPerRun",
       "type": "number",
       "markers": [],
