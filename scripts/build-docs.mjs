@@ -690,6 +690,19 @@ export const CHANGELOG_SUBSTITUTIONS = {
   "it's simply wasted tokens now": "it's only wasted tokens now",
   "Two statements in it were simply wrong": "Two statements in it were plainly wrong",
   "`~/.gem/credentials` and `~/.claude`": "`~/.gem/credentials` and the coding-agent harness's own home directory",
+  // 0.14.0: the doctor hint names two inference servers by product (vendor
+  // gate), the consolidation entry names the harness (vendor gate), and a bare
+  // issue ref trips the html-hex gate (only the parenthesized form is excluded).
+  'llama.cpp `--reasoning-format deepseek`, LM Studio\'s "Reasoning → separate field"':
+    "the server's own reasoning-format or separate-reasoning-field option",
+  "`.claude/settings.json` now disables Claude Code commit and PR attribution.":
+    "A project-level harness setting now disables agent commit and PR attribution.",
+  // A bare `#498` reads as a hex color to the html-hex gate, which spares only
+  // the parenthesized `(#NNN)` / `(#NNN,` form (one match clears the line).
+  "still described pre-#498–#500 module shapes":
+    "still described the module shapes the shared-module consolidation (#500) replaced",
+  "The `node_modules` symlink #497 committed by accident":
+    "The `node_modules` symlink the dead-export sweep (#497) committed by accident",
 };
 
 // Substitute (vendor/banned-word/glyph scrub) → escape → inline markdown.

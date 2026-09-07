@@ -322,6 +322,9 @@ anywhere that isn't a private personal repo.</div>
   <div><dt><code>chat.turnTimeoutMinutes</code> <span class="ph">number</span></dt><dd>Per-turn chat timeout; unset → worker.defaultTimeoutMinutes. <span class="default">default undefined · restart</span></dd></div>
   <div><dt><code>chat.submitTool</code> <span class="ph">boolean</span></dt><dd>Register the junco_submit tool on new chat sessions (the model can submit a parked draft after you confirm). <span class="default">default true · restart</span></dd></div>
   <div><dt><code>chat.confirmTimeoutMinutes</code> <span class="ph">number</span></dt><dd>How long a proposed chat submit waits for y/n in the dashboard before expiring. <span class="default">default 10 · restart</span></dd></div>
+  <div><dt><code>chat.thinkTags</code> <span class="ph">auto | on | off</span></dt><dd>Split inline &lt;think&gt;…&lt;/think&gt; spans from the answer into the thinking block; auto skips a turn that already streams native thinking. A running chat session keeps the value it started with (restart, or /new in the chat, to apply). <span class="default">default &quot;auto&quot; · restart</span></dd></div>
+  <div><dt><code>chat.maxFps</code> <span class="ph">number</span></dt><dd>Dashboard frame cap while the chat streams (lower on a slow terminal or machine). <span class="default">default 60 · restart</span></dd></div>
+  <div><dt><code>chat.theme</code> <span class="ph">auto | dark | light</span></dt><dd>Palette for the chat's highlighted code fences: auto guesses from the terminal background (COLORFGBG), dark/light pin it. <span class="default">default &quot;auto&quot; · restart</span></dd></div>
 </dl>
 <h2 id="g-assess"><code>assess.*</code></h2>
 <dl class="flags">
@@ -345,7 +348,7 @@ anywhere that isn't a private personal repo.</div>
         <a href="https://github.com/ironforgesoftware/junco/blob/main/CHANGELOG.md">changelog</a>
       </p>
       <p class="stamp">
-        verified against junco 0.13.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/configuration.md">docs/configuration.md</a> ·
+        verified against junco 0.14.0 · source: <a href="https://github.com/ironforgesoftware/junco/blob/main/docs/configuration.md">docs/configuration.md</a> ·
         <a href="https://github.com/ironforgesoftware/junco-site/edit/main/docs-src/pages/config.html">edit this page</a>
       </p>
     </footer>
